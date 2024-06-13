@@ -8,24 +8,24 @@ pico_sdk_init()
 
 include_directories(
 	.
-	../z80core
-	../iodevices
+	../z80pack/z80core
+	../z80pack/iodevices
 )
 add_executable(picosim
 	picosim.c
-	../z80core/simcore.c
-	../z80core/simglb.c
-	../z80core/simdis.c
-	../z80core/simice.c
-	../z80core/sim8080.c
-	../z80core/simz80.c
-	../z80core/simz80-cb.c
-	../z80core/simz80-dd.c
-	../z80core/simz80-ddcb.c
-	../z80core/simz80-ed.c
-	../z80core/simz80-fd.c
-	../z80core/simz80-fdcb.c
-	../iodevices/sd-fdc.c
+	../z80pack/z80core/simcore.c
+	../z80pack/z80core/simglb.c
+	../z80pack/z80core/simdis.c
+	../z80pack/z80core/simice.c
+	../z80pack/z80core/sim8080.c
+	../z80pack/z80core/simz80.c
+	../z80pack/z80core/simz80-cb.c
+	../z80pack/z80core/simz80-dd.c
+	../z80pack/z80core/simz80-ddcb.c
+	../z80pack/z80core/simz80-ed.c
+	../z80pack/z80core/simz80-fd.c
+	../z80pack/z80core/simz80-fdcb.c
+	../z80pack/iodevices/sd-fdc.c
 	config.c
 	memsim.c
 	iosim.c

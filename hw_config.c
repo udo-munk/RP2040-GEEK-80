@@ -28,14 +28,14 @@ static spi_t spi = {
     .hw_inst = spi0,  // RP2040 SPI component
     .sck_gpio = 18,   // GPIO number (not Pico pin number)
     .mosi_gpio = 19,
-    .miso_gpio = 16,
+    .miso_gpio = 20,
     .baud_rate = 12 * 1000 * 1000   // Actual frequency: 10416666.
 };
 
 /* SPI Interface */
 static sd_spi_if_t spi_if = {
     .spi = &spi,  // Pointer to the SPI driving this card
-    .ss_gpio = 17 // The SPI slave select GPIO for this SD card
+    .ss_gpio = 23 // The SPI slave select GPIO for this SD card
 };
 
 /* Configuration of the SD Card socket object */
