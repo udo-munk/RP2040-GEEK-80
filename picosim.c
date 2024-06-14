@@ -96,7 +96,6 @@ extern void init_cpu(void), init_io(void), run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 
 uint64_t get_clock_us(void);
-void gpio_callback(uint, uint32_t);
 
 /* Callbacks used by the SD library */
 size_t sd_get_num() { return 1; }
