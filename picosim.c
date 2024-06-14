@@ -13,6 +13,7 @@
  * 28-MAY-2024 implemented boot from disk images with some OS
  * 31-MAY-2024 use USB UART
  * 09-JUN-2024 implemented boot ROM
+ * 13-JUN-2024 ported to RP2040-GEEK
  */
 
 /* Raspberry SDK and FatFS includes */
@@ -40,6 +41,14 @@
 
 /* global variables for access to SPI MicroSD drive */
 
+/*
+ * In the RP2024-GEEK the MicroSD card is connected to the MCU GPIO's
+ * so that it either can be accessed with SPI or with SDIO. First it
+ * was tested with SPI and then with SDIO, which is active because
+ * data transfers are faster.
+ */
+
+#if 0
 /* Configuration of RP2040 hardware SPI object */
 static spi_t spi = {  
 	.hw_inst = spi0,  // RP2040 SPI component
@@ -59,6 +68,20 @@ static sd_spi_if_t spi_if = {
 static sd_card_t sd_card = {   
 	.type = SD_IF_SPI,
 	.spi_if_p = &spi_if  // Pointer to the SPI interface driving this card
+};
+#endif
+
+/* SDIO Interface */
+static sd_sdio_if_t sdio_if = {
+	.CMD_gpio = 19,
+	.D0_gpio = 20,
+	.baud_rate = 15 * 1000 * 1000  // 15 MHz
+};
+
+/* Hardware Configuration of the SD Card socket "object" */
+static sd_card_t sd_card = {
+	.type = SD_IF_SDIO,
+	.sdio_if_p = &sdio_if
 };
 
 FATFS fs;       /* FatFs on SDIO MicroSD */
