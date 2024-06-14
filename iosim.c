@@ -27,16 +27,11 @@
 #include "sim.h"
 #include "simglb.h"
 
-/* Pico W also needs this */
-#if PICO == 1
-#include "pico/cyw43_arch.h"
-#endif
-
 /*
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static void p000_out(BYTE), p001_out(BYTE), p255_out(BYTE), hwctl_out(BYTE);
+static void p001_out(BYTE), p255_out(BYTE), hwctl_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
 extern void fdc_out(BYTE);
 extern BYTE fdc_in(void);
@@ -62,7 +57,6 @@ BYTE (*port_in[256])(void) = {
  *	I/O port (0 - 255), to do the required I/O.
  */
 void (*port_out[256])(BYTE) = {
-	[  0] = p000_out,	/* internal LED */
 	[  1] = p001_out,	/* SIO data */
 	[  4] = fdc_out,	/* FDC status */
 	[160] = hwctl_out,	/* virtual hardware control */
@@ -162,29 +156,6 @@ static BYTE p255_in(void)
 	return fp_value;
 }
 
-/*
- * 	I/O function port 0 write:
- *	Switch builtin LED on/off.
- */
-static void p000_out(BYTE data)
-{
-	if (!data) {
-		/* 0 switches LED off */
-#if PICO == 1
-		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-#else
-		gpio_put(LED, 0);
-#endif
-	} else {
-		/* everything else on */
-#if PICO == 1
-		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-#else
-		gpio_put(LED, 1);
-#endif
-	}
-}	
- 
 /*
  *	I/O function port 1 write:
  *	Write byte to Pico UART.

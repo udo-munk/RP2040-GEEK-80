@@ -34,13 +34,6 @@
 #include "memsim.h"
 #include "sd-fdc.h"
 
-/* Pico W also needs this */
-#if PICO == 1
-#include "pico/cyw43_arch.h"
-#endif
-
-#define SWITCH_BREAK 15 /* switch we use to interrupt the system */
-
 #define BS  0x08 /* backspace */
 #define DEL 0x7f /* delete */
 
@@ -62,22 +55,6 @@ void gpio_callback(uint, uint32_t);
 int main(void)
 {
 	stdio_init_all();	/* initialize Pico stdio */
-
-#if PICO == 1			/* initialize Pico W hardware */
-	if (cyw43_arch_init())
-	{
-		printf("CYW43 init failed\n");
-		return -1;
-	}
-#else				/* initialize Pico hardware */
-	gpio_init(LED);		/* configure GPIO for LED output */
-	gpio_set_dir(LED, GPIO_OUT);
-#endif
-
-	gpio_init(SWITCH_BREAK); /* setupt interrupt for break switch */
-	gpio_set_dir(SWITCH_BREAK, GPIO_IN);
-	gpio_set_irq_enabled_with_callback(SWITCH_BREAK, GPIO_IRQ_EDGE_RISE,
-					   true, &gpio_callback);
 
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB
@@ -128,13 +105,6 @@ NOPE:	config();		/* configure the machine */
 	/* unmount SD card */
 	f_unmount("");
 
-	/* switch builtin LED on */
-#if PICO == 1
-	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-#else
-	gpio_put(LED, 1);
-#endif
-
 #ifndef WANT_ICE
 	putchar('\n');
 	report_cpu_error();	/* check for CPU emulation errors and report */
@@ -149,16 +119,6 @@ NOPE:	config();		/* configure the machine */
 uint64_t get_clock_us(void)
 {
 	return to_us_since_boot(get_absolute_time());
-}
-
-/*
- * interrupt handler for break switch
- * stops CPU
- */
-void gpio_callback(uint gpio, uint32_t events)
-{
-	cpu_error = USERINT;
-	cpu_state = STOPPED;
 }
 
 /*

@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
 set (PICO_BOARD pico)
-#set(PICO_BOARD pico_w)
 include(pico_sdk_import.cmake)
 
 project(picosim C CXX ASM)
@@ -43,17 +42,10 @@ target_compile_definitions(picosim INTERFACE
 	PICO_DEFAULT_UART=0
 )
 
-# for Pico
 target_link_libraries(picosim
 	pico_stdlib
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 )
-# for Pico W
-#target_link_libraries(picosim
-#	pico_stdlib
-#	pico_cyw43_arch_none
-#	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
-#)
 
 pico_add_extra_outputs(picosim)
 

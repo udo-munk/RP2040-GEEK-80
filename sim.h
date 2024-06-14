@@ -3,18 +3,14 @@
  *
  * Copyright (C) 2024 by Udo Munk
  *
- * This is the configuration for a Raspberry Pico (W) board
+ * This is the configuration for a Waveshare RP2040-GEEK board
  */
 
 #ifndef SIM_INC
 #define SIM_INC
 
-#define PICO 0		/* board we use, 0 for Pico 1 for Pico W */
-//#define LED PICO_DEFAULT_LED_PIN	/* use builtin LED */
-#define LED 14			/* or another one */
-
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
-//#define EXCLUDE_I8080	/* don't include 8080, for now we want both */
+//#define EXCLUDE_I8080	/* we want both CPU's */
 #define CPU_SPEED 4	/* CPU speed 0=unlimited */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
 /*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
@@ -32,7 +28,7 @@ extern void sleep_us(uint64_t);
 extern void sleep_ms(uint32_t);
 #define SLEEP_MS(t)	sleep_ms(t)
 
-#define USR_COM "Raspberry Pi Pico Z80/8080 emulator"
+#define USR_COM "Raspberry RP2040 Z80/8080 emulator"
 #define USR_REL "1.2"
 #define USR_CPR "Copyright (C) 2024 by Udo Munk & Thomas Eberhardt"
 
