@@ -34,7 +34,6 @@
 #include "config.h"
 #include "memsim.h"
 #include "sd-fdc.h"
-#include "hw_config.h"
 
 #define BS  0x08 /* backspace */
 #define DEL 0x7f /* delete */
