@@ -11,7 +11,7 @@ tb.bin: tb.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 -x $<
 
 test8080.bin: test8080.asm $(Z80ASM)
-	$(Z80ASM) $(Z80ASMFLAGS) -8 -x $<
+	$(Z80ASM) $(Z80ASMFLAGS) -8 -dONCPM=0 $<
 
 $(Z80ASM): FORCE
 	$(MAKE) -C $(Z80ASMDIR)
