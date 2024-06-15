@@ -166,7 +166,7 @@ NOPE:	config();		/* configure the machine */
 	f_unmount("");
 
 	/* shutdown LCD */
-	lcd_exit();
+	DEV_Module_Exit();
 
 #ifndef WANT_ICE
 	putchar('\n');

@@ -4,9 +4,7 @@
  * Copyright (c) 2024 Udo Munk
  */
 
-#include "LCD_1in14_V2.h"
-#include "DEV_Config.h"
-#include "GUI_Paint.h"
+#include "lcd.h"
 
 void lcd_init(void)
 {
@@ -19,9 +17,4 @@ void lcd_init(void)
 	LCD_1IN14_V2_Init(HORIZONTAL);
 	LCD_1IN14_V2_Clear(BLACK);
 	DEV_SET_PWM(75);
-}
-
-void lcd_exit(void)
-{
-	DEV_Module_Exit();
 }

@@ -7,6 +7,10 @@
 #ifndef LCD_H
 #define LCD_H
 
-extern void lcd_init(void), lcd_exit(void);
+#include "LCD_1in14_V2.h"
+#include "DEV_Config.h"
+#include "GUI_Paint.h"
+
+extern void lcd_init(void);
 
 #endif
