@@ -23,9 +23,10 @@ To build the application:
 Flash picosim.uf2 into the device, and then prepare a MicroSD card.
 
 In the root directory of the card create these directories:
-CONF80
-CODE80
-DISKS80
+
+	CONF80
+	CODE80
+	DISKS80
 
 Into the CODE80 directory copy all the .bin files from src-examples.
 Into the DISKS80 directory copy the disk images from disks.
