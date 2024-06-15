@@ -15,8 +15,20 @@ void lcd_init(void)
 
 	DEV_SET_PWM(0);
 	LCD_1IN14_V2_Init(HORIZONTAL);
-	LCD_1IN14_V2_Clear(WHITE);
+	LCD_1IN14_V2_Clear(BLACK);
 	DEV_SET_PWM(100);
+
+    UWORD *BlackImage;
+    UDOUBLE Imagesize = LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH * 2;
+    if ((BlackImage = (UWORD *)malloc(Imagesize)) == NULL)
+    {
+        printf("Failed to apply for black memory...\r\n");
+        exit(0);
+    }
+
+    // /*1.Create a new image cache named IMAGE_RGB and fill it with white*/
+    Paint_NewImage((UBYTE *)BlackImage, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT, 0, WHITE);
+
 	Paint_SetScale(65);
 	Paint_SetRotate(ROTATE_0);
 
@@ -42,4 +54,7 @@ void lcd_init(void)
     Paint_DrawString_EN(1, 40, "ABC", &Font20, 0x000f, 0xfff0);
     Paint_DrawString_CN(1, 60, "»¶Ó­Ê¹ÓÃ", &Font24CN, WHITE, BLUE);
     Paint_DrawString_EN(1, 100, "Pico-GEEK", &Font16, RED, WHITE);
+
+        // /*3.Refresh the picture in RAM to LCD*/
+    LCD_1IN14_V2_Display(BlackImage);
 }
