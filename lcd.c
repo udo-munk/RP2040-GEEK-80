@@ -6,12 +6,12 @@
 
 #include "lcd.h"
 
-void lcd_init(void)
+int lcd_init(void)
 {
 	/* initialize LCD device */
 	if (DEV_Module_Init() != 0)
 	{
-		return;
+		return 1;
 	}
 
 	/* set orientation */
@@ -23,8 +23,7 @@ void lcd_init(void)
 	UDOUBLE Imagesize = LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH * 2;
 	if ((BlackImage = (UWORD *)malloc(Imagesize)) == NULL)
 	{
-		printf("Failed to allocate memory\n");
-		exit(0);
+		return 2;
 	}
 
 	/* use this image memory */
@@ -40,4 +39,6 @@ void lcd_init(void)
 
 	/* refresh the picture in memory to LCD */
 	LCD_1IN14_V2_Display(BlackImage);
+
+	return 0;
 }

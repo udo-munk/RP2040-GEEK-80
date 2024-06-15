@@ -11,6 +11,6 @@
 #include "DEV_Config.h"
 #include "GUI_Paint.h"
 
-extern void lcd_init(void);
+extern int lcd_init(void);
 
 #endif

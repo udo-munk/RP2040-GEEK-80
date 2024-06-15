@@ -14,6 +14,7 @@
  * 31-MAY-2024 use USB UART
  * 09-JUN-2024 implemented boot ROM
  * 13-JUN-2024 ported to RP2040-GEEK
+ * 15-JUN-2024 add access to RP2040-GEEK LCD display
  */
 
 /* Raspberry SDK and FatFS includes */
@@ -110,6 +111,8 @@ sd_card_t *sd_get_by_num(size_t num) {
 
 int main(void)
 {
+	int stat;
+
 	stdio_init_all();	/* initialize Pico stdio */
 
 	/* when using USB UART wait until it is connected */
@@ -123,13 +126,15 @@ int main(void)
 	printf("%s release %s\n", USR_COM, USR_REL);
 	printf("%s\n\n", USR_CPR);
 
+	/* initialize LCD */
+	if (stat = lcd_init())
+		panic("lcd_init error: %d\n", stat);
+
 	/* try to mount SD card */
 	sd_res = f_mount(&fs, "", 1);
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 
-	/* initialize LCD */
-	lcd_init();
 	putchar('\n');
 
 	init_cpu();		/* initialize CPU */
