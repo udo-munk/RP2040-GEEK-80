@@ -34,6 +34,7 @@
 #include "config.h"
 #include "memsim.h"
 #include "sd-fdc.h"
+#include "lcd.h"
 
 #define BS  0x08 /* backspace */
 #define DEL 0x7f /* delete */
@@ -127,6 +128,10 @@ int main(void)
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 
+	/* initialize LCD */
+	lcd_init();
+	putchar('\n');
+
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
@@ -159,6 +164,9 @@ NOPE:	config();		/* configure the machine */
 
 	/* unmount SD card */
 	f_unmount("");
+
+	/* shutdown LCD */
+	lcd_exit();
 
 #ifndef WANT_ICE
 	putchar('\n');
