@@ -9,7 +9,7 @@ used by non technical users, I found this:
 To install z80pack on this device:
 
 1. clone z80pack: git clone https://github.com/udo-munk/z80pack.git
-2. checkout dev branch: cd z80pack; git checkout dev
+2. checkout dev branch: cd z80pack; git checkout dev; cd ..
 3. clone this: git clone https://github.com/udo-munk/RP2040-GEEK-80.git
 
 To build the application:
