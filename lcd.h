@@ -1,5 +1,5 @@
 /*
- * functions for using the RP2040-GEEK LCD from the emulation
+ * Functions for using the RP2040-GEEK LCD from the emulation
  *
  * Copyright (c) 2024 Udo Munk
  */
@@ -12,6 +12,6 @@
 #include "GUI_Paint.h"
 
 extern int lcd_init(void);
-extern void lcd_banner(void);
+extern void lcd_refresh(void), lcd_banner(void);
 
 #endif

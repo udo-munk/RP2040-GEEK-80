@@ -1,5 +1,5 @@
 /*
- * functions for using the RP2040-GEEK LCD from the emulation
+ * Functions for using the RP2040-GEEK LCD from the emulation
  *
  * Copyright (c) 2024 Udo Munk
  */
@@ -7,7 +7,8 @@
 #include "lcd.h"
 
 /* memory image for drawing */
-UWORD *Image;
+static UWORD *Image;
+static UDOUBLE Imagesize = LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH * 2;
 
 int lcd_init(void)
 {
@@ -22,7 +23,6 @@ int lcd_init(void)
 	LCD_1IN14_V2_Clear(BLACK);
 
 	/* allocate memory for an image */
-	UDOUBLE Imagesize = LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH * 2;
 	if ((Image = (UWORD *) malloc(Imagesize)) == NULL)
 	{
 		return 2;
@@ -37,6 +37,12 @@ int lcd_init(void)
 	return 0;
 }
 
+void lcd_refresh(void)
+{
+	/* refresh the picture in memory to LCD */
+	LCD_1IN14_V2_Display(Image);
+}
+
 void lcd_banner(void)
 {
 	/* draw banner */
@@ -44,6 +50,5 @@ void lcd_banner(void)
 	Paint_DrawString_EN(25, 40, "# Z80pack #", &Font24, BLACK, WHITE);
 	Paint_DrawString_EN(25, 64, "RP2040-GEEK", &Font24, BLACK, WHITE);
 
-	/* refresh the picture in memory to LCD */
-	LCD_1IN14_V2_Display(Image);
+	lcd_refresh();
 }
