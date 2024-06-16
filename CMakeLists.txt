@@ -36,7 +36,7 @@ add_executable(picosim
 	lcd.c
 )
 
-add_subdirectory(no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src build)
+add_subdirectory(no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs)
 add_subdirectory(lcd/Config)
 add_subdirectory(lcd/LCD)
 add_subdirectory(lcd/Fonts)
