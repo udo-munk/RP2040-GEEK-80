@@ -115,6 +115,10 @@ int main(void)
 
 	stdio_init_all();	/* initialize Pico stdio */
 
+	/* initialize LCD */
+	if (stat = lcd_init())
+		panic("lcd_init error: %d\n", stat);
+
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB
 	while (!tud_cdc_connected())
@@ -125,10 +129,6 @@ int main(void)
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s\n", USR_COM, USR_REL);
 	printf("%s\n\n", USR_CPR);
-
-	/* initialize LCD */
-	if (stat = lcd_init())
-		panic("lcd_init error: %d\n", stat);
 
 	/* try to mount SD card */
 	sd_res = f_mount(&fs, "", 1);
