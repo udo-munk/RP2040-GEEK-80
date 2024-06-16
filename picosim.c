@@ -135,8 +135,6 @@ int main(void)
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 
-	putchar('\n');
-
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
