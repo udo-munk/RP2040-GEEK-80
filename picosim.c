@@ -40,7 +40,7 @@
 #define BS  0x08 /* backspace */
 #define DEL 0x7f /* delete */
 
-/* global variables for access to SPI MicroSD drive */
+/* global variables for access to MicroSD card */
 
 /*
  * In the RP2024-GEEK the MicroSD card is connected to the MCU GPIO's
@@ -79,7 +79,7 @@ static sd_sdio_if_t sdio_if = {
 	.baud_rate = 15 * 1000 * 1000  // 15 MHz
 };
 
-/* Hardware Configuration of the SD Card socket "object" */
+/* Configuration of the SD Card socket object */
 static sd_card_t sd_card = {
 	.type = SD_IF_SDIO,
 	.sdio_if_p = &sdio_if
