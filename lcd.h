@@ -12,6 +12,7 @@
 #include "GUI_Paint.h"
 
 extern int lcd_init(void);
-extern void lcd_refresh(void), lcd_banner(void);
+extern void lcd_refresh(void);
+extern void lcd_banner(void), lcd_info(void);
 
 #endif

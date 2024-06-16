@@ -45,10 +45,18 @@ void lcd_refresh(void)
 
 void lcd_banner(void)
 {
-	/* draw banner */
 	Paint_Clear(BLUE);
 	Paint_DrawString_EN(25, 40, "# Z80pack #", &Font24, BLACK, WHITE);
 	Paint_DrawString_EN(25, 64, "RP2040-GEEK", &Font24, BLACK, WHITE);
+
+	lcd_refresh();
+}
+
+void lcd_info(void)
+{
+	Paint_Clear(BLACK);
+	Paint_DrawString_EN(25, 40, "Waiting for", &Font24, RED, BLACK);
+	Paint_DrawString_EN(25, 64, "  terminal ", &Font24, RED, BLACK);
 
 	lcd_refresh();
 }
