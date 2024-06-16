@@ -63,7 +63,6 @@ void DEV_SPI_Write_nByte(uint8_t pData[], uint32_t Len)
 /**
  * I2C
 **/
-
 void DEV_I2C_Write(uint8_t addr, uint8_t reg, uint8_t Value)
 {
     uint8_t data[2] = {reg, Value};
@@ -119,15 +118,12 @@ void DEV_Delay_us(UDOUBLE xus)
     sleep_us(xus);
 }
 
-
-
 void DEV_GPIO_Init(void)
 {
     DEV_GPIO_Mode(LCD_RST_PIN, 1);
     DEV_GPIO_Mode(LCD_DC_PIN, 1);
     DEV_GPIO_Mode(LCD_CS_PIN, 1);
     DEV_GPIO_Mode(LCD_BL_PIN, 1);
-    
     
     DEV_GPIO_Mode(LCD_CS_PIN, 1);
     DEV_GPIO_Mode(LCD_BL_PIN, 1);
@@ -136,6 +132,7 @@ void DEV_GPIO_Init(void)
     DEV_Digital_Write(LCD_DC_PIN, 0);
     DEV_Digital_Write(LCD_BL_PIN, 1);
 }
+
 /******************************************************************************
 function:	Module Initialize, the library and initialize the pins, SPI protocol
 parameter:
@@ -143,16 +140,16 @@ Info:
 ******************************************************************************/
 UBYTE DEV_Module_Init(void)
 {
-    stdio_init_all();   
+    // application should init, not here
+    // stdio_init_all();   
     // SPI Config
     spi_init(SPI_PORT, 30*1000 * 1000);
     gpio_set_function(LCD_CLK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(LCD_MOSI_PIN, GPIO_FUNC_SPI);
-    
+
     // GPIO Config
     DEV_GPIO_Init();
-    
-    
+
     // PWM Config
     gpio_set_function(LCD_BL_PIN, GPIO_FUNC_PWM);
     slice_num = pwm_gpio_to_slice_num(LCD_BL_PIN);
@@ -160,8 +157,7 @@ UBYTE DEV_Module_Init(void)
     pwm_set_chan_level(slice_num, PWM_CHAN_B, 1);
     pwm_set_clkdiv(slice_num,50);
     pwm_set_enabled(slice_num, true);
-    
-    
+
     //I2C Config
     i2c_init(i2c1,300*1000);
     gpio_set_function(LCD_SDA_PIN,GPIO_FUNC_I2C);
@@ -169,19 +165,18 @@ UBYTE DEV_Module_Init(void)
     gpio_pull_up(LCD_SDA_PIN);
     gpio_pull_up(LCD_SCL_PIN);
     
-    printf("DEV_Module_Init OK \r\n");
+    // do not print here
+    // printf("DEV_Module_Init OK \r\n");
     return 0;
 }
 
 void DEV_SET_PWM(uint8_t Value){
     if(Value<0 || Value >100){
-        printf("DEV_SET_PWM Error \r\n");
+        ; //printf("DEV_SET_PWM Error \r\n");
     }else {
         pwm_set_chan_level(slice_num, PWM_CHAN_B, Value);
     }
-        
-    
-    
+
 }
 
 /******************************************************************************
