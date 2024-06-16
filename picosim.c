@@ -118,6 +118,8 @@ int main(void)
 	/* initialize LCD */
 	if (stat = lcd_init())
 		panic("lcd_init error: %d\n", stat);
+	/* and draw banner */
+	lcd_banner();
 
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB
