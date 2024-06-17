@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  *
- * This is the main program for a Raspberry Pico (W) board,
+ * This is the main program for a RP2040-GEEK board,
  * substitutes z80core/simmain.c
  *
  * History:
