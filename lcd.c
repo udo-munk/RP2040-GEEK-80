@@ -18,7 +18,7 @@ int lcd_init(void)
 		return 1;
 	}
 
-	/* set orientation */
+	/* set orientation, x = 240 width and y = 135 height */
 	LCD_1IN14_V2_Init(HORIZONTAL);
 	LCD_1IN14_V2_Clear(BLACK);
 
@@ -31,7 +31,9 @@ int lcd_init(void)
 	/* use this image memory */
 	Paint_NewImage((UBYTE *)Image, LCD_1IN14_V2.WIDTH,
 			LCD_1IN14_V2.HEIGHT, 0, WHITE);
+	/* with this scale */
 	Paint_SetScale(65);
+	/* 0,0 is upper left corner */
 	Paint_SetRotate(ROTATE_0);
 
 	return 0;
