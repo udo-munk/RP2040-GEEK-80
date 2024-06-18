@@ -48,7 +48,7 @@
 
 #define LCD_RST_PIN  12
 #define LCD_DC_PIN   8
-#define LCD_BL_PIN   13
+#define LCD_BL_PIN   25
     
 #define LCD_CS_PIN   9
 #define LCD_CLK_PIN  10
