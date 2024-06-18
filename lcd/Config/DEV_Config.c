@@ -58,8 +58,6 @@ void DEV_SPI_Write_nByte(uint8_t pData[], uint32_t Len)
     spi_write_blocking(SPI_PORT, pData, Len);
 }
 
-
-
 /**
  * I2C
 **/
@@ -142,6 +140,7 @@ UBYTE DEV_Module_Init(void)
 {
     // application should init, not here
     // stdio_init_all();   
+
     // SPI Config
     spi_init(SPI_PORT, 30*1000 * 1000);
     gpio_set_function(LCD_CLK_PIN, GPIO_FUNC_SPI);
@@ -150,6 +149,7 @@ UBYTE DEV_Module_Init(void)
     // GPIO Config
     DEV_GPIO_Init();
 
+#if 0	// this LCD has no PWM pin connected
     // PWM Config
     gpio_set_function(LCD_BL_PIN, GPIO_FUNC_PWM);
     slice_num = pwm_gpio_to_slice_num(LCD_BL_PIN);
@@ -157,13 +157,16 @@ UBYTE DEV_Module_Init(void)
     pwm_set_chan_level(slice_num, PWM_CHAN_B, 1);
     pwm_set_clkdiv(slice_num,50);
     pwm_set_enabled(slice_num, true);
+#endif
 
+#if 0	// this LCD has no I2C pin connected
     //I2C Config
     i2c_init(i2c1,300*1000);
     gpio_set_function(LCD_SDA_PIN,GPIO_FUNC_I2C);
     gpio_set_function(LCD_SCL_PIN,GPIO_FUNC_I2C);
     gpio_pull_up(LCD_SDA_PIN);
     gpio_pull_up(LCD_SCL_PIN);
+#endif
     
     // do not print here
     // printf("DEV_Module_Init OK \r\n");
@@ -172,11 +175,10 @@ UBYTE DEV_Module_Init(void)
 
 void DEV_SET_PWM(uint8_t Value){
     if(Value<0 || Value >100){
-        ; //printf("DEV_SET_PWM Error \r\n");
+        ; //printf("DEV_SET_PWM Error \r\n"); // do not print here
     }else {
         pwm_set_chan_level(slice_num, PWM_CHAN_B, Value);
     }
-
 }
 
 /******************************************************************************
