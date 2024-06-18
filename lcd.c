@@ -9,7 +9,7 @@
 /* memory image for drawing */
 static UWORD img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
 
-int lcd_init(void)
+void lcd_init(void)
 {
 	/* initialize LCD device */
 	DEV_Module_Init();
@@ -24,8 +24,6 @@ int lcd_init(void)
 	Paint_SetScale(65);
 	/* 0,0 is upper left corner */
 	Paint_SetRotate(ROTATE_0);
-
-	return 0;
 }
 
 void lcd_refresh(void)

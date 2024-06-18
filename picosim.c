@@ -111,13 +111,10 @@ sd_card_t *sd_get_by_num(size_t num) {
 
 int main(void)
 {
-	int stat;
-
 	stdio_init_all();	/* initialize Pico stdio */
 
 	/* initialize LCD */
-	if (stat = lcd_init())
-		panic("lcd_init error: %d\n", stat);
+	lcd_init();
 
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB
