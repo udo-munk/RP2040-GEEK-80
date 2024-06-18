@@ -32,6 +32,11 @@ void lcd_refresh(void)
 	LCD_1IN14_V2_Display(&img[0]);
 }
 
+void lcd_brightness(int brightness)
+{
+	DEV_SET_PWM((uint8_t) brightness);
+}
+
 void lcd_info(void)
 {
 	Paint_DrawString_EN(25, 40, "Waiting for", &Font24, RED, BLACK);

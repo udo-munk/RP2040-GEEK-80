@@ -149,7 +149,6 @@ UBYTE DEV_Module_Init(void)
     // GPIO Config
     DEV_GPIO_Init();
 
-#if 0	// this LCD has no PWM pin connected
     // PWM Config
     gpio_set_function(LCD_BL_PIN, GPIO_FUNC_PWM);
     slice_num = pwm_gpio_to_slice_num(LCD_BL_PIN);
@@ -157,7 +156,6 @@ UBYTE DEV_Module_Init(void)
     pwm_set_chan_level(slice_num, PWM_CHAN_B, 1);
     pwm_set_clkdiv(slice_num,50);
     pwm_set_enabled(slice_num, true);
-#endif
 
 #if 0	// this LCD has no I2C pin connected
     //I2C Config

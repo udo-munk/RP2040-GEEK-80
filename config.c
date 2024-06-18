@@ -23,6 +23,7 @@
 #include "ff.h"
 #include "sim.h"
 #include "simglb.h"
+#include "lcd.h"
 
 extern FIL sd_file;
 extern FRESULT sd_res;
@@ -59,7 +60,7 @@ void config(void)
 	const char *dext = "*.DSK";
 	char s[10];
 	unsigned int br;
-	int go_flag = 0;
+	int go_flag = 0, brightness = DEFAULT_BRIGHTNESS;
 
 	/* try to read config file */
 	sd_res = f_open(&sd_file, cfg, FA_READ);
@@ -69,10 +70,13 @@ void config(void)
 		f_read(&sd_file, &fp_value, 1, &br);
 		f_read(&sd_file, &disks[0], 22, &br);
 		f_read(&sd_file, &disks[1], 22, &br);
+		f_read(&sd_file, &brightness, sizeof(int), &br);
 		f_close(&sd_file);
 	}
+	lcd_brightness(brightness);
 
 	while (!go_flag) {
+		printf("b - LCD brightness: %d\n", brightness);
 		printf("1 - switch CPU, currently %s\n", (cpu == Z80) ?
 							  "Z80" : "8080");
 		printf("2 - CPU speed: %d MHz\n", speed);
@@ -88,6 +92,19 @@ void config(void)
 		printf("\n\n");
 
 		switch (*s) {
+		case 'b':
+			printf("Value (0-100): ");
+			get_cmdline(s, 4);
+			printf("\n\n");
+			brightness = atoi((const char *) &s);
+			if (brightness < 0 || brightness > 100) {
+				printf("invalid brightness value: %d\n",
+				       brightness);
+				brightness = DEFAULT_BRIGHTNESS;
+			}
+			lcd_brightness((uint8_t) brightness);
+			break;
+
 		case '1':
 			if (cpu == Z80)
 				switch_cpu(I8080);
@@ -169,6 +186,7 @@ again:
 		f_write(&sd_file, &fp_value, 1, &br);
 		f_write(&sd_file, &disks[0], 22, &br);
 		f_write(&sd_file, &disks[1], 22, &br);
+		f_write(&sd_file, &brightness, sizeof(int), &br);
 		f_close(&sd_file);
 	}
 }
