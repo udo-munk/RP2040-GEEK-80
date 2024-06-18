@@ -13,6 +13,6 @@
 
 extern void lcd_init(void);
 extern void lcd_refresh(void);
-extern void lcd_banner(void), lcd_info(void);
+extern void lcd_banner(void), lcd_info(void), lcd_running(void);
 
 #endif

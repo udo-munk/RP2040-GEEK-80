@@ -155,6 +155,8 @@ NOPE:	config();		/* configure the machine */
 	/* power on jump into the boot ROM */
 	PC = 0xff00;
 
+	lcd_running();
+
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
 	extern void ice_cmd_loop(int);

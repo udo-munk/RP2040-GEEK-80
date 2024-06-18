@@ -32,6 +32,14 @@ void lcd_refresh(void)
 	LCD_1IN14_V2_Display(&img[0]);
 }
 
+void lcd_info(void)
+{
+	Paint_DrawString_EN(25, 40, "Waiting for", &Font24, RED, BLACK);
+	Paint_DrawString_EN(25, 64, "  terminal ", &Font24, RED, BLACK);
+
+	lcd_refresh();
+}
+
 void lcd_banner(void)
 {
 	Paint_DrawString_EN(25, 40, "# Z80pack #", &Font24, BLACK, WHITE);
@@ -40,10 +48,10 @@ void lcd_banner(void)
 	lcd_refresh();
 }
 
-void lcd_info(void)
+void lcd_running(void)
 {
-	Paint_DrawString_EN(25, 40, "Waiting for", &Font24, RED, BLACK);
-	Paint_DrawString_EN(25, 64, "  terminal ", &Font24, RED, BLACK);
+	Paint_DrawString_EN(25, 40, "   CPU is  ", &Font24, GREEN, BLACK);
+	Paint_DrawString_EN(25, 64, "   running ", &Font24, GREEN, BLACK);
 
 	lcd_refresh();
 }
