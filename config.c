@@ -98,7 +98,7 @@ void config(void)
 			printf("\n\n");
 			brightness = atoi((const char *) &s);
 			if (brightness < 0 || brightness > 100) {
-				printf("invalid brightness value: %d\n",
+				printf("invalid brightness value: %d\n\n",
 				       brightness);
 				brightness = DEFAULT_BRIGHTNESS;
 			}
