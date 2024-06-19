@@ -223,15 +223,15 @@ void LCD_1IN14_V2_SetWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
 {
     UBYTE x, y;
     if (LCD_1IN14_V2.SCAN_DIR == HORIZONTAL) { x = 40; y = 53; }
-    else { x=52; y=40; }
+    else { x = 52; y = 40; }
     //set the X coordinates
     LCD_1IN14_V2_SendCommand(0x2A);
-    LCD_1IN14_V2_SendData_16Bit(Xstart	+x);
-    LCD_1IN14_V2_SendData_16Bit(Xend-1	+x);
+    LCD_1IN14_V2_SendData_16Bit(Xstart + x);
+    LCD_1IN14_V2_SendData_16Bit(Xend - 1 + x);
     //set the Y coordinates
     LCD_1IN14_V2_SendCommand(0x2B);
-    LCD_1IN14_V2_SendData_16Bit(Ystart +y);
-    LCD_1IN14_V2_SendData_16Bit(Yend-1	  +y);
+    LCD_1IN14_V2_SendData_16Bit(Ystart + y);
+    LCD_1IN14_V2_SendData_16Bit(Yend - 1 + y);
 
     LCD_1IN14_V2_SendCommand(0X2C);
 }
@@ -245,7 +245,7 @@ void LCD_1IN14_V2_Clear(UWORD Color)
     UWORD j, i;
     UWORD Image[LCD_1IN14_V2.WIDTH * LCD_1IN14_V2.HEIGHT];
     
-    Color = ((Color<<8)&0xff00)|(Color>>8);
+    Color = ((Color << 8) & 0xff00) | (Color >> 8);
    
     for (j = 0; j < LCD_1IN14_V2.HEIGHT * LCD_1IN14_V2.WIDTH; j++) {
         Image[j] = Color;
