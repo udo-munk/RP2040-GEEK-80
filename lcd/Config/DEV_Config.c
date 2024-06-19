@@ -32,6 +32,7 @@
 #define I2C_PORT spi1
 
 uint slice_num;
+
 /**
  * GPIO read and write
 **/
@@ -138,9 +139,6 @@ Info:
 ******************************************************************************/
 UBYTE DEV_Module_Init(void)
 {
-    // application should init, not here
-    // stdio_init_all();   
-
     // SPI Config
     spi_init(SPI_PORT, 30*1000 * 1000);
     gpio_set_function(LCD_CLK_PIN, GPIO_FUNC_SPI);
@@ -166,14 +164,12 @@ UBYTE DEV_Module_Init(void)
     gpio_pull_up(LCD_SCL_PIN);
 #endif
     
-    // do not print here
-    // printf("DEV_Module_Init OK \r\n");
     return 0;
 }
 
 void DEV_SET_PWM(uint8_t Value){
     if(Value<0 || Value >100){
-        ; //printf("DEV_SET_PWM Error \r\n"); // do not print here
+        ;
     }else {
         pwm_set_chan_level(slice_num, PWM_CHAN_B, Value);
     }

@@ -45,7 +45,6 @@
 /**
  * GPIOI config
 **/
-
 #define LCD_RST_PIN  12
 #define LCD_DC_PIN   8
 #define LCD_BL_PIN   25
@@ -56,7 +55,9 @@
     
 #define LCD_SCL_PIN  7
 #define LCD_SDA_PIN  6
+
 /*------------------------------------------------------------------------------------------------------*/
+
 void DEV_Digital_Write(UWORD Pin, UBYTE Value);
 UBYTE DEV_Digital_Read(UWORD Pin);
 
@@ -71,7 +72,6 @@ void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len);
 void DEV_Delay_ms(UDOUBLE xms);
 void DEV_Delay_us(UDOUBLE xus);
 
-
 void DEV_I2C_Write(uint8_t addr, uint8_t reg, uint8_t Value);
 void DEV_I2C_Write_nByte(uint8_t addr, uint8_t *pData, uint32_t Len);
 uint8_t DEV_I2C_ReadByte(uint8_t addr, uint8_t reg);
@@ -80,6 +80,5 @@ void DEV_SET_PWM(uint8_t Value);
 
 UBYTE DEV_Module_Init(void);
 void DEV_Module_Exit(void);
-
 
 #endif
