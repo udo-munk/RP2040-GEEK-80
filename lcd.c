@@ -39,24 +39,24 @@ void lcd_brightness(int brightness)
 
 void lcd_info(void)
 {
-	Paint_DrawString_EN(25, 40, "Waiting for", &Font24, RED, BLACK);
-	Paint_DrawString_EN(25, 64, "  terminal ", &Font24, RED, BLACK);
+	Paint_DrawString(25, 40, "Waiting for", &Font24, RED, BLACK);
+	Paint_DrawString(25, 64, "  terminal ", &Font24, RED, BLACK);
 
 	lcd_refresh();
 }
 
 void lcd_banner(void)
 {
-	Paint_DrawString_EN(25, 40, "# Z80pack #", &Font24, BLACK, WHITE);
-	Paint_DrawString_EN(25, 64, "RP2040-GEEK", &Font24, BLACK, WHITE);
+	Paint_DrawString(25, 40, "# Z80pack #", &Font24, BLACK, WHITE);
+	Paint_DrawString(25, 64, "RP2040-GEEK", &Font24, BLACK, WHITE);
 
 	lcd_refresh();
 }
 
 void lcd_running(void)
 {
-	Paint_DrawString_EN(25, 40, "   CPU is  ", &Font24, GREEN, BLACK);
-	Paint_DrawString_EN(25, 64, "   running ", &Font24, GREEN, BLACK);
+	Paint_DrawString(25, 40, "   CPU is  ", &Font24, GREEN, BLACK);
+	Paint_DrawString(25, 64, "   running ", &Font24, GREEN, BLACK);
 
 	lcd_refresh();
 }

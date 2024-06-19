@@ -1,6 +1,6 @@
-# 查找当前目录下的所有源文件
-# 并将名称保存到 DIR_Fonts_SRCS 变量
+# Find all source files in the current directory
+# and save their names in the DIR_Fonts_SRCS variable
 aux_source_directory(. DIR_Fonts_SRCS)
 
-# 生成链接库
+# Generate link library
 add_library(Fonts ${DIR_Fonts_SRCS})

@@ -346,13 +346,13 @@ void Paint_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color,
 /******************************************************************************
 function: Draw a line of arbitrary slope
 parameter:
-    Xstart ：Starting Xpoint point coordinates
-    Ystart ：Starting Xpoint point coordinates
-    Xend   ：End point Xpoint coordinate
-    Yend   ：End point Ypoint coordinate
-    Color  ：The color of the line segment
+    Xstart : Starting Xpoint point coordinates
+    Ystart : Starting Xpoint point coordinates
+    Xend   : End point Xpoint coordinate
+    Yend   : End point Ypoint coordinate
+    Color  : The color of the line segment
     Line_width : Line width
-    Line_Style: Solid and dotted lines
+    Line_Style : Solid and dotted lines
 ******************************************************************************/
 void Paint_DrawLine(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
                     UWORD Color, DOT_PIXEL Line_width, LINE_STYLE Line_Style)
@@ -416,13 +416,13 @@ void Paint_DrawLine(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
 /******************************************************************************
 function: Draw a rectangle
 parameter:
-    Xstart ：Rectangular  Starting Xpoint point coordinates
-    Ystart ：Rectangular  Starting Xpoint point coordinates
-    Xend   ：Rectangular  End point Xpoint coordinate
-    Yend   ：Rectangular  End point Ypoint coordinate
-    Color  ：The color of the Rectangular segment
-    Line_width: Line width
-    Draw_Fill : Whether to fill the inside of the rectangle
+    Xstart : Rectangular  Starting Xpoint point coordinates
+    Ystart : Rectangular  Starting Xpoint point coordinates
+    Xend   : Rectangular  End point Xpoint coordinate
+    Yend   : Rectangular  End point Ypoint coordinate
+    Color  : The color of the Rectangular segment
+    Line_width : Line width
+    Draw_Fill  : Whether to fill the inside of the rectangle
 ******************************************************************************/
 void Paint_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
                          UWORD Color, DOT_PIXEL Line_width, DRAW_FILL Draw_Fill)
@@ -460,10 +460,10 @@ void Paint_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
 function: Use the 8-point method to draw a circle of the
             specified size at the specified position->
 parameter:
-    X_Center  ：Center X coordinate
-    Y_Center  ：Center Y coordinate
-    Radius    ：circle Radius
-    Color     ：The color of the ：circle segment
+    X_Center  : Center X coordinate
+    Y_Center  : Center Y coordinate
+    Radius    : circle Radius
+    Color     : The color of the : circle segment
     Line_width: Line width
     Draw_Fill : Whether to fill the inside of the Circle
 ******************************************************************************/
@@ -554,10 +554,10 @@ void Paint_DrawCircle(UWORD X_Center, UWORD Y_Center, UWORD Radius,
 /******************************************************************************
 function: Show English characters
 parameter:
-    Xpoint           ：X coordinate
-    Ypoint           ：Y coordinate
-    Acsii_Char       ：To display the English characters
-    Font             ：A structure pointer that displays a character size
+    Xpoint           : X coordinate
+    Ypoint           : Y coordinate
+    Acsii_Char       : To display the English characters
+    Font             : A structure pointer that displays a character size
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
 ******************************************************************************/
@@ -609,23 +609,23 @@ void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
 /******************************************************************************
 function:	Display the string
 parameter:
-    Xstart           ：X coordinate
-    Ystart           ：Y coordinate
-    pString          ：The first address of the English string to be displayed
-    Font             ：A structure pointer that displays a character size
+    Xstart           : X coordinate
+    Ystart           : Y coordinate
+    pString          : The first address of the English string to be displayed
+    Font             : A structure pointer that displays a character size
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
 ******************************************************************************/
-void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char *pString,
-                         sFONT *Font, UWORD Color_Foreground,
-			 UWORD Color_Background)
+void Paint_DrawString(UWORD Xstart, UWORD Ystart, const char *pString,
+		      sFONT *Font, UWORD Color_Foreground,
+		      UWORD Color_Background)
 {
     UWORD Xpoint = Xstart;
     UWORD Ypoint = Ystart;
 
     if (Xstart > Paint.Width || Ystart > Paint.Height)
     {
-        Debug("Paint_DrawString_EN Input exceeds the normal display range\r\n");
+        Debug("Paint_DrawString input exceeds the normal display range\r\n");
         return;
     }
 
@@ -657,164 +657,12 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char *pString,
 }
 
 /******************************************************************************
-function: Display the string
-parameter:
-    Xstart  ：X coordinate
-    Ystart  ：Y coordinate
-    pString ：The first address of the Chinese string and English
-              string to be displayed
-    Font    ：A structure pointer that displays a character size
-    Color_Foreground : Select the foreground color
-    Color_Background : Select the background color
-******************************************************************************/
-void Paint_DrawString_CN(UWORD Xstart, UWORD Ystart,
-			 const char *pString, cFONT *font,
-                         UWORD Color_Foreground, UWORD Color_Background)
-{
-    const char *p_text = pString;
-    int x = Xstart, y = Ystart;
-    int i, j, Num;
-
-    /* Send the string character by character on LCD */
-    while (*p_text != 0)
-    {
-        if (*p_text <= 0x7F)
-        { // ASCII < 126
-            for (Num = 0; Num < font->size; Num++)
-            {
-                if (*p_text == font->table[Num].index[0])
-                {
-                    const char *ptr = &font->table[Num].matrix[0];
-
-                    for (j = 0; j < font->Height; j++)
-                    {
-                        for (i = 0; i < font->Width; i++)
-                        {
-                            if (FONT_BACKGROUND == Color_Background)
-                            { // this process is to speed up the scan
-                                if (*ptr & (0x80 >> (i % 8)))
-                                {
-                                    Paint_SetPixel(x + i, y + j,
-						   Color_Foreground);
-                                    // Paint_DrawPoint(x + i, y + j,
-				    //		       Color_Foreground,
-				    //		       DOT_PIXEL_DFT,
-				    //		       DOT_STYLE_DFT);
-                                }
-                            }
-                            else
-                            {
-                                if (*ptr & (0x80 >> (i % 8)))
-                                {
-                                    Paint_SetPixel(x + i, y + j,
-						   Color_Foreground);
-                                    // Paint_DrawPoint(x + i, y + j,
-				    //		       Color_Foreground,
-				    //		       DOT_PIXEL_DFT,
-				    //		       DOT_STYLE_DFT);
-                                }
-                                else
-                                {
-                                    Paint_SetPixel(x + i, y + j,
-						   Color_Background);
-                                    // Paint_DrawPoint(x + i, y + j,
-				    //		       Color_Background,
-				    //		       DOT_PIXEL_DFT,
-				    //		       DOT_STYLE_DFT);
-                                }
-                            }
-                            if (i % 8 == 7)
-                            {
-                                ptr++;
-                            }
-                        }
-                        if (font->Width % 8 != 0)
-                        {
-                            ptr++;
-                        }
-                    }
-                    break;
-                }
-            }
-            /* Point on the next character */
-            p_text += 1;
-            /* Decrement the column position by 16 */
-            x += font->ASCII_Width;
-        }
-        else
-        { // Chinese
-            for (Num = 0; Num < font->size; Num++)
-            {
-                if ((*p_text == font->table[Num].index[0]) &&
-		    (*(p_text + 1) == font->table[Num].index[1]))
-                {
-                    const char *ptr = &font->table[Num].matrix[0];
-
-                    for (j = 0; j < font->Height; j++)
-                    {
-                        for (i = 0; i < font->Width; i++)
-                        {
-                            if (FONT_BACKGROUND == Color_Background)
-                            { // this process is to speed up the scan
-                                if (*ptr & (0x80 >> (i % 8)))
-                                {
-                                    Paint_SetPixel(x + i, y + j,
-						   Color_Foreground);
-                                    // Paint_DrawPoint(x + i, y + j,
-				    //		       Color_Foreground,
-				    //		       DOT_PIXEL_DFT,
-				    //		       DOT_STYLE_DFT);
-                                }
-                            }
-                            else
-                            {
-                                if (*ptr & (0x80 >> (i % 8)))
-                                {
-                                    Paint_SetPixel(x + i, y + j,
-						   Color_Foreground);
-                                    // Paint_DrawPoint(x + i, y + j,
-				    //		       Color_Foreground,
-				    //		       DOT_PIXEL_DFT,
-				    //		       DOT_STYLE_DFT);
-                                }
-                                else
-                                {
-                                    Paint_SetPixel(x + i, y + j,
-						   Color_Background);
-                                    // Paint_DrawPoint(x + i, y + j,
-				    //		       Color_Background,
-				    //		       DOT_PIXEL_DFT,
-				    //		       DOT_STYLE_DFT);
-                                }
-                            }
-                            if (i % 8 == 7)
-                            {
-                                ptr++;
-                            }
-                        }
-                        if (font->Width % 8 != 0)
-                        {
-                            ptr++;
-                        }
-                    }
-                    break;
-                }
-            }
-            /* Point on the next character */
-            p_text += 2;
-            /* Decrement the column position by 16 */
-            x += font->Width;
-        }
-    }
-}
-
-/******************************************************************************
 function:	Display nummber
 parameter:
-    Xstart           ：X coordinate
+    Xstart           : X coordinate
     Ystart           : Y coordinate
     Nummber          : The number displayed
-    Font             ：A structure pointer that displays a character size
+    Font             : A structure pointer that displays a character size
     Digit						 : Fractional width
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
@@ -834,17 +682,17 @@ void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, double Nummber,
     {
         sprintf(Str, "%.*lf", Digit, Nummber);
     }
-    Paint_DrawString_EN(Xpoint, Ypoint, (const char *)Str, Font,
-			Color_Foreground, Color_Background);
+    Paint_DrawString(Xpoint, Ypoint, (const char *)Str, Font,
+		     Color_Foreground, Color_Background);
 }
 
 /******************************************************************************
 function:	Display time
 parameter:
-    Xstart           ：X coordinate
+    Xstart           : X coordinate
     Ystart           : Y coordinate
     pTime            : Time-related structures
-    Font             ：A structure pointer that displays a character size
+    Font             : A structure pointer that displays a character size
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
 ******************************************************************************/
@@ -919,7 +767,7 @@ void Paint_DrawImage1(const unsigned char *image, UWORD xStart, UWORD yStart,
 /******************************************************************************
 function:	Display monochrome bitmap
 parameter:
-    image_buffer ：A picture data converted to a bitmap
+    image_buffer : A picture data converted to a bitmap
 info:
     Use a computer to convert the image into a corresponding array,
     and then embed the array directly into Imagedata.cpp as a .c file.
