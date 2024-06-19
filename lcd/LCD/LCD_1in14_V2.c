@@ -111,7 +111,7 @@ static void LCD_1IN14_V2_InitReg(void)
     LCD_1IN14_V2_SendCommand(0xBB);  //VCOM Setting
     LCD_1IN14_V2_SendData_8Bit(0x19);
 
-    LCD_1IN14_V2_SendCommand(0xC0); //LCM Control     
+    LCD_1IN14_V2_SendCommand(0xC0);  //LCM Control     
     LCD_1IN14_V2_SendData_8Bit(0x2C);
 
     LCD_1IN14_V2_SendCommand(0xC2);  //VDV and VRH Command Enable
@@ -180,12 +180,12 @@ static void LCD_1IN14_V2_SetAttributes(UBYTE Scan_dir)
 
     //Get GRAM and LCD width and height
     if(Scan_dir == HORIZONTAL) {
-        LCD_1IN14_V2.HEIGHT	= LCD_1IN14_V2_WIDTH;
-        LCD_1IN14_V2.WIDTH   = LCD_1IN14_V2_HEIGHT;
+        LCD_1IN14_V2.HEIGHT = LCD_1IN14_V2_WIDTH;
+        LCD_1IN14_V2.WIDTH  = LCD_1IN14_V2_HEIGHT;
         MemoryAccessReg = 0X70;
     } else {
-        LCD_1IN14_V2.HEIGHT	= LCD_1IN14_V2_HEIGHT;       
-        LCD_1IN14_V2.WIDTH   = LCD_1IN14_V2_WIDTH;
+        LCD_1IN14_V2.HEIGHT = LCD_1IN14_V2_HEIGHT;       
+        LCD_1IN14_V2.WIDTH  = LCD_1IN14_V2_WIDTH;
         MemoryAccessReg = 0X00;
     }
 
@@ -221,13 +221,11 @@ parameter:
 ********************************************************************************/
 void LCD_1IN14_V2_SetWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
 {
-    UBYTE x,y;
-    if(LCD_1IN14_V2.SCAN_DIR == HORIZONTAL){x=40;y=53;}
-    else{ x=52; y=40; }
+    UBYTE x, y;
+    if (LCD_1IN14_V2.SCAN_DIR == HORIZONTAL) { x = 40; y = 53; }
+    else { x=52; y=40; }
     //set the X coordinates
     LCD_1IN14_V2_SendCommand(0x2A);
-    
-    
     LCD_1IN14_V2_SendData_16Bit(Xstart	+x);
     LCD_1IN14_V2_SendData_16Bit(Xend-1	+x);
     //set the Y coordinates
@@ -236,7 +234,6 @@ void LCD_1IN14_V2_SetWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
     LCD_1IN14_V2_SendData_16Bit(Yend-1	  +y);
 
     LCD_1IN14_V2_SendCommand(0X2C);
-    // printf("%d %d\r\n",x,y);
 }
 
 /******************************************************************************
@@ -245,21 +242,21 @@ parameter:
 ******************************************************************************/
 void LCD_1IN14_V2_Clear(UWORD Color)
 {
-    UWORD j,i;
-    UWORD Image[LCD_1IN14_V2.WIDTH*LCD_1IN14_V2.HEIGHT];
+    UWORD j, i;
+    UWORD Image[LCD_1IN14_V2.WIDTH * LCD_1IN14_V2.HEIGHT];
     
     Color = ((Color<<8)&0xff00)|(Color>>8);
    
-    for (j = 0; j < LCD_1IN14_V2.HEIGHT*LCD_1IN14_V2.WIDTH; j++) {
+    for (j = 0; j < LCD_1IN14_V2.HEIGHT * LCD_1IN14_V2.WIDTH; j++) {
         Image[j] = Color;
     }
     
     LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
     DEV_Digital_Write(LCD_DC_PIN, 1);
     DEV_Digital_Write(LCD_CS_PIN, 0);
-    // printf("HEIGHT %d, WIDTH %d\r\n",LCD_1IN14_V2.HEIGHT,LCD_1IN14_V2.WIDTH);
-    for(j = 0; j < LCD_1IN14_V2.HEIGHT; j++){
-        DEV_SPI_Write_nByte((uint8_t *)&Image[j*LCD_1IN14_V2.WIDTH], LCD_1IN14_V2.WIDTH*2);
+    for(j = 0; j < LCD_1IN14_V2.HEIGHT; j++) {
+        DEV_SPI_Write_nByte((uint8_t *) &Image[j * LCD_1IN14_V2.WIDTH],
+			    LCD_1IN14_V2.WIDTH * 2);
     }
     DEV_Digital_Write(LCD_CS_PIN, 1);
 }
@@ -275,7 +272,8 @@ void LCD_1IN14_V2_Display(UWORD *Image)
     DEV_Digital_Write(LCD_DC_PIN, 1);
     DEV_Digital_Write(LCD_CS_PIN, 0);
     for (j = 0; j < LCD_1IN14_V2.HEIGHT; j++) {
-        DEV_SPI_Write_nByte((uint8_t *)&Image[j*LCD_1IN14_V2.WIDTH], LCD_1IN14_V2.WIDTH*2);
+        DEV_SPI_Write_nByte((uint8_t *) &Image[j * LCD_1IN14_V2.WIDTH],
+			    LCD_1IN14_V2.WIDTH * 2);
     }
     DEV_Digital_Write(LCD_CS_PIN, 1);
     LCD_1IN14_V2_SendCommand(0x29);
@@ -290,7 +288,8 @@ parameter:
 		Yend    :   Y direction end coordinates
 		Image	:	Written content 
 ******************************************************************************/
-void LCD_1IN14_V2_DisplayWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD *Image)
+void LCD_1IN14_V2_DisplayWindows(UWORD Xstart, UWORD Ystart,
+				 UWORD Xend, UWORD Yend, UWORD *Image)
 {
     // display
     UDOUBLE Addr = 0;
@@ -301,7 +300,7 @@ void LCD_1IN14_V2_DisplayWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Y
     DEV_Digital_Write(LCD_CS_PIN, 0);
     for (j = Ystart; j < Yend - 1; j++) {
         Addr = Xstart + j * LCD_1IN14_V2.WIDTH ;
-        DEV_SPI_Write_nByte((uint8_t *)&Image[Addr], (Xend-Xstart)*2);
+        DEV_SPI_Write_nByte((uint8_t *) &Image[Addr], (Xend - Xstart) * 2);
     }
     DEV_Digital_Write(LCD_CS_PIN, 1);
 }
@@ -315,7 +314,7 @@ parameter:
 ******************************************************************************/
 void LCD_1IN14_V2_DisplayPoint(UWORD X, UWORD Y, UWORD Color)
 {
-    LCD_1IN14_V2_SetWindows(X,Y,X,Y);
+    LCD_1IN14_V2_SetWindows(X, Y, X, Y);
     LCD_1IN14_V2_SendData_16Bit(Color);
 }
 

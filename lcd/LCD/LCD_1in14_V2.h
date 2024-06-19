@@ -29,13 +29,10 @@
 #ifndef __LCD_1IN14_V2_H
 #define __LCD_1IN14_V2_H
 
-
 #include "DEV_Config.h"
 #include <stdint.h>
-
 #include <stdlib.h>     //itoa()
 #include <stdio.h>
-
 
 #define LCD_1IN14_V2_HEIGHT 240
 #define LCD_1IN14_V2_WIDTH 135
@@ -46,12 +43,12 @@
 
 #define LCD_1IN14_V2_SetBacklight(Value) ; 
 
-
-typedef struct{
+typedef struct {
     UWORD WIDTH;
     UWORD HEIGHT;
     UBYTE SCAN_DIR;
-}LCD_1IN14_V2_ATTRIBUTES;
+} LCD_1IN14_V2_ATTRIBUTES;
+
 extern LCD_1IN14_V2_ATTRIBUTES LCD_1IN14_V2;
 
 /********************************************************************************
@@ -65,4 +62,5 @@ void LCD_1IN14_V2_DisplayWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Y
 void LCD_1IN14_V2_DisplayPoint(UWORD X, UWORD Y, UWORD Color);
 
 void Handler_1IN14_V2_LCD(int signo);
+
 #endif
