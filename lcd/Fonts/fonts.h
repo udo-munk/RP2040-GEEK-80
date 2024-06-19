@@ -57,17 +57,14 @@ typedef struct _tFont
   const uint8_t *table;
   uint16_t Width;
   uint16_t Height;
-  
 } sFONT;
-
 
 //GB2312
 typedef struct                                          // 汉字字模数据结构
 {
   const  char index[2];                               // 汉字内码索引
   const  char matrix[MAX_HEIGHT_FONT*MAX_WIDTH_FONT/8+2];  // 点阵码数据
-}CH_CN;
-
+} CH_CN;
 
 typedef struct
 {    
@@ -76,8 +73,7 @@ typedef struct
   uint16_t ASCII_Width;
   uint16_t Width;
   uint16_t Height;
-  
-}cFONT;
+} cFONT;
 
 extern sFONT Font24;
 extern sFONT Font20;
@@ -87,11 +83,11 @@ extern sFONT Font8;
 
 extern cFONT Font12CN;
 extern cFONT Font24CN;
+
 #ifdef __cplusplus
 }
 #endif
   
 #endif /* __FONTS_H */
- 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
