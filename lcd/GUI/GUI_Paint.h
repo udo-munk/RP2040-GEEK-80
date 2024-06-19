@@ -142,23 +142,23 @@ void Paint_DrawCircle(UWORD X_Center, UWORD Y_Center, UWORD Radius,
 
 //Display string
 void Paint_DrawChar(UWORD Xstart, UWORD Ystart, const char Acsii_Char,
-		    sFONT* Font, UWORD Color_Foreground,
+		    sFONT *Font, UWORD Color_Foreground,
 		    UWORD Color_Background);
-void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
-			 sFONT* Font, UWORD Color_Foreground,
+void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char *pString,
+			 sFONT *Font, UWORD Color_Foreground,
 			 UWORD Color_Background);
-void Paint_DrawString_CN(UWORD Xstart, UWORD Ystart, const char * pString,
-			 cFONT* font, UWORD Color_Foreground,
+void Paint_DrawString_CN(UWORD Xstart, UWORD Ystart, const char *pString,
+			 cFONT *font, UWORD Color_Foreground,
 			 UWORD Color_Background);
-void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, double Nummber, sFONT* Font,
+void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, double Nummber, sFONT *Font,
 		   UWORD Digit,UWORD Color_Foreground, UWORD Color_Background);
 void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime,
-		    sFONT* Font, UWORD Color_Foreground,
+		    sFONT *Font, UWORD Color_Foreground,
 		    UWORD Color_Background);
 
 //pic
-void Paint_DrawBitMap(const unsigned char* image_buffer);
-void Paint_DrawBitMap_Block(const unsigned char* image_buffer, UBYTE Region);
+void Paint_DrawBitMap(const unsigned char *image_buffer);
+void Paint_DrawBitMap_Block(const unsigned char *image_buffer, UBYTE Region);
 
 void Paint_DrawImage(const unsigned char *image, UWORD xStart, UWORD yStart,
 		     UWORD W_Image, UWORD H_Image) ;
