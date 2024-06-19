@@ -38,10 +38,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "fonts.h"
 
-// 
-//  Font data for Courier New 12pt
-// 
-
 const uint8_t Font8_Table[] = 
 {
 	// @0 ' ' (5 pixels wide)
