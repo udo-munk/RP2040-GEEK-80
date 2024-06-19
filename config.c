@@ -124,7 +124,8 @@ again:
 			printf("Value in Hex: ");
 			get_cmdline(s, 3);
 			printf("\n\n");
-			if (!isxdigit(*s) || !isxdigit(*(s + 1))) {
+			if (!isxdigit((unsigned char) *s) ||
+			    !isxdigit((unsigned char) *(s + 1))) {
 				printf("What?\n");
 				goto again;
 			}

@@ -1,5 +1,21 @@
-cmake_minimum_required(VERSION 3.12)
-set (PICO_BOARD pico)
+cmake_minimum_required(VERSION 3.13)
+
+# Set default build type to Release
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR})
+
+# Set platform, board, and compiler
+set(PICO_PLATFORM rp2040)
+set(PICO_BOARD waveshare_rp2040_geek)
+set(PICO_COMPILER pico_arm_gcc)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+
+# Pull in SDK (must be before project)
 include(pico_sdk_import.cmake)
 
 project(picosim C CXX ASM)
@@ -52,6 +68,17 @@ target_compile_definitions(picosim INTERFACE
 	PICO_DEFAULT_UART=0
 )
 
+target_compile_options(picosim PUBLIC
+	### GNU/Clang C Options
+	$<$<COMPILE_LANG_AND_ID:C,GNU>:-fdiagnostics-color=always>
+	$<$<COMPILE_LANG_AND_ID:C,Clang>:-fcolor-diagnostics>
+
+	$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wall>
+	$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wextra>
+	$<$<COMPILE_LANG_AND_ID:C,Clang>:-Weverything>
+	$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wno-unused-parameter>
+	)
+
 target_link_libraries(picosim
 	pico_stdlib
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
@@ -64,8 +91,12 @@ target_link_libraries(picosim
 
 pico_add_extra_outputs(picosim)
 
+set_property(TARGET picosim APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--print-memory-usage")
+
 pico_set_program_name(picosim "z80pack picosim")
+pico_set_program_description(picosim "z80pack on Waveshare RP2040-GEEK")
 pico_set_program_version(picosim "1.2")
+pico_set_program_url(picosim "https://github.com/udo-munk/RP2040-GEEK-80")
 
 # disable UART in/out, enable USB in/out
 pico_enable_stdio_uart(picosim 0)
