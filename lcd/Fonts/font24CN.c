@@ -38,11 +38,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "fonts.h"
 
-
-// 
-//  Font data for Courier New 12pt
-// 
-
 const CH_CN Font24CN_Table[] = 
 {
 /*--  ÎÄ×Ö:  Äã  --*/
