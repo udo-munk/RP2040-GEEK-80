@@ -38,7 +38,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "fonts.h"
 
-// Character bitmaps for Courier New 15pt
 const uint8_t Font20_Table[] = 
 {
 	// @0 ' ' (14 pixels wide)
