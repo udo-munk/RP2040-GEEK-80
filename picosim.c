@@ -155,7 +155,7 @@ NOPE:	config();		/* configure the machine */
 	/* power on jump into the boot ROM */
 	PC = 0xff00;
 
-	lcd_running();
+	lcd_cpudisp_on();
 
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
@@ -165,6 +165,8 @@ NOPE:	config();		/* configure the machine */
 #else
 	run_cpu();
 #endif
+
+	lcd_cpudisp_off();
 
 	/* unmount SD card */
 	f_unmount("");
@@ -179,6 +181,7 @@ NOPE:	config();		/* configure the machine */
 #endif
 	putchar('\n');
 	stdio_flush();
+	lcd_finish();
 	sleep_ms(500);
 	return 0;
 }

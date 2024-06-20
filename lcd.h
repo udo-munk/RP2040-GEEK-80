@@ -13,9 +13,9 @@
 
 #define DEFAULT_BRIGHTNESS 90
 
-extern void lcd_init(void);
-extern void lcd_refresh(void);
+extern void lcd_init(void), lcd_finish(void);
+extern void lcd_cpudisp_on(void), lcd_cpudisp_off(void);
 extern void lcd_brightness(int);
-extern void lcd_banner(void), lcd_info(void), lcd_running(void);
+extern void lcd_banner(void), lcd_info(void);
 
 #endif
