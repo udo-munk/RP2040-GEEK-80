@@ -8,7 +8,6 @@
 #define LCD_H
 
 #include "LCD_1in14_V2.h"
-#include "DEV_Config.h"
 #include "GUI_Paint.h"
 
 #define DEFAULT_BRIGHTNESS 90

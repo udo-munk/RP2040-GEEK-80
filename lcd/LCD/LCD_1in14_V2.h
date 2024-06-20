@@ -56,6 +56,7 @@ function:
 void LCD_1IN14_V2_Init(UBYTE Scan_dir);
 void LCD_1IN14_V2_Clear(UWORD Color);
 void LCD_1IN14_V2_Display(UWORD *Image);
+void LCD_1IN14_V2_Display12(UBYTE *Image);
 void LCD_1IN14_V2_DisplayWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD *Image);
 void LCD_1IN14_V2_DisplayPoint(UWORD X, UWORD Y, UWORD Color);
 void LCD_1IN14_V2_SetBacklight(UBYTE Value);

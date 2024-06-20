@@ -62,6 +62,11 @@ target_compile_definitions(picosim PRIVATE
 	PICO_STACK_SIZE=4096
 	PICO_CORE1_STACK_SIZE=4096
 	PICO_HEAP_SIZE=8192
+	# LCD_COLOR_DEPTH can be 12 or 16 bits
+	LCD_COLOR_DEPTH=12
+	# LCD_REFRESH_US (40000=25Hz, 50000=20Hz)
+	# 40000 works for 12-bit, 50000 for 16-bit
+	LCD_REFRESH_US=40000
 )
 
 target_compile_definitions(picosim INTERFACE

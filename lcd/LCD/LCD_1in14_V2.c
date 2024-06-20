@@ -200,6 +200,9 @@ parameter:
 ********************************************************************************/
 void LCD_1IN14_V2_Init(UBYTE Scan_dir)
 {
+    /* initialize LCD device */
+    DEV_Module_Init();
+
     DEV_SET_PWM(90);
 
     //Hardware reset
@@ -273,6 +276,24 @@ void LCD_1IN14_V2_Display(UWORD *Image)
     }
     DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
     LCD_1IN14_V2_SendCommand(0x29);
+}
+
+void LCD_1IN14_V2_Display12(UBYTE *Image)
+{
+    UWORD j;
+    const UWORD n = ((LCD_1IN14_V2.WIDTH + 1) / 2) * 3;
+    LCD_1IN14_V2_SendCommand(0x3A);
+    LCD_1IN14_V2_SendData_8Bit(0x03);
+    LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
+    for (j = 0; j < LCD_1IN14_V2.HEIGHT; j++) {
+        DEV_SPI_Write_nByte(&Image[j * n], n);
+    }
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
+    LCD_1IN14_V2_SendCommand(0x29);
+    LCD_1IN14_V2_SendCommand(0x3A);
+    LCD_1IN14_V2_SendData_8Bit(0x05);
 }
 
 /******************************************************************************
