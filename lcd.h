@@ -10,8 +10,6 @@
 #include "LCD_1in14_V2.h"
 #include "GUI_Paint.h"
 
-#define DEFAULT_BRIGHTNESS 90
-
 extern void lcd_init(void), lcd_finish(void);
 extern void lcd_cpudisp_on(void), lcd_cpudisp_off(void);
 extern void lcd_brightness(int);
