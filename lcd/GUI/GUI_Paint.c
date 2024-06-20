@@ -94,6 +94,11 @@ void Paint_SetDepth(UBYTE depth)
         Paint.WidthByte = (Paint.WidthMemory % 2 == 0) ?
 			  (Paint.WidthMemory / 2) : (Paint.WidthMemory / 2 + 1);
     }
+    else if (depth == 12)
+    {
+        Paint.Depth = depth;
+        Paint.WidthByte = ((Paint.WidthMemory + 1) / 2) * 3;
+    }
     else if (depth == 16)
     {
         Paint.Depth = depth;
@@ -102,7 +107,7 @@ void Paint_SetDepth(UBYTE depth)
     else
     {
         Debug("Set Depth Input parameter error\r\n");
-        Debug("Depth Only support: 1 2 4 16\r\n");
+        Debug("Depth Only support: 1 2 4 12 16\r\n");
     }
 }
 
@@ -223,6 +228,23 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
         Rdata = Rdata & (~(0xf0 >> ((X % 2) * 4)));
         Paint.Image[Addr] = Rdata | ((Color << 4) >> ((X % 2) * 4));
     }
+    else if (Paint.Depth == 12)
+    {
+        UDOUBLE Addr = ((X + 1) / 2) * 3 + Y * Paint.WidthByte;
+        UBYTE Rdata;
+        if ((X % 2) == 0)
+        {
+            Paint.Image[Addr] = Color >> 4;
+            Rdata = Paint.Image[Addr + 1] & 0x0f;
+            Paint.Image[Addr + 1] = (Color << 4) | Rdata;
+        }
+        else
+        {
+            Rdata = Paint.Image[Addr - 2] & 0xf0;
+            Paint.Image[Addr - 2] = Rdata | ((Color >> 8) & 0x0f);
+            Paint.Image[Addr - 1] = Color;
+        }
+    }
     else if (Paint.Depth == 16)
     {
         UDOUBLE Addr = X * 2 + Y * Paint.WidthByte;
@@ -238,7 +260,15 @@ parameter:
 ******************************************************************************/
 void Paint_Clear(UWORD Color)
 {
-    if (Paint.Depth == 1 || Paint.Depth == 2)
+    if (Color == 0x0000)
+    {
+        memset(Paint.Image, 0x00, (size_t) Paint.HeightByte * Paint.WidthByte);
+    }
+    else if (Color == 0xffff)
+    {
+        memset(Paint.Image, 0xff, (size_t) Paint.HeightByte * Paint.WidthByte);
+    }
+    else if (Paint.Depth == 1 || Paint.Depth == 2)
     {
         for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
         {
@@ -258,6 +288,28 @@ void Paint_Clear(UWORD Color)
                 UDOUBLE Addr = X + Y * Paint.WidthByte;
                 Color = Color & 0x0f;
                 Paint.Image[Addr] = (Color << 4) | Color;
+            }
+        }
+    }
+    else if (Paint.Depth == 12)
+    {
+        for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
+        {
+            for (UWORD X = 0; X < Paint.WidthMemory; X++)
+            { // 1 pixel = 1.5 bytes
+                UDOUBLE Addr = ((X + 1) / 2) * 3 + Y * Paint.WidthByte;
+                if ((X % 2) == 0)
+                {
+                    Paint.Image[Addr] = Color >> 4;
+                    Paint.Image[Addr + 1] = Color << 4;
+                }
+                else
+                {
+                    Paint.Image[Addr - 2] = ((Color & 0x0f) << 4) | ((Color >> 8) & 0x0f);
+                    Paint.Image[Addr - 1] = Color;
+                }
+                Paint.Image[Addr] = 0xff & (Color >> 8);
+                Paint.Image[Addr + 1] = 0xff & Color;
             }
         }
     }
@@ -585,14 +637,14 @@ void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
 	    // background color is consistent
             if (*ptr & (0x80 >> (Column % 8)))
             {
-                Paint_SetPixel(Xpoint + Column, Ypoint + Page, Color_Background);
+                Paint_SetPixel(Xpoint + Column, Ypoint + Page, Color_Foreground);
                 // Paint_DrawPoint(Xpoint + Column, Ypoint + Page,
 		//		   Color_Foreground, DOT_PIXEL_DFT,
 		//		   DOT_STYLE_DFT);
             }
             else
             {
-                Paint_SetPixel(Xpoint + Column, Ypoint + Page, Color_Foreground);
+                Paint_SetPixel(Xpoint + Column, Ypoint + Page, Color_Background);
                 // Paint_DrawPoint(Xpoint + Column, Ypoint + Page,
 		//		   Color_Background, DOT_PIXEL_DFT,
 		//		   DOT_STYLE_DFT);
@@ -645,8 +697,8 @@ void Paint_DrawString(UWORD Xstart, UWORD Ystart, const char *pString,
             Xpoint = Xstart;
             Ypoint = Ystart;
         }
-        Paint_DrawChar(Xpoint, Ypoint, *pString, Font, Color_Background,
-		       Color_Foreground);
+        Paint_DrawChar(Xpoint, Ypoint, *pString, Font, Color_Foreground,
+		       Color_Background);
 
         // The next character of the address
         pString++;

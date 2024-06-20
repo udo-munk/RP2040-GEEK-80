@@ -65,12 +65,12 @@ void config(void)
 	/* try to read config file */
 	sd_res = f_open(&sd_file, cfg, FA_READ);
 	if (sd_res == FR_OK) {
-		f_read(&sd_file, &cpu, 1, &br);
-		f_read(&sd_file, &speed, sizeof(int), &br);
-		f_read(&sd_file, &fp_value, 1, &br);
+		f_read(&sd_file, &cpu, sizeof(cpu), &br);
+		f_read(&sd_file, &speed, sizeof(speed), &br);
+		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
 		f_read(&sd_file, &disks[0], 22, &br);
 		f_read(&sd_file, &disks[1], 22, &br);
-		f_read(&sd_file, &brightness, sizeof(int), &br);
+		f_read(&sd_file, &brightness, sizeof(brightness), &br);
 		f_close(&sd_file);
 	}
 	lcd_brightness(brightness);
@@ -182,12 +182,12 @@ again:
 	/* try to save config file */
 	sd_res = f_open(&sd_file, cfg, FA_WRITE);
 	if (sd_res == FR_OK) {
-		f_write(&sd_file, &cpu, 1, &br);
-		f_write(&sd_file, &speed, sizeof(int), &br);
-		f_write(&sd_file, &fp_value, 1, &br);
+		f_write(&sd_file, &cpu, sizeof(cpu), &br);
+		f_write(&sd_file, &speed, sizeof(speed), &br);
+		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
 		f_write(&sd_file, &disks[0], 22, &br);
 		f_write(&sd_file, &disks[1], 22, &br);
-		f_write(&sd_file, &brightness, sizeof(int), &br);
+		f_write(&sd_file, &brightness, sizeof(brightness), &br);
 		f_close(&sd_file);
 	}
 }

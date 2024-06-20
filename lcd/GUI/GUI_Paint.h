@@ -42,22 +42,39 @@ typedef enum {
 #define MIRROR_IMAGE_DFT MIRROR_NONE
 
 /**
- * image color
+ * image colors (444 (12-bit) or 565 (16-bit))
 **/
+#if LCD_COLOR_DEPTH == 12
+#define WHITE          0x0FFF
+#define BLACK          0x0000
+#define BLUE           0x000F
+#define BRED           0x0F0F
+#define GRED           0x0FF0
+#define GBLUE          0x00FF
+#define RED            0x0F00
+#define MAGENTA        0x0F0F
+#define GREEN          0x00F0
+#define CYAN           0x00FF
+#define YELLOW         0x0FF0
+#define BROWN          0x0C90
+#define BRRED          0x0F84
+#define GRAY           0x0888
+#else
 #define WHITE          0xFFFF
 #define BLACK          0x0000
 #define BLUE           0x001F
-#define BRED           0XF81F
-#define GRED           0XFFE0
-#define GBLUE          0X07FF
+#define BRED           0xF81F
+#define GRED           0xFFE0
+#define GBLUE          0x07FF
 #define RED            0xF800
 #define MAGENTA        0xF81F
 #define GREEN          0x07E0
 #define CYAN           0x7FFF
 #define YELLOW         0xFFE0
-#define BROWN          0XBC40
-#define BRRED          0XFC07
-#define GRAY           0X8430
+#define BROWN          0xBC40
+#define BRRED          0xFC07
+#define GRAY           0x8430
+#endif
 
 #define IMAGE_BACKGROUND    WHITE
 #define FONT_FOREGROUND     BLACK
