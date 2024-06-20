@@ -136,7 +136,7 @@ parameter:
 ******************************************************************************/
 void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
 {
-    if (Xpoint > Paint.Width || Ypoint > Paint.Height)
+    if (Xpoint >= Paint.Width || Ypoint >= Paint.Height)
     {
         Debug("Exceeding display boundaries\r\n");
         return;
@@ -191,7 +191,7 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
         return;
     }
 
-    if (X > Paint.WidthMemory || Y > Paint.HeightMemory)
+    if (X >= Paint.WidthMemory || Y >= Paint.HeightMemory)
     {
         Debug("Exceeding display boundaries\r\n");
         return;
@@ -243,7 +243,7 @@ void Paint_Clear(UWORD Color)
         for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
         {
             for (UWORD X = 0; X < Paint.WidthByte; X++)
-            { // 8 pixel =  1 byte
+            { // 8 or 4 pixel = 1 byte
                 UDOUBLE Addr = X + Y * Paint.WidthByte;
                 Paint.Image[Addr] = Color;
             }
@@ -254,7 +254,7 @@ void Paint_Clear(UWORD Color)
         for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
         {
             for (UWORD X = 0; X < Paint.WidthByte; X++)
-            { // 8 pixel =  1 byte
+            { // 2 pixel = 1 byte
                 UDOUBLE Addr = X + Y * Paint.WidthByte;
                 Color = Color & 0x0f;
                 Paint.Image[Addr] = (Color << 4) | Color;
@@ -265,8 +265,8 @@ void Paint_Clear(UWORD Color)
     {
         for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
         {
-            for (UWORD X = 0; X < Paint.WidthByte; X++)
-            { // 8 pixel =  1 byte
+            for (UWORD X = 0; X < Paint.WidthByte / 2; X++)
+            { // 1 pixel = 2 bytes
                 UDOUBLE Addr = X * 2 + Y * Paint.WidthByte;
                 Paint.Image[Addr] = 0xff & (Color >> 8);
                 Paint.Image[Addr + 1] = 0xff & Color;
@@ -309,7 +309,7 @@ parameter:
 void Paint_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color,
                      DOT_PIXEL Dot_Pixel, DOT_STYLE Dot_Style)
 {
-    if (Xpoint > Paint.Width || Ypoint > Paint.Height)
+    if (Xpoint >= Paint.Width || Ypoint >= Paint.Height)
     {
         Debug("Paint_DrawPoint Input exceeds the normal display range\r\n");
         return;
@@ -357,8 +357,8 @@ parameter:
 void Paint_DrawLine(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
                     UWORD Color, DOT_PIXEL Line_width, LINE_STYLE Line_Style)
 {
-    if (Xstart > Paint.Width || Ystart > Paint.Height ||
-        Xend > Paint.Width || Yend > Paint.Height)
+    if (Xstart >= Paint.Width || Ystart >= Paint.Height ||
+        Xend >= Paint.Width || Yend >= Paint.Height)
     {
         Debug("Paint_DrawLine Input exceeds the normal display range\r\n");
         return;
@@ -427,8 +427,8 @@ parameter:
 void Paint_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
                          UWORD Color, DOT_PIXEL Line_width, DRAW_FILL Draw_Fill)
 {
-    if (Xstart > Paint.Width || Ystart > Paint.Height ||
-        Xend > Paint.Width || Yend > Paint.Height)
+    if (Xstart >= Paint.Width || Ystart >= Paint.Height ||
+        Xend >= Paint.Width || Yend >= Paint.Height)
     {
         Debug("Input exceeds the normal display range\r\n");
         return;
@@ -470,7 +470,7 @@ parameter:
 void Paint_DrawCircle(UWORD X_Center, UWORD Y_Center, UWORD Radius,
                       UWORD Color, DOT_PIXEL Line_width, DRAW_FILL Draw_Fill)
 {
-    if (X_Center > Paint.Width || Y_Center >= Paint.Height)
+    if (X_Center >= Paint.Width || Y_Center >= Paint.Height)
     {
         Debug("Paint_DrawCircle Input exceeds the normal display range\r\n");
         return;
@@ -566,7 +566,7 @@ void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
 {
     UWORD Page, Column;
 
-    if (Xpoint > Paint.Width || Ypoint > Paint.Height)
+    if (Xpoint >= Paint.Width || Ypoint >= Paint.Height)
     {
         Debug("Paint_DrawChar Input exceeds the normal display range\r\n");
         return;
@@ -623,7 +623,7 @@ void Paint_DrawString(UWORD Xstart, UWORD Ystart, const char *pString,
     UWORD Xpoint = Xstart;
     UWORD Ypoint = Ystart;
 
-    if (Xstart > Paint.Width || Ystart > Paint.Height)
+    if (Xstart >= Paint.Width || Ystart >= Paint.Height)
     {
         Debug("Paint_DrawString input exceeds the normal display range\r\n");
         return;
