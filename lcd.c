@@ -1,7 +1,7 @@
 /*
  * Functions for using the RP2040-GEEK LCD from the emulation
  *
- * Copyright (c) 2024 Udo Munk
+ * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  */
 
 #include "pico/multicore.h"
