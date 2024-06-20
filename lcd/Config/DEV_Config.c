@@ -28,7 +28,7 @@
 ******************************************************************************/
 #include "DEV_Config.h"
 
-#define SPI_PORT spi1
+#define SPI_PORT (__CONCAT(spi,WAVESHARE_RP2040_LCD_SPI))
 
 uint slice_num;
 
