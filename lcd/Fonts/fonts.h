@@ -54,11 +54,11 @@ typedef struct _tFont
   uint16_t Height;
 } sFONT;
 
-extern sFONT Font24;
-extern sFONT Font20;
-extern sFONT Font16;
-extern sFONT Font12;
-extern sFONT Font8;
+extern sFONT Font24;	/* 17 x 24 pixels */
+extern sFONT Font20;	/* 14 x 20 pixels */
+extern sFONT Font16;	/* 11 x 16 pixels */
+extern sFONT Font12;	/* 7 x 12 pixels */
+extern sFONT Font8;	/* 5 x 8 pixels */
 
 #ifdef __cplusplus
 }

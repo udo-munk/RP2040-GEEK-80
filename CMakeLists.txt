@@ -80,6 +80,7 @@ target_compile_options(picosim PUBLIC
 	)
 
 target_link_libraries(picosim
+	pico_multicore
 	pico_stdlib
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 	LCD
