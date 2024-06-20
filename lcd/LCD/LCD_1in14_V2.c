@@ -200,6 +200,9 @@ parameter:
 ********************************************************************************/
 void LCD_1IN14_V2_Init(UBYTE Scan_dir)
 {
+    /* initialize LCD device */
+    DEV_Module_Init();
+
     DEV_SET_PWM(90);
 
     //Hardware reset

@@ -26,8 +26,6 @@ static void lcd_task(void);
 void lcd_init(void)
 {
 	/* initialize LCD device */
-	DEV_Module_Init();
-
 	/* set orientation, x = 240 width and y = 135 height */
 	LCD_1IN14_V2_Init(HORIZONTAL);
 
