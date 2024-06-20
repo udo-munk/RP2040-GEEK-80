@@ -78,7 +78,7 @@ static void lcd_refresh(void)
 
 void lcd_brightness(int brightness)
 {
-	DEV_SET_PWM((uint8_t) brightness);
+	LCD_1IN14_V2_SetBacklight((uint8_t) brightness);
 }
 
 void lcd_info(void)

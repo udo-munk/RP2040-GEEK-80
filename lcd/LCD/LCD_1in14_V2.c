@@ -41,11 +41,11 @@ parameter:
 ******************************************************************************/
 static void LCD_1IN14_V2_Reset(void)
 {
-    DEV_Digital_Write(LCD_RST_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_RST_PIN, 1);
     DEV_Delay_ms(100);
-    DEV_Digital_Write(LCD_RST_PIN, 0);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_RST_PIN, 0);
     DEV_Delay_ms(100);
-    DEV_Digital_Write(LCD_RST_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_RST_PIN, 1);
     DEV_Delay_ms(100);
 }
 
@@ -56,10 +56,10 @@ parameter:
 ******************************************************************************/
 static void LCD_1IN14_V2_SendCommand(UBYTE Reg)
 {
-    DEV_Digital_Write(LCD_DC_PIN, 0);
-    DEV_Digital_Write(LCD_CS_PIN, 0);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 0);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
     DEV_SPI_WriteByte(Reg);
-    DEV_Digital_Write(LCD_CS_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -69,10 +69,10 @@ parameter:
 ******************************************************************************/
 static void LCD_1IN14_V2_SendData_8Bit(UBYTE Data)
 {
-    DEV_Digital_Write(LCD_DC_PIN, 1);
-    DEV_Digital_Write(LCD_CS_PIN, 0);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
     DEV_SPI_WriteByte(Data);
-    DEV_Digital_Write(LCD_CS_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -82,11 +82,11 @@ parameter:
 ******************************************************************************/
 static void LCD_1IN14_V2_SendData_16Bit(UWORD Data)
 {
-    DEV_Digital_Write(LCD_DC_PIN, 1);
-    DEV_Digital_Write(LCD_CS_PIN, 0);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
     DEV_SPI_WriteByte((Data >> 8) & 0xFF);
     DEV_SPI_WriteByte(Data & 0xFF);
-    DEV_Digital_Write(LCD_CS_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -201,6 +201,7 @@ parameter:
 void LCD_1IN14_V2_Init(UBYTE Scan_dir)
 {
     DEV_SET_PWM(90);
+
     //Hardware reset
     LCD_1IN14_V2_Reset();
 
@@ -236,8 +237,6 @@ void LCD_1IN14_V2_SetWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
     LCD_1IN14_V2_SendCommand(0X2C);
 }
 
-static UWORD clr_img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
-
 /******************************************************************************
 function :	Clear screen
 parameter:
@@ -245,21 +244,17 @@ parameter:
 void LCD_1IN14_V2_Clear(UWORD Color)
 {
     UWORD j, i;
-    
-    Color = ((Color << 8) & 0xff00) | (Color >> 8);
-   
-    for (j = 0; j < LCD_1IN14_V2.HEIGHT * LCD_1IN14_V2.WIDTH; j++) {
-        clr_img[j] = Color;
-    }
-    
+
     LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
-    DEV_Digital_Write(LCD_DC_PIN, 1);
-    DEV_Digital_Write(LCD_CS_PIN, 0);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
     for(j = 0; j < LCD_1IN14_V2.HEIGHT; j++) {
-        DEV_SPI_Write_nByte((uint8_t *) &clr_img[j * LCD_1IN14_V2.WIDTH],
-			    LCD_1IN14_V2.WIDTH * 2);
+        for(i = 0; i < LCD_1IN14_V2.WIDTH; i++) {
+            DEV_SPI_WriteByte(Color >> 8);
+            DEV_SPI_WriteByte(Color & 0xff);
+        }
     }
-    DEV_Digital_Write(LCD_CS_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -270,13 +265,13 @@ void LCD_1IN14_V2_Display(UWORD *Image)
 {
     UWORD j;
     LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
-    DEV_Digital_Write(LCD_DC_PIN, 1);
-    DEV_Digital_Write(LCD_CS_PIN, 0);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
     for (j = 0; j < LCD_1IN14_V2.HEIGHT; j++) {
         DEV_SPI_Write_nByte((uint8_t *) &Image[j * LCD_1IN14_V2.WIDTH],
 			    LCD_1IN14_V2.WIDTH * 2);
     }
-    DEV_Digital_Write(LCD_CS_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
     LCD_1IN14_V2_SendCommand(0x29);
 }
 
@@ -297,13 +292,13 @@ void LCD_1IN14_V2_DisplayWindows(UWORD Xstart, UWORD Ystart,
 
     UWORD j;
     LCD_1IN14_V2_SetWindows(Xstart, Ystart, Xend , Yend);
-    DEV_Digital_Write(LCD_DC_PIN, 1);
-    DEV_Digital_Write(LCD_CS_PIN, 0);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
     for (j = Ystart; j < Yend - 1; j++) {
         Addr = Xstart + j * LCD_1IN14_V2.WIDTH ;
         DEV_SPI_Write_nByte((uint8_t *) &Image[Addr], (Xend - Xstart) * 2);
     }
-    DEV_Digital_Write(LCD_CS_PIN, 1);
+    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -319,10 +314,7 @@ void LCD_1IN14_V2_DisplayPoint(UWORD X, UWORD Y, UWORD Color)
     LCD_1IN14_V2_SendData_16Bit(Color);
 }
 
-void  Handler_1IN14_V2_LCD(int signo)
+void LCD_1IN14_V2_SetBacklight(UBYTE Value)
 {
-    //System Exit
-    printf("\r\nHandler:Program stop\r\n");     
-    DEV_Module_Exit();
-	exit(0);
+    DEV_SET_PWM(Value);
 }
