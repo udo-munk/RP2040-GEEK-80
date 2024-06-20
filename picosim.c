@@ -227,5 +227,6 @@ int get_cmdline(char *buf, int len)
 		}
 	}
 	buf[i++] = '\0';
+	putchar('\n');
 	return 0;
 }

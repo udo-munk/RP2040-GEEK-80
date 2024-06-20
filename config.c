@@ -47,7 +47,6 @@ static void prompt_fn(char *s)
 {
       printf("Filename: ");
       get_cmdline(s, 9);
-      putchar('\n');
 }
 
 /*
@@ -91,13 +90,13 @@ void config(void)
 		printf("9 - run machine\n\n");
 		printf("Command: ");
 		get_cmdline(s, 2);
-		printf("\n\n");
+		putchar('\n');
 
 		switch (*s) {
 		case 'b':
 			printf("Value (0-100): ");
 			get_cmdline(s, 4);
-			printf("\n\n");
+			putchar('\n');
 			brightness = atoi((const char *) &s);
 			if (brightness < 0 || brightness > 100) {
 				printf("invalid brightness value: %d\n\n",
@@ -117,7 +116,7 @@ void config(void)
 		case '2':
 			printf("Value in MHz, 0=unlimited: ");
 			get_cmdline(s, 2);
-			printf("\n\n");
+			putchar('\n');
 			speed = atoi((const char *) &s);
 			break;
 
@@ -125,7 +124,7 @@ void config(void)
 again:
 			printf("Value in Hex: ");
 			get_cmdline(s, 3);
-			printf("\n\n");
+			putchar('\n');
 			if (!isxdigit((unsigned char) *s) ||
 			    !isxdigit((unsigned char) *(s + 1))) {
 				printf("What?\n");
