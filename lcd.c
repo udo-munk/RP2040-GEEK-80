@@ -29,8 +29,8 @@ void lcd_init(void)
 	Paint_NewImage((UBYTE *) &img[0], LCD_1IN14_V2.WIDTH,
 			LCD_1IN14_V2.HEIGHT, 0, WHITE);
 
-	/* with this scale */
-	Paint_SetScale(65);
+	/* with this depth */
+	Paint_SetDepth(16);
 
 	/* 0,0 is upper left corner */
 	Paint_SetRotate(ROTATE_0);
