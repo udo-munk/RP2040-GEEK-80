@@ -236,6 +236,8 @@ void LCD_1IN14_V2_SetWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
     LCD_1IN14_V2_SendCommand(0X2C);
 }
 
+static UWORD clr_img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
+
 /******************************************************************************
 function :	Clear screen
 parameter:
@@ -243,19 +245,18 @@ parameter:
 void LCD_1IN14_V2_Clear(UWORD Color)
 {
     UWORD j, i;
-    UWORD Image[LCD_1IN14_V2.WIDTH * LCD_1IN14_V2.HEIGHT];
     
     Color = ((Color << 8) & 0xff00) | (Color >> 8);
    
     for (j = 0; j < LCD_1IN14_V2.HEIGHT * LCD_1IN14_V2.WIDTH; j++) {
-        Image[j] = Color;
+        clr_img[j] = Color;
     }
     
     LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
     DEV_Digital_Write(LCD_DC_PIN, 1);
     DEV_Digital_Write(LCD_CS_PIN, 0);
     for(j = 0; j < LCD_1IN14_V2.HEIGHT; j++) {
-        DEV_SPI_Write_nByte((uint8_t *) &Image[j * LCD_1IN14_V2.WIDTH],
+        DEV_SPI_Write_nByte((uint8_t *) &clr_img[j * LCD_1IN14_V2.WIDTH],
 			    LCD_1IN14_V2.WIDTH * 2);
     }
     DEV_Digital_Write(LCD_CS_PIN, 1);
