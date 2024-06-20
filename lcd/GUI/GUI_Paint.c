@@ -25,9 +25,9 @@ void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate,
     Paint.WidthMemory = Width;
     Paint.HeightMemory = Height;
     Paint.Color = Color;
-    Paint.Scale = 2;
+    Paint.Depth = 16;
 
-    Paint.WidthByte = (Width % 8 == 0) ? (Width / 8) : (Width / 8 + 1);
+    Paint.WidthByte = Width * 2;
     Paint.HeightByte = Height;
 
     Paint.Rotate = Rotate;
@@ -74,35 +74,35 @@ void Paint_SetRotate(UWORD Rotate)
     }
 }
 
-void Paint_SetScale(UBYTE scale)
+void Paint_SetDepth(UBYTE depth)
 {
-    if (scale == 2)
+    if (depth == 1)
     {
-        Paint.Scale = scale;
+        Paint.Depth = depth;
         Paint.WidthByte = (Paint.WidthMemory % 8 == 0) ?
 			  (Paint.WidthMemory / 8) : (Paint.WidthMemory / 8 + 1);
     }
-    else if (scale == 4)
+    else if (depth == 2)
     {
-        Paint.Scale = scale;
+        Paint.Depth = depth;
         Paint.WidthByte = (Paint.WidthMemory % 4 == 0) ?
 			  (Paint.WidthMemory / 4) : (Paint.WidthMemory / 4 + 1);
     }
-    else if (scale == 16)
+    else if (depth == 4)
     {
-        Paint.Scale = scale;
+        Paint.Depth = depth;
         Paint.WidthByte = (Paint.WidthMemory % 2 == 0) ?
 			  (Paint.WidthMemory / 2) : (Paint.WidthMemory / 2 + 1);
     }
-    else if (scale == 65)
+    else if (depth == 16)
     {
-        Paint.Scale = scale;
+        Paint.Depth = depth;
         Paint.WidthByte = Paint.WidthMemory * 2;
     }
     else
     {
-        Debug("Set Scale Input parameter error\r\n");
-        Debug("Scale Only support: 2 4 16 65\r\n");
+        Debug("Set Depth Input parameter error\r\n");
+        Debug("Depth Only support: 1 2 4 16\r\n");
     }
 }
 
@@ -197,7 +197,7 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
         return;
     }
 
-    if (Paint.Scale == 2)
+    if (Paint.Depth == 1)
     {
         UDOUBLE Addr = X / 8 + Y * Paint.WidthByte;
         UBYTE Rdata = Paint.Image[Addr];
@@ -206,16 +206,16 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
         else
             Paint.Image[Addr] = Rdata | (0x80 >> (X % 8));
     }
-    else if (Paint.Scale == 4)
+    else if (Paint.Depth == 2)
     {
         UDOUBLE Addr = X / 4 + Y * Paint.WidthByte;
-        Color = Color % 4; // Guaranteed color scale is 4  --- 0~3
+        Color = Color % 4; // Guaranteed color depth is 2  --- 0~3
         UBYTE Rdata = Paint.Image[Addr];
 
         Rdata = Rdata & (~(0xC0 >> ((X % 4) * 2)));
         Paint.Image[Addr] = Rdata | ((Color << 6) >> ((X % 4) * 2));
     }
-    else if (Paint.Scale == 16)
+    else if (Paint.Depth == 4)
     {
         UDOUBLE Addr = X / 2 + Y * Paint.WidthByte;
         UBYTE Rdata = Paint.Image[Addr];
@@ -223,7 +223,7 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
         Rdata = Rdata & (~(0xf0 >> ((X % 2) * 4)));
         Paint.Image[Addr] = Rdata | ((Color << 4) >> ((X % 2) * 4));
     }
-    else if (Paint.Scale == 65)
+    else if (Paint.Depth == 16)
     {
         UDOUBLE Addr = X * 2 + Y * Paint.WidthByte;
         Paint.Image[Addr] = 0xff & (Color >> 8);
@@ -238,7 +238,7 @@ parameter:
 ******************************************************************************/
 void Paint_Clear(UWORD Color)
 {
-    if (Paint.Scale == 2 || Paint.Scale == 4)
+    if (Paint.Depth == 1 || Paint.Depth == 2)
     {
         for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
         {
@@ -249,7 +249,7 @@ void Paint_Clear(UWORD Color)
             }
         }
     }
-    else if (Paint.Scale == 16)
+    else if (Paint.Depth == 4)
     {
         for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
         {
@@ -261,7 +261,7 @@ void Paint_Clear(UWORD Color)
             }
         }
     }
-    else if (Paint.Scale == 65)
+    else if (Paint.Depth == 16)
     {
         for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
         {
