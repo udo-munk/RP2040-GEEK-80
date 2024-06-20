@@ -25,6 +25,8 @@
 #include "simglb.h"
 #include "lcd.h"
 
+#define DEFAULT_BRIGHTNESS 90
+
 extern FIL sd_file;
 extern FRESULT sd_res;
 extern char disks[2][22];

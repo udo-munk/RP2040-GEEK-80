@@ -260,13 +260,9 @@ parameter:
 ******************************************************************************/
 void Paint_Clear(UWORD Color)
 {
-    if (Color == 0x0000)
+    if (Color == BLACK || Color == WHITE)
     {
-        memset(Paint.Image, 0x00, (size_t) Paint.HeightByte * Paint.WidthByte);
-    }
-    else if (Color == 0xffff)
-    {
-        memset(Paint.Image, 0xff, (size_t) Paint.HeightByte * Paint.WidthByte);
+        memset(Paint.Image, Color & 0xff, (size_t) Paint.HeightByte * Paint.WidthByte);
     }
     else if (Paint.Depth == 1 || Paint.Depth == 2)
     {
