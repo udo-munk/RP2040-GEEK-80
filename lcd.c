@@ -42,7 +42,7 @@ void lcd_init(void)
 	cpudisp_flag = 0;
 	refresh_flag = 1;
 	curr_cpu = cpu;
-	snprintf(info_line, sizeof(info_line), "z80pack RP2040-GEEK %s",
+	snprintf(info_line, sizeof(info_line), "Z80pack RP2040-GEEK %s",
 		 USR_REL);
 	multicore_launch_core1(lcd_task);
 }
