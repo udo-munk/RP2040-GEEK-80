@@ -122,7 +122,7 @@ void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 
 int main(void)
 {
-	stdio_init_all();	/* initialize Pico stdio */
+	stdio_init_all();	/* initialize stdio */
 
 	/* initialize LCD */
 	lcd_init();
@@ -150,10 +150,6 @@ int main(void)
 	init_io();		/* initialize I/O devices */
 NOPE:	config();		/* configure the machine */
 
-	/* setup speed of the CPU */
-	f_flag = speed;
-	tmax = speed * 10000; /* theoretically */
-
 	/* check if there are disks in the drives */
 	if (strlen(disks[0]) != 0) {
 		/* they will try this for sure, so ... */
@@ -163,9 +159,14 @@ NOPE:	config();		/* configure the machine */
 		}
 	}
 
+	/* setup speed of the CPU */
+	f_flag = speed;
+	tmax = speed * 10000; /* theoretically */
+
 	/* power on jump into the boot ROM */
 	PC = 0xff00;
 
+	/* tell LCD refresh task to display CPU registers */
 	lcd_cpudisp_on();
 
 	/* run the CPU with whatever is in memory */
@@ -177,6 +178,7 @@ NOPE:	config();		/* configure the machine */
 	run_cpu();
 #endif
 
+	/* tell LCD refresh task to stop displaying CPU registers */
 	lcd_cpudisp_off();
 
 	/* unmount SD card */
