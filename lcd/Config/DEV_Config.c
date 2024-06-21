@@ -53,7 +53,7 @@ void DEV_SPI_WriteByte(uint8_t Value)
     spi_write_blocking(SPI_PORT, &Value, 1);
 }
 
-void DEV_SPI_Write_nByte(uint8_t pData[], uint32_t Len)
+void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
 {
     spi_write_blocking(SPI_PORT, pData, Len);
 }
