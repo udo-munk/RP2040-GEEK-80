@@ -4,6 +4,7 @@
  * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  */
 
+#include <string.h>
 #include "pico/multicore.h"
 #include "lcd.h"
 #include "sim.h"
@@ -16,10 +17,10 @@ static UBYTE img[LCD_1IN14_V2_HEIGHT * ((LCD_1IN14_V2_WIDTH + 1) / 2) * 3];
 static UWORD img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
 #endif
 
-static int refresh_flag;	/* task will refresh LCD display when > 0 */
-static int cpudisp_flag;	/* task will draw CPU status when > 0 */
+static volatile int refresh_flag; /* task will refresh LCD display when > 0 */
+static volatile int cpudisp_flag; /* task will draw CPU status when > 0 */
 static int curr_cpu;		/* currently shown CPU type */
-static char info_line[17];	/* last line in display */
+static char info_line[25];	/* last line in display */
 
 static void lcd_task(void);
 
@@ -42,7 +43,8 @@ void lcd_init(void)
 	cpudisp_flag = 0;
 	refresh_flag = 1;
 	curr_cpu = cpu;
-	snprintf(info_line, sizeof(info_line), "z80pack GEEK %s", USR_REL);
+	snprintf(info_line, sizeof(info_line), "z80pack RP2040-GEEK %s",
+		 USR_REL);
 	multicore_launch_core1(lcd_task);
 }
 
@@ -55,7 +57,9 @@ void lcd_cpudisp_on(void)
 void lcd_cpudisp_off(void)
 {
 	if (cpudisp_flag > 0) {
+		/* tell LCD refresh task to stop displaying CPU registers */
 		cpudisp_flag = -1;
+		/* wait until it stopped */
 		while (cpudisp_flag == -1)
 			sleep_ms(20);
 
@@ -68,7 +72,9 @@ void lcd_finish(void)
 	lcd_cpudisp_off();
 
 	if (refresh_flag > 0) {
+		/* tell LCD refresh task to stop refreshing the display */
 		refresh_flag = -1;
+		/* wait until it stopped */
 		while (refresh_flag == -1)
 			sleep_ms(20);
 	}
@@ -93,97 +99,120 @@ void lcd_brightness(int brightness)
 void lcd_info(void)
 {
 	Paint_Clear(BLACK);
-	Paint_DrawString(25, 40, "Waiting for", &Font24, RED, BLACK);
-	Paint_DrawString(25, 64, "  terminal ", &Font24, RED, BLACK);
+	Paint_DrawString(32, 35, "Waiting for", &Font32, RED, BLACK);
+	Paint_DrawString(32, 67, "  terminal ", &Font32, RED, BLACK);
 }
 
 void lcd_banner(void)
 {
 	Paint_Clear(BLACK);
-	Paint_DrawString(25, 40, "# Z80pack #", &Font24, BLACK, WHITE);
-	Paint_DrawString(25, 64, "RP2040-GEEK", &Font24, BLACK, WHITE);
+	Paint_DrawString(32, 35, "# Z80pack #", &Font32, BLACK, WHITE);
+	Paint_DrawString(32, 67, "RP2040-GEEK", &Font32, BLACK, WHITE);
 }
+
+/*
+ *    012345678901234567890123
+ *  0 A  12   BC 1234 DE 1234
+ *  1 HL 1234 SP 1234 PC 1234
+ *  2 IX 1234 IY 1234 AF`1234
+ *  3 BC'1234 DE'1234 HL`1234
+ *  4 F  S Z H P N C  IR 1234
+ *  5 z80pack RP2040-GEEK 1.2
+ */
+
+#define FONT	Font20
+#define OFF_X	8
+#define OFF_Y	0
+#define SPC_Y	3
+
+#define P_C(x, y, c, col) \
+	Paint_DrawChar((x) * FONT.Width + OFF_X,		\
+		       (y) * (FONT.Height + SPC_Y) + OFF_Y,	\
+		       c, &FONT, col, BLACK)
+#define P_S(x, y, s, col) \
+	Paint_DrawString((x) * FONT.Width + OFF_X,		\
+			 (y) * (FONT.Height + SPC_Y) + OFF_Y,	\
+			 s, &FONT, col, BLACK)
+
+static const char *hex = "0123456789ABCDEF";
+
+#define H3(x) hex[((x) >> 12) & 0xf]
+#define H2(x) hex[((x) >> 8) & 0xf]
+#define H1(x) hex[((x) >> 4) & 0xf]
+#define H0(x) hex[(x) & 0xf]
 
 static void lcd_cpubg(void)
 {
 	Paint_Clear(BLACK);
-	Paint_DrawChar  (8+ 0*14,  0+0*20, 'A', &Font20, WHITE, BLACK);
-	Paint_DrawString(8+ 9*14,  0+0*20, "BC", &Font20, WHITE, BLACK);
-	Paint_DrawString(8+ 0*14,  3+1*20, "DE", &Font20, WHITE, BLACK);
-	Paint_DrawString(8+ 9*14,  3+1*20, "HL", &Font20, WHITE, BLACK);
-	Paint_DrawString(8+ 0*14,  6+2*20, "SP", &Font20, WHITE, BLACK);
-	Paint_DrawString(8+ 9*14,  6+2*20, "PC", &Font20, WHITE, BLACK);
+	P_C( 0, 0, 'A',  WHITE);
+	P_S( 8, 0, "BC", WHITE);
+	P_S(16, 0, "DE", WHITE);
+	P_S( 0, 1, "HL", WHITE);
+	P_S( 8, 1, "SP", WHITE);
+	P_S(16, 1, "PC", WHITE);
 	if (curr_cpu == Z80) {
-	Paint_DrawString(8+ 0*14,  9+3*20, "IX", &Font20, WHITE, BLACK);
-	Paint_DrawString(8+ 9*14,  9+3*20, "IY", &Font20, WHITE, BLACK);
-	Paint_DrawChar  (8+ 0*14, 12+4*20, 'F', &Font20, WHITE, BLACK);
+		P_S( 0, 2, "IX",  WHITE);
+		P_S( 8, 2, "IY",  WHITE);
+		P_S(16, 2, "AF'", WHITE);
+		P_S( 0, 3, "BC'", WHITE);
+		P_S( 8, 3, "DE'", WHITE);
+		P_S(16, 3, "HL'", WHITE);
+		P_C( 0, 4, 'F',   WHITE);
+		P_S(16, 4, "IR",  WHITE);
 	}
 	else {
-	Paint_DrawChar  (8+ 0*14,  9+3*20, 'F', &Font20, WHITE, BLACK);
+		P_C( 0, 3, 'F',   WHITE);
 	}
-	Paint_DrawString(8+ 0*14, 15+5*20, info_line, &Font20, BRRED, BLACK);
+	P_S( 0, 5, info_line, BRRED);
 }
 
 static void lcd_cpudisp(void)
 {
-	static const char *hex = "0123456789ABCDEF";
+	BYTE r;
 
-	/*
-	 *  A  12    BC 1234
-	 *  DE 1234  HL 1234
-	 *  SP 1234  PC 1234
-	 *  IX 1234  IY 1234
-	 *  F  S Z H P N C
-	 *  Z80pack pico 1.2
-	 */
+	P_C( 3, 0, H1(A),  GREEN); P_C( 4, 0, H0(A),  GREEN);
+	P_C(11, 0, H1(B),  GREEN); P_C(12, 0, H0(B),  GREEN);
+	P_C(13, 0, H1(C),  GREEN); P_C(14, 0, H0(C),  GREEN);
+	P_C(19, 0, H1(D),  GREEN); P_C(20, 0, H0(D),  GREEN);
+	P_C(21, 0, H1(E),  GREEN); P_C(22, 0, H0(E),  GREEN);
 
-	Paint_DrawChar(8+ 3*14,  0+0*20, hex[A >> 4], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 4*14,  0+0*20, hex[A & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+12*14,  0+0*20, hex[B >> 4], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+13*14,  0+0*20, hex[B & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+14*14,  0+0*20, hex[C >> 4], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+15*14,  0+0*20, hex[C & 15], &Font20, GREEN, BLACK);
-
-	Paint_DrawChar(8+ 3*14,  3+1*20, hex[D >> 4], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 4*14,  3+1*20, hex[D & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 5*14,  3+1*20, hex[E >> 4], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 6*14,  3+1*20, hex[E & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+12*14,  3+1*20, hex[H >> 4], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+13*14,  3+1*20, hex[H & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+14*14,  3+1*20, hex[L >> 4], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+15*14,  3+1*20, hex[L & 15], &Font20, GREEN, BLACK);
-
-	Paint_DrawChar(8+ 3*14,  6+2*20, hex[SP >> 12], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 4*14,  6+2*20, hex[(SP >> 8) & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 5*14,  6+2*20, hex[(SP >> 4) & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 6*14,  6+2*20, hex[SP & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+12*14,  6+2*20, hex[PC >> 12], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+13*14,  6+2*20, hex[(PC >> 8) & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+14*14,  6+2*20, hex[(PC >> 4) & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+15*14,  6+2*20, hex[PC & 15], &Font20, GREEN, BLACK);
+	P_C( 3, 1, H1(H),  GREEN); P_C( 4, 1, H0(H),  GREEN);
+	P_C( 5, 1, H1(L),  GREEN); P_C( 6, 1, H0(L),  GREEN);
+	P_C(11, 1, H3(SP), GREEN); P_C(12, 1, H2(SP), GREEN);
+	P_C(13, 1, H1(SP), GREEN); P_C(14, 1, H0(SP), GREEN);
+	P_C(19, 1, H3(PC), GREEN); P_C(20, 1, H2(PC), GREEN);
+	P_C(21, 1, H1(PC), GREEN); P_C(22, 1, H0(PC), GREEN);
 
 	if (curr_cpu == Z80) {
-	Paint_DrawChar(8+ 3*14,  9+3*20, hex[IX >> 12], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 4*14,  9+3*20, hex[(IX >> 8) & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 5*14,  9+3*20, hex[(IX >> 4) & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+ 6*14,  9+3*20, hex[IX & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+12*14,  9+3*20, hex[IY >> 12], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+13*14,  9+3*20, hex[(IY >> 8) & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+14*14,  9+3*20, hex[(IY >> 4) & 15], &Font20, GREEN, BLACK);
-	Paint_DrawChar(8+15*14,  9+3*20, hex[IY & 15], &Font20, GREEN, BLACK);
+		P_C( 3, 2, H3(IX), GREEN); P_C( 4, 2, H2(IX), GREEN);
+		P_C( 5, 2, H1(IX), GREEN); P_C( 6, 2, H0(IX), GREEN);
+		P_C(11, 2, H3(IY), GREEN); P_C(12, 2, H2(IY), GREEN);
+		P_C(13, 2, H1(IY), GREEN); P_C(14, 2, H0(IY), GREEN);
+		P_C(19, 2, H1(A_), GREEN); P_C(20, 2, H1(A_), GREEN);
+		P_C(21, 2, H1(F_), GREEN); P_C(22, 2, H0(F_), GREEN);
 
-	Paint_DrawChar(8+ 3*14, 12+4*20, 'S', &Font20, F & S_FLAG ? GREEN : RED, BLACK);
-	Paint_DrawChar(8+ 5*14, 12+4*20, 'Z', &Font20, F & Z_FLAG ? GREEN : RED, BLACK);
-	Paint_DrawChar(8+ 7*14, 12+4*20, 'H', &Font20, F & H_FLAG ? GREEN : RED, BLACK);
-	Paint_DrawChar(8+ 9*14, 12+4*20, 'P', &Font20, F & P_FLAG ? GREEN : RED, BLACK);
-	Paint_DrawChar(8+11*14, 12+4*20, 'N', &Font20, F & N_FLAG ? GREEN : RED, BLACK);
-	Paint_DrawChar(8+13*14, 12+4*20, 'C', &Font20, F & C_FLAG ? GREEN : RED, BLACK);
+		P_C( 3, 3, H1(B_), GREEN); P_C( 4, 3, H1(B_), GREEN);
+		P_C( 5, 3, H1(C_), GREEN); P_C( 6, 3, H0(C_), GREEN);
+		P_C(11, 3, H1(D_), GREEN); P_C(12, 3, H1(D_), GREEN);
+		P_C(13, 3, H1(E_), GREEN); P_C(14, 3, H0(E_), GREEN);
+		P_C(19, 3, H1(H_), GREEN); P_C(20, 3, H1(H_), GREEN);
+		P_C(21, 3, H1(L_), GREEN); P_C(22, 3, H0(L_), GREEN);
+
+		P_C( 3, 4, 'S', F & S_FLAG ? GREEN : RED);
+		P_C( 5, 4, 'Z', F & Z_FLAG ? GREEN : RED);
+		P_C( 7, 4, 'H', F & H_FLAG ? GREEN : RED);
+		P_C( 9, 4, 'P', F & P_FLAG ? GREEN : RED);
+		P_C(11, 4, 'N', F & N_FLAG ? GREEN : RED);
+		P_C(13, 4, 'C', F & C_FLAG ? GREEN : RED);
+		P_C(19, 4, H1(I), GREEN); P_C(20, 4, H0(I), GREEN);
+		r = (R_ & 0x80) | (R & 0x7f);
+		P_C(21, 4, H1(r), GREEN); P_C(22, 4, H0(r), GREEN);
 	} else {
-	Paint_DrawChar(8+ 3*14,  9+3*20, 'S', &Font20, F & S_FLAG ? GREEN : RED, BLACK);
-	Paint_DrawChar(8+ 5*14,  9+3*20, 'Z', &Font20, F & Z_FLAG ? GREEN : RED, BLACK);
-	Paint_DrawChar(8+ 7*14,  9+3*20, 'H', &Font20, F & H_FLAG ? GREEN : RED, BLACK);
-	Paint_DrawChar(8+ 9*14,  9+3*20, 'P', &Font20, F & P_FLAG ? GREEN : RED, BLACK);
-	Paint_DrawChar(8+11*14,  9+3*20, 'C', &Font20, F & C_FLAG ? GREEN : RED, BLACK);
+		P_C( 3, 3, 'S', F & S_FLAG ? GREEN : RED);
+		P_C( 5, 3, 'Z', F & Z_FLAG ? GREEN : RED);
+		P_C( 7, 3, 'H', F & H_FLAG ? GREEN : RED);
+		P_C( 9, 3, 'P', F & P_FLAG ? GREEN : RED);
+		P_C(11, 3, 'C', F & C_FLAG ? GREEN : RED);
 	}
 }
 

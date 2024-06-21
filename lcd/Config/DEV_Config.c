@@ -99,7 +99,7 @@ Info:
 UBYTE DEV_Module_Init(void)
 {
     // SPI Config
-    spi_init(SPI_PORT, 30 * 1000 * 1000);
+    spi_init(SPI_PORT, 40 * 1000 * 1000);
     gpio_set_function(WAVESHARE_RP2040_LCD_SCLK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(WAVESHARE_RP2040_LCD_TX_PIN, GPIO_FUNC_SPI);
 

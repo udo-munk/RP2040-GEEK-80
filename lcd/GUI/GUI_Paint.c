@@ -94,6 +94,11 @@ void Paint_SetDepth(UBYTE depth)
         Paint.WidthByte = (Paint.WidthMemory % 2 == 0) ?
 			  (Paint.WidthMemory / 2) : (Paint.WidthMemory / 2 + 1);
     }
+    else if (depth == 8)
+    {
+        Paint.Depth = depth;
+        Paint.WidthByte = Paint.WidthMemory;
+    }
     else if (depth == 12)
     {
         Paint.Depth = depth;
@@ -107,7 +112,7 @@ void Paint_SetDepth(UBYTE depth)
     else
     {
         Debug("Set Depth Input parameter error\r\n");
-        Debug("Depth Only support: 1 2 4 12 16\r\n");
+        Debug("Depth Only support: 1 2 4 8 12 16\r\n");
     }
 }
 
@@ -139,7 +144,7 @@ parameter:
     Ypoint : At point Y
     Color  : Painted colors
 ******************************************************************************/
-void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
+void __time_critical_func(Paint_SetPixel)(UWORD Xpoint, UWORD Ypoint, UWORD Color)
 {
     if (Xpoint >= Paint.Width || Ypoint >= Paint.Height)
     {
@@ -206,7 +211,7 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
     {
         UDOUBLE Addr = X / 8 + Y * Paint.WidthByte;
         UBYTE Rdata = Paint.Image[Addr];
-        if (Color & 0xff == BLACK)
+        if (Color % 2 == 0)
             Paint.Image[Addr] = Rdata & ~(0x80 >> (X % 8));
         else
             Paint.Image[Addr] = Rdata | (0x80 >> (X % 8));
@@ -228,28 +233,33 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
         Rdata = Rdata & (~(0xf0 >> ((X % 2) * 4)));
         Paint.Image[Addr] = Rdata | ((Color << 4) >> ((X % 2) * 4));
     }
+    else if (Paint.Depth == 8)
+    {
+        UDOUBLE Addr = X + Y * Paint.WidthByte;
+        Paint.Image[Addr] = Color & 0xff;
+    }
     else if (Paint.Depth == 12)
     {
         UDOUBLE Addr = ((X + 1) / 2) * 3 + Y * Paint.WidthByte;
         UBYTE Rdata;
         if ((X % 2) == 0)
         {
-            Paint.Image[Addr] = Color >> 4;
+            Paint.Image[Addr] = (Color >> 4) & 0xff;
             Rdata = Paint.Image[Addr + 1] & 0x0f;
-            Paint.Image[Addr + 1] = (Color << 4) | Rdata;
+            Paint.Image[Addr + 1] = ((Color & 0x0f) << 4) | Rdata;
         }
         else
         {
             Rdata = Paint.Image[Addr - 2] & 0xf0;
             Paint.Image[Addr - 2] = Rdata | ((Color >> 8) & 0x0f);
-            Paint.Image[Addr - 1] = Color;
+            Paint.Image[Addr - 1] = Color & 0xff;
         }
     }
     else if (Paint.Depth == 16)
     {
         UDOUBLE Addr = X * 2 + Y * Paint.WidthByte;
-        Paint.Image[Addr] = 0xff & (Color >> 8);
-        Paint.Image[Addr + 1] = 0xff & Color;
+        Paint.Image[Addr] = (Color >> 8) & 0xff;
+        Paint.Image[Addr + 1] = Color & 0xff;
     }
 }
 
@@ -260,64 +270,57 @@ parameter:
 ******************************************************************************/
 void Paint_Clear(UWORD Color)
 {
-    if (Color == BLACK || Color == WHITE)
+    if (Paint.Depth == 1)
     {
-        memset(Paint.Image, Color & 0xff, (size_t) Paint.HeightByte * Paint.WidthByte);
+        Color &= 0x1;
+        Color |= Color << 1;
+        Color |= Color << 2;
+        Color |= Color << 4;
     }
-    else if (Paint.Depth == 1 || Paint.Depth == 2)
+    else if (Paint.Depth == 2)
     {
-        for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
-        {
-            for (UWORD X = 0; X < Paint.WidthByte; X++)
-            { // 8 or 4 pixel = 1 byte
-                UDOUBLE Addr = X + Y * Paint.WidthByte;
-                Paint.Image[Addr] = Color;
-            }
-        }
+        Color &= 0x3;
+        Color |= Color << 2;
+        Color |= Color << 4;
     }
     else if (Paint.Depth == 4)
     {
-        for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
-        {
-            for (UWORD X = 0; X < Paint.WidthByte; X++)
-            { // 2 pixel = 1 byte
-                UDOUBLE Addr = X + Y * Paint.WidthByte;
-                Color = Color & 0x0f;
-                Paint.Image[Addr] = (Color << 4) | Color;
-            }
-        }
+        Color &= 0xf;
+        Color |= Color << 4;
+    }
+    if (Paint.Depth <= 8 || Color == BLACK || Color == WHITE)
+    {
+        memset(Paint.Image, Color & 0xff, (size_t) Paint.HeightByte * Paint.WidthByte);
     }
     else if (Paint.Depth == 12)
     {
+        uint32_t Addr = 0;
+        uint8_t Bytes[3] =
+        {
+            (Color >> 4) & 0xff,
+            ((Color & 0xf) << 4) | ((Color >> 8) & 0xf),
+            Color & 0xff
+        };
         for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
         {
-            for (UWORD X = 0; X < Paint.WidthMemory; X++)
-            { // 1 pixel = 1.5 bytes
-                UDOUBLE Addr = ((X + 1) / 2) * 3 + Y * Paint.WidthByte;
-                if ((X % 2) == 0)
-                {
-                    Paint.Image[Addr] = Color >> 4;
-                    Paint.Image[Addr + 1] = Color << 4;
-                }
-                else
-                {
-                    Paint.Image[Addr - 2] = ((Color & 0x0f) << 4) | ((Color >> 8) & 0x0f);
-                    Paint.Image[Addr - 1] = Color;
-                }
-                Paint.Image[Addr] = 0xff & (Color >> 8);
-                Paint.Image[Addr + 1] = 0xff & Color;
+            int i = 0;
+            for (UWORD X = 0; X < Paint.WidthByte; X++)
+            {
+                Paint.Image[Addr++] = Bytes[i++];
+                if (i == 3)
+                    i = 0;
             }
         }
     }
     else if (Paint.Depth == 16)
     {
+        UDOUBLE Addr = 0;
         for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
         {
             for (UWORD X = 0; X < Paint.WidthByte / 2; X++)
-            { // 1 pixel = 2 bytes
-                UDOUBLE Addr = X * 2 + Y * Paint.WidthByte;
-                Paint.Image[Addr] = 0xff & (Color >> 8);
-                Paint.Image[Addr + 1] = 0xff & Color;
+            {
+                Paint.Image[Addr++] = (Color >> 8) & 0xff;
+                Paint.Image[Addr++] = Color & 0xff;
             }
         }
     }
@@ -609,8 +612,8 @@ parameter:
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
 ******************************************************************************/
-void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
-                    sFONT *Font, UWORD Color_Foreground, UWORD Color_Background)
+void __time_critical_func(Paint_DrawChar)(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
+					  sFONT *Font, UWORD Color_Foreground, UWORD Color_Background)
 {
     UWORD Page, Column;
 
