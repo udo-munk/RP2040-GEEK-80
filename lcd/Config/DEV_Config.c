@@ -99,7 +99,7 @@ Info:
 UBYTE DEV_Module_Init(void)
 {
     // SPI Config
-    spi_init(SPI_PORT, 30*1000 * 1000);
+    spi_init(SPI_PORT, 30 * 1000 * 1000);
     gpio_set_function(WAVESHARE_RP2040_LCD_SCLK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(WAVESHARE_RP2040_LCD_TX_PIN, GPIO_FUNC_SPI);
 
@@ -111,7 +111,7 @@ UBYTE DEV_Module_Init(void)
     slice_num = pwm_gpio_to_slice_num(WAVESHARE_RP2040_LCD_BL_PIN);
     pwm_set_wrap(slice_num, 100);
     pwm_set_chan_level(slice_num, PWM_CHAN_B, 1);
-    pwm_set_clkdiv(slice_num,50);
+    pwm_set_clkdiv(slice_num, 50);
     pwm_set_enabled(slice_num, true);
     
     return 0;
