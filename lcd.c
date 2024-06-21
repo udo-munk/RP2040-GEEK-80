@@ -4,7 +4,6 @@
  * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  */
 
-#include <string.h>
 #include "pico/multicore.h"
 #include "lcd.h"
 #include "sim.h"
