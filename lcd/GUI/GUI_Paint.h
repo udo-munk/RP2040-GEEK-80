@@ -74,7 +74,7 @@ typedef enum {
 
 /**
  * Define WHITE and BLACK as all ones or zeroes,
- * so there usable with all color depths
+ * so they're usable with all color depths
 **/
 #define WHITE          0xFFFF
 #define BLACK          0x0000
@@ -136,7 +136,7 @@ typedef struct {
 } PAINT_TIME;
 extern PAINT_TIME sPaint_time;
 
-//init and Clear
+//Init and Clear
 void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height,
 		    UWORD Rotate, UWORD Color);
 void Paint_SelectImage(UBYTE *image);
@@ -173,7 +173,7 @@ void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime,
 		    sFONT *Font, UWORD Color_Foreground,
 		    UWORD Color_Background);
 
-//pic
+//Pic
 void Paint_DrawBitMap(const unsigned char *image_buffer);
 void Paint_DrawBitMap_Block(const unsigned char *image_buffer, UBYTE Region);
 
