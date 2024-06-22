@@ -115,23 +115,37 @@ void lcd_banner(void)
  *  1 HL 1234 SP 1234 PC 1234
  *  2 IX 1234 IY 1234 AF`1234
  *  3 BC'1234 DE'1234 HL`1234
- *  4 F  S Z H P N C  IR 1234
+ *  4 F  SZHPNC  IF12 IR 1234
  *  5 z80pack RP2040-GEEK 1.2
+ *
+ *    0123456789012345
+ *  0 A  12    BC 1234
+ *  1 DE 1234  HL 1234
+ *  2 SP 1234  PC 1234
+ *  3 F  SZHPC    IF 1
  */
 
-#define FONT	Font20
-#define OFF_X	8
-#define OFF_Y	0
-#define SPC_Y	3
+#define OFFX20	5
+#define OFFY20	0
+#define SPC20	3
 
-#define P_C(x, y, c, col) \
-	Paint_DrawChar((x) * FONT.Width + OFF_X,		\
-		       (y) * (FONT.Height + SPC_Y) + OFF_Y,	\
-		       c, &FONT, col, BLACK)
-#define P_S(x, y, s, col) \
-	Paint_DrawString((x) * FONT.Width + OFF_X,		\
-			 (y) * (FONT.Height + SPC_Y) + OFF_Y,	\
-			 s, &FONT, col, BLACK)
+#define OFFX28	8
+#define OFFY28	0
+#define SPC28	1
+
+#define P_C(x, y, c, col, font, offx, offy, spc)		\
+	Paint_DrawChar((x) * font.Width + offx,			\
+		       (y) * (font.Height + spc) + offy,	\
+		       c, &font, col, BLACK)
+#define P_C20(x, y, c, col) P_C(x, y, c, col, Font20, OFFX20, OFFY20, SPC20)
+#define P_C28(x, y, c, col) P_C(x, y, c, col, Font28, OFFX28, OFFY28, SPC28)
+
+#define P_S(x, y, s, col, font, offx, offy, spc)		\
+	Paint_DrawString((x) * font.Width + offx,		\
+			 (y) * (font.Height + spc) + offy,	\
+			 s, &font, col, BLACK)
+#define P_S20(x, y, c, col) P_S(x, y, c, col, Font20, OFFX20, OFFY20, SPC20)
+#define P_S28(x, y, c, col) P_S(x, y, c, col, Font28, OFFX28, OFFY28, SPC28)
 
 static const char *hex = "0123456789ABCDEF";
 
@@ -143,75 +157,100 @@ static const char *hex = "0123456789ABCDEF";
 static void lcd_cpubg(void)
 {
 	Paint_Clear(BLACK);
-	P_C( 0, 0, 'A',  WHITE);
-	P_S( 8, 0, "BC", WHITE);
-	P_S(16, 0, "DE", WHITE);
-	P_S( 0, 1, "HL", WHITE);
-	P_S( 8, 1, "SP", WHITE);
-	P_S(16, 1, "PC", WHITE);
 	if (curr_cpu == Z80) {
-		P_S( 0, 2, "IX",  WHITE);
-		P_S( 8, 2, "IY",  WHITE);
-		P_S(16, 2, "AF'", WHITE);
-		P_S( 0, 3, "BC'", WHITE);
-		P_S( 8, 3, "DE'", WHITE);
-		P_S(16, 3, "HL'", WHITE);
-		P_C( 0, 4, 'F',   WHITE);
-		P_S(16, 4, "IR",  WHITE);
+		P_C20( 0, 0, 'A',   WHITE);
+		P_S20( 8, 0, "BC",  WHITE);
+		P_S20(16, 0, "DE",  WHITE);
+		P_S20( 0, 1, "HL",  WHITE);
+		P_S20( 8, 1, "SP",  WHITE);
+		P_S20(16, 1, "PC",  WHITE);
+		P_S20( 0, 2, "IX",  WHITE);
+		P_S20( 8, 2, "IY",  WHITE);
+		P_S20(16, 2, "AF'", WHITE);
+		P_S20( 0, 3, "BC'", WHITE);
+		P_S20( 8, 3, "DE'", WHITE);
+		P_S20(16, 3, "HL'", WHITE);
+		P_C20( 0, 4, 'F',   WHITE);
+		P_S20(11, 4, "IF",  WHITE);
+		P_S20(16, 4, "IR",  WHITE);
 	}
 	else {
-		P_C( 0, 3, 'F',   WHITE);
+		P_C28( 0, 0, 'A',   WHITE);
+		P_S28( 9, 0, "BC",  WHITE);
+		P_S28( 0, 1, "DE",  WHITE);
+		P_S28( 9, 1, "HL",  WHITE);
+		P_S28( 0, 2, "SP",  WHITE);
+		P_S28( 9, 2, "PC",  WHITE);
+		P_C28( 0, 3, 'F',   WHITE);
+		P_S28(12, 3, "IF",  WHITE);
 	}
-	P_S( 0, 5, info_line, BRRED);
+	P_S20( 0, 5, info_line, BRRED);
 }
 
 static void lcd_cpudisp(void)
 {
 	BYTE r;
 
-	P_C( 3, 0, H1(A),  GREEN); P_C( 4, 0, H0(A),  GREEN);
-	P_C(11, 0, H1(B),  GREEN); P_C(12, 0, H0(B),  GREEN);
-	P_C(13, 0, H1(C),  GREEN); P_C(14, 0, H0(C),  GREEN);
-	P_C(19, 0, H1(D),  GREEN); P_C(20, 0, H0(D),  GREEN);
-	P_C(21, 0, H1(E),  GREEN); P_C(22, 0, H0(E),  GREEN);
-
-	P_C( 3, 1, H1(H),  GREEN); P_C( 4, 1, H0(H),  GREEN);
-	P_C( 5, 1, H1(L),  GREEN); P_C( 6, 1, H0(L),  GREEN);
-	P_C(11, 1, H3(SP), GREEN); P_C(12, 1, H2(SP), GREEN);
-	P_C(13, 1, H1(SP), GREEN); P_C(14, 1, H0(SP), GREEN);
-	P_C(19, 1, H3(PC), GREEN); P_C(20, 1, H2(PC), GREEN);
-	P_C(21, 1, H1(PC), GREEN); P_C(22, 1, H0(PC), GREEN);
-
 	if (curr_cpu == Z80) {
-		P_C( 3, 2, H3(IX), GREEN); P_C( 4, 2, H2(IX), GREEN);
-		P_C( 5, 2, H1(IX), GREEN); P_C( 6, 2, H0(IX), GREEN);
-		P_C(11, 2, H3(IY), GREEN); P_C(12, 2, H2(IY), GREEN);
-		P_C(13, 2, H1(IY), GREEN); P_C(14, 2, H0(IY), GREEN);
-		P_C(19, 2, H1(A_), GREEN); P_C(20, 2, H0(A_), GREEN);
-		P_C(21, 2, H1(F_), GREEN); P_C(22, 2, H0(F_), GREEN);
+		P_C20( 3, 0, H1(A),  GREEN); P_C20( 4, 0, H0(A),  GREEN);
+		P_C20(11, 0, H1(B),  GREEN); P_C20(12, 0, H0(B),  GREEN);
+		P_C20(13, 0, H1(C),  GREEN); P_C20(14, 0, H0(C),  GREEN);
+		P_C20(19, 0, H1(D),  GREEN); P_C20(20, 0, H0(D),  GREEN);
+		P_C20(21, 0, H1(E),  GREEN); P_C20(22, 0, H0(E),  GREEN);
 
-		P_C( 3, 3, H1(B_), GREEN); P_C( 4, 3, H0(B_), GREEN);
-		P_C( 5, 3, H1(C_), GREEN); P_C( 6, 3, H0(C_), GREEN);
-		P_C(11, 3, H1(D_), GREEN); P_C(12, 3, H0(D_), GREEN);
-		P_C(13, 3, H1(E_), GREEN); P_C(14, 3, H0(E_), GREEN);
-		P_C(19, 3, H1(H_), GREEN); P_C(20, 3, H0(H_), GREEN);
-		P_C(21, 3, H1(L_), GREEN); P_C(22, 3, H0(L_), GREEN);
+		P_C20( 3, 1, H1(H),  GREEN); P_C20( 4, 1, H0(H),  GREEN);
+		P_C20( 5, 1, H1(L),  GREEN); P_C20( 6, 1, H0(L),  GREEN);
+		P_C20(11, 1, H3(SP), GREEN); P_C20(12, 1, H2(SP), GREEN);
+		P_C20(13, 1, H1(SP), GREEN); P_C20(14, 1, H0(SP), GREEN);
+		P_C20(19, 1, H3(PC), GREEN); P_C20(20, 1, H2(PC), GREEN);
+		P_C20(21, 1, H1(PC), GREEN); P_C20(22, 1, H0(PC), GREEN);
 
-		P_C( 3, 4, 'S', F & S_FLAG ? GREEN : RED);
-		P_C( 5, 4, 'Z', F & Z_FLAG ? GREEN : RED);
-		P_C( 7, 4, 'H', F & H_FLAG ? GREEN : RED);
-		P_C( 9, 4, 'P', F & P_FLAG ? GREEN : RED);
-		P_C(11, 4, 'N', F & N_FLAG ? GREEN : RED);
-		P_C(13, 4, 'C', F & C_FLAG ? GREEN : RED);
-		P_C(19, 4, H1(I), GREEN); P_C(20, 4, H0(I), GREEN);
+		P_C20( 3, 2, H3(IX), GREEN); P_C20( 4, 2, H2(IX), GREEN);
+		P_C20( 5, 2, H1(IX), GREEN); P_C20( 6, 2, H0(IX), GREEN);
+		P_C20(11, 2, H3(IY), GREEN); P_C20(12, 2, H2(IY), GREEN);
+		P_C20(13, 2, H1(IY), GREEN); P_C20(14, 2, H0(IY), GREEN);
+		P_C20(19, 2, H1(A_), GREEN); P_C20(20, 2, H0(A_), GREEN);
+		P_C20(21, 2, H1(F_), GREEN); P_C20(22, 2, H0(F_), GREEN);
+
+		P_C20( 3, 3, H1(B_), GREEN); P_C20( 4, 3, H0(B_), GREEN);
+		P_C20( 5, 3, H1(C_), GREEN); P_C20( 6, 3, H0(C_), GREEN);
+		P_C20(11, 3, H1(D_), GREEN); P_C20(12, 3, H0(D_), GREEN);
+		P_C20(13, 3, H1(E_), GREEN); P_C20(14, 3, H0(E_), GREEN);
+		P_C20(19, 3, H1(H_), GREEN); P_C20(20, 3, H0(H_), GREEN);
+		P_C20(21, 3, H1(L_), GREEN); P_C20(22, 3, H0(L_), GREEN);
+
+		P_C20( 3, 4, 'S', F & S_FLAG ? GREEN : RED);
+		P_C20( 4, 4, 'Z', F & Z_FLAG ? GREEN : RED);
+		P_C20( 5, 4, 'H', F & H_FLAG ? GREEN : RED);
+		P_C20( 6, 4, 'P', F & P_FLAG ? GREEN : RED);
+		P_C20( 7, 4, 'N', F & N_FLAG ? GREEN : RED);
+		P_C20( 8, 4, 'C', F & C_FLAG ? GREEN : RED);
+		P_C20(13, 4, '1', IFF & 1 ? GREEN : RED);
+		P_C20(14, 4, '2', IFF & 2 ? GREEN : RED);
+		P_C20(19, 4, H1(I),  GREEN); P_C20(20, 4, H0(I),  GREEN);
 		r = (R_ & 0x80) | (R & 0x7f);
-		P_C(21, 4, H1(r), GREEN); P_C(22, 4, H0(r), GREEN);
+		P_C20(21, 4, H1(r),  GREEN); P_C20(22, 4, H0(r),  GREEN);
 	} else {
-		P_C( 3, 3, 'S', F & S_FLAG ? GREEN : RED);
-		P_C( 5, 3, 'Z', F & Z_FLAG ? GREEN : RED);
-		P_C( 7, 3, 'H', F & H_FLAG ? GREEN : RED);
-		P_C( 9, 3, 'P', F & P_FLAG ? GREEN : RED);
-		P_C(11, 3, 'C', F & C_FLAG ? GREEN : RED);
+		P_C28( 3, 0, H1(A),  GREEN); P_C28( 4, 0, H0(A),  GREEN);
+		P_C28(12, 0, H1(B),  GREEN); P_C28(13, 0, H0(B),  GREEN);
+		P_C28(14, 0, H1(C),  GREEN); P_C28(15, 0, H0(C),  GREEN);
+
+		P_C28( 3, 1, H1(D),  GREEN); P_C28( 4, 1, H0(D),  GREEN);
+		P_C28( 5, 1, H1(E),  GREEN); P_C28( 6, 1, H0(E),  GREEN);
+		P_C28(12, 1, H1(H),  GREEN); P_C28(13, 1, H0(H),  GREEN);
+		P_C28(14, 1, H1(L),  GREEN); P_C28(15, 1, H0(L),  GREEN);
+
+		P_C28( 3, 2, H3(SP), GREEN); P_C28( 4, 2, H2(SP), GREEN);
+		P_C28( 5, 2, H1(SP), GREEN); P_C28( 6, 2, H0(SP), GREEN);
+		P_C28(12, 2, H3(PC), GREEN); P_C28(13, 2, H2(PC), GREEN);
+		P_C28(14, 2, H1(PC), GREEN); P_C28(15, 2, H0(PC), GREEN);
+
+		P_C28( 3, 3, 'S', F & S_FLAG ? GREEN : RED);
+		P_C28( 4, 3, 'Z', F & Z_FLAG ? GREEN : RED);
+		P_C28( 5, 3, 'H', F & H_FLAG ? GREEN : RED);
+		P_C28( 6, 3, 'P', F & P_FLAG ? GREEN : RED);
+		P_C28( 7, 3, 'C', F & C_FLAG ? GREEN : RED);
+		P_C28(15, 3, '1', IFF == 3 ? GREEN : RED);
 	}
 }
 
