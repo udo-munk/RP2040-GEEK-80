@@ -55,8 +55,6 @@ static inline uint8_t DEV_Digital_Read(uint16_t Pin)
 	return gpio_get(Pin);
 }
 
-extern void DEV_GPIO_Mode(uint16_t Pin, uint16_t Mode);
-
 /*
  *	SPI write
  */
