@@ -126,21 +126,24 @@ void lcd_banner(void)
  */
 
 #if LCD_COLOR_DEPTH == 12
-#define DKBLUE		0x0007
-#define DKYELLOW	0x0880
+#define DKBLUE		0x0007	/* color used for background */
+#define DKYELLOW	0x0880	/* color used for grid lines */
 #else
-#define DKBLUE		0x000f
-#define DKYELLOW	0x8400
+#define DKBLUE		0x000f	/* color used for background */
+#define DKYELLOW	0x8400	/* color used for grid lines */
 #endif
 
-#define OFFX20	5
-#define OFFY20	0
-#define SPC20	3
+#define OFFX20	5	/* x pixel offset of text coordinate grid for Font20 */
+#define OFFY20	0	/* y pixel offset of text coordinate grid for Font20 */
+#define SPC20	3	/* vertical spacing for Font20 */
 
-#define OFFX28	8
-#define OFFY28	0
-#define SPC28	1
+#define OFFX28	8	/* x pixel offset of text coordinate grid for Font28 */
+#define OFFY28	0	/* y pixel offset of text coordinate grid for Font28 */
+#define SPC28	1	/* vertical spacing for Font28 */
 
+/*
+ * Draw character "c" at text coordinates "x, y" with color "col"
+ */
 #define P_C(x, y, c, col, font, offx, offy, spc)		\
 	Paint_DrawChar((x) * font.Width + offx,			\
 		       (y) * (font.Height + spc) + offy,	\
@@ -148,12 +151,66 @@ void lcd_banner(void)
 #define P_C20(x, y, c, col) P_C(x, y, c, col, Font20, OFFX20, OFFY20, SPC20)
 #define P_C28(x, y, c, col) P_C(x, y, c, col, Font28, OFFX28, OFFY28, SPC28)
 
+/*
+ * Draw string "s" at text coordinates "x, y" with color "col"
+ */
 #define P_S(x, y, s, col, font, offx, offy, spc)		\
 	Paint_DrawString((x) * font.Width + offx,		\
 			 (y) * (font.Height + spc) + offy,	\
 			 s, &font, col, DKBLUE)
-#define P_S20(x, y, c, col) P_S(x, y, c, col, Font20, OFFX20, OFFY20, SPC20)
-#define P_S28(x, y, c, col) P_S(x, y, c, col, Font28, OFFX28, OFFY28, SPC28)
+#define P_S20(x, y, s, col) P_S(x, y, s, col, Font20, OFFX20, OFFY20, SPC20)
+#define P_S28(x, y, s, col) P_S(x, y, s, col, Font28, OFFX28, OFFY28, SPC28)
+
+/*
+ * Draw horizontal grid line in the middle of vertical spacing below
+ * text row "y" with color "col" and vertical adjustment "adj"
+ */
+#define P_GH(y, adj, col, font, offy, spc)			\
+	Paint_DrawLine(0,					\
+		       ((y) + 1) * (font.Height + spc)		\
+		       - (spc + 1) / 2 + 1 + offy + (adj),	\
+		       Paint.Width - 1,				\
+		       ((y) + 1) * (font.Height + spc)		\
+		       - (spc + 1) / 2 + 1 + offy + (adj),	\
+		       col, DOT_PIXEL_DFT, LINE_STYLE_SOLID)
+#define P_GH20(y, adj, col) P_GH(y, adj, col, Font20, OFFY20, SPC20)
+#define P_GH28(y, adj, col) P_GH(y, adj, col, Font28, OFFY28, SPC28)
+
+/*
+ * Draw vertical grid line in the middle of text column "x" with
+ * color "col" from the top of screen to the middle of vertical spacing
+ * below text row "y" with vertical adjustment "adj"
+ */
+#define P_GV(x, y, adj, col, font, offx, offy, spc)			\
+	Paint_DrawLine((x) * font.Width + font.Width / 2 + offx,	\
+		       0,						\
+		       (x) * font.Width + font.Width / 2 + offx,	\
+		       ((y) + 1) * (font.Height + spc)			\
+		       - (spc + 1) / 2 + 1 + offy + (adj),		\
+		       col, DOT_PIXEL_DFT, LINE_STYLE_SOLID)
+#define P_GV20(x, y, adj, col) \
+	P_GV(x, y, adj, col, Font20, OFFX20, OFFY20, SPC20)
+#define P_GV28(x, y, adj, col) \
+	P_GV(x, y, adj, col, Font28, OFFX28, OFFY28, SPC28)
+
+/*
+ * Draw short vertical grid line in the middle of text column "x" with
+ * color "col" from the middle of vertical spacing above text row "y0"
+ * to the middle of vertical spacing below text row "y1" with vertical
+ * adjustment "adj"
+ */
+#define P_GVS(x, y0, y1, adj, col, font, offx, offy, spc)		\
+	Paint_DrawLine((x) * font.Width + font.Width / 2 + offx,	\
+		       (y0) * (font.Height + spc)			\
+		       - (spc + 1) / 2 + 1 + offy,			\
+		       (x) * font.Width + font.Width / 2 + offx,	\
+		       ((y1) + 1) * (font.Height + spc)			\
+		       - (spc + 1) / 2 + 1 + offy + (adj),		\
+		       col, DOT_PIXEL_DFT, LINE_STYLE_SOLID)
+#define P_GVS20(x, y0, y1, adj, col) \
+	P_GVS(x, y0, y1, adj, col, Font20, OFFX20, OFFY20, SPC20)
+#define P_GVS28(x, y0, y1, adj, col) \
+	P_GVS(x, y0, y1, adj, col, Font28, OFFX28, OFFY28, SPC28)
 
 static const char *hex = "0123456789ABCDEF";
 
@@ -166,81 +223,42 @@ static void lcd_cpubg(void)
 {
 	Paint_Clear(DKBLUE);
 	if (cpudisp_type == Z80) {
-		Paint_DrawLine(7 * Font20.Width + Font20.Width / 2 + OFFX20,
-			       0,
-			       7 * Font20.Width + Font20.Width / 2 + OFFX20,
-			       (Font20.Height + SPC20) * 4 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
-		Paint_DrawLine(10 * Font20.Width + Font20.Width / 2 + OFFX20,
-			       (Font20.Height + SPC20) * 4 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       10 * Font20.Width + Font20.Width / 2 + OFFX20,
-			       (Font20.Height + SPC20) * 5 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
-		Paint_DrawLine(15 * Font20.Width + Font20.Width / 2 + OFFX20,
-			       0,
-			       15 * Font20.Width + Font20.Width / 2 + OFFX20,
-			       (Font20.Height + SPC20) * 5 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		P_GV20(7, 3, 0, DKYELLOW);
+		P_GVS20(10, 4, 4, 0, DKYELLOW);
+		P_GV20(15, 4, 0, DKYELLOW);
 		P_C20( 0, 0, 'A',   WHITE);
 		P_S20( 8, 0, "BC",  WHITE);
 		P_S20(16, 0, "DE",  WHITE);
-		Paint_DrawLine(0, (Font20.Height + SPC20) - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       Paint.Width - 1,
-			       (Font20.Height + SPC20) - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		P_GH20(0, 0, DKYELLOW);
 		P_S20( 0, 1, "HL",  WHITE);
 		P_S20( 8, 1, "SP",  WHITE);
 		P_S20(16, 1, "PC",  WHITE);
-		Paint_DrawLine(0, (Font20.Height + SPC20) * 2 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       Paint.Width - 1,
-			       (Font20.Height + SPC20) * 2 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		P_GH20(1, 0, DKYELLOW);
 		P_S20( 0, 2, "IX",  WHITE);
 		P_S20( 8, 2, "IY",  WHITE);
 		P_S20(16, 2, "AF'", WHITE);
-		Paint_DrawLine(0, (Font20.Height + SPC20) * 3 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       Paint.Width - 1,
-			       (Font20.Height + SPC20) * 3 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		P_GH20(2, 0, DKYELLOW);
 		P_S20( 0, 3, "BC'", WHITE);
 		P_S20( 8, 3, "DE'", WHITE);
 		P_S20(16, 3, "HL'", WHITE);
-		Paint_DrawLine(0, (Font20.Height + SPC20) * 4 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       Paint.Width - 1,
-			       (Font20.Height + SPC20) * 4 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		P_GH20(3, 0, DKYELLOW);
 		P_C20( 0, 4, 'F',   WHITE);
 		P_S20(11, 4, "IF",  WHITE);
 		P_S20(16, 4, "IR",  WHITE);
-		Paint_DrawLine(0, (Font20.Height + SPC20) * 5 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       Paint.Width - 1,
-			       (Font20.Height + SPC20) * 5 - (SPC20 + 1) / 2 + 1 + OFFY20,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		P_GH20(4, 0, DKYELLOW);
 	}
 	else {
-		Paint_DrawLine(8 * Font28.Width + Font28.Width / 2 + OFFX28,
-			       0,
-			       8 * Font28.Width + Font28.Width / 2 + OFFX28,
-			       (Font28.Height + SPC28) * 4 - (SPC28 + 1) / 2 + 1 + OFFY28 - 2,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		/* adjustment keeps grid line outside "info_line" */
+		P_GV28(8, 3, -2, DKYELLOW);
 		P_C28( 0, 0, 'A',   WHITE);
 		P_S28( 9, 0, "BC",  WHITE);
-		Paint_DrawLine(0, (Font28.Height + SPC28) - (SPC28 + 1) / 2 + 1 + OFFY28,
-			       Paint.Width - 1,
-			       (Font28.Height + SPC28) - (SPC28 + 1) / 2 + 1 + OFFY28,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		P_GH28(0, 0, DKYELLOW);
 		P_S28( 0, 1, "DE",  WHITE);
 		P_S28( 9, 1, "HL",  WHITE);
-		Paint_DrawLine(0, (Font28.Height + SPC28) * 2 - (SPC28 + 1) / 2 + 1 + OFFY28,
-			       Paint.Width - 1,
-			       (Font28.Height + SPC28) * 2 - (SPC28 + 1) / 2 + 1 + OFFY28,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		P_GH28(1, 0, DKYELLOW);
 		P_S28( 0, 2, "SP",  WHITE);
 		P_S28( 9, 2, "PC",  WHITE);
-		Paint_DrawLine(0, (Font28.Height + SPC28) * 3 - (SPC28 + 1) / 2 + 1 + OFFY28,
-			       Paint.Width - 1,
-			       (Font28.Height + SPC28) * 3 - (SPC28 + 1) / 2 + 1 + OFFY28,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		P_GH28(2, 0, DKYELLOW);
 		P_C28( 0, 3, 'F',   WHITE);
 		P_S28(12, 3, "IF",  WHITE);
 	}
@@ -312,11 +330,12 @@ static void lcd_cpudisp(void)
 		P_C28( 7, 3, 'C', F & C_FLAG ? GREEN : RED);
 		P_C28(15, 3, '1', IFF == 3 ? GREEN : RED);
 
-		/* Hack, draws into the descenders of the "F IF" line */
-		Paint_DrawLine(0, (Font28.Height + SPC28) * 4 - (SPC28 + 1) / 2 + 1 + OFFY28 - 2,
-			       Paint.Width - 1,
-			       (Font28.Height + SPC28) * 4 - (SPC28 + 1) / 2 + 1 + OFFY28 - 2,
-			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		/*
+		 * The adjustment moves the grid line from inside the
+		 * "info_line" into the descenders space of the "F IF" line,
+		 * therefore the need to draw it inside the refresh code
+		 */
+		P_GH28(3, -2, DKYELLOW);
 	}
 }
 
