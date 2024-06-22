@@ -315,8 +315,9 @@ parameter:
     Dot_Pixel	: point size
     Dot_Style	: point Style
 ******************************************************************************/
-void Paint_DrawPoint(uint16_t Xpoint, uint16_t Ypoint, uint16_t Color,
-		     DOT_PIXEL Dot_Pixel, DOT_STYLE Dot_Style)
+void __time_critical_func(Paint_DrawPoint)(uint16_t Xpoint, uint16_t Ypoint,
+					   uint16_t Color, DOT_PIXEL Dot_Pixel,
+					   DOT_STYLE Dot_Style)
 {
 	int16_t XDir_Num, YDir_Num;
 
@@ -357,10 +358,10 @@ parameter:
     Line_width : Line width
     Line_Style : Solid and dotted lines
 ******************************************************************************/
-void Paint_DrawLine(uint16_t Xstart, uint16_t Ystart,
-		    uint16_t Xend, uint16_t Yend,
-		    uint16_t Color, DOT_PIXEL Line_width,
-		    LINE_STYLE Line_Style)
+void __time_critical_func(Paint_DrawLine)(uint16_t Xstart, uint16_t Ystart,
+					  uint16_t Xend, uint16_t Yend,
+					  uint16_t Color, DOT_PIXEL Line_width,
+					  LINE_STYLE Line_Style)
 {
 	uint16_t Xpoint, Ypoint;
 	int dx, dy, XAddway, YAddway, Esp;
