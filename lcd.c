@@ -178,8 +178,8 @@ void lcd_banner(void)
 
 /*
  * Draw vertical grid line in the middle of text column "x" with
- * color "col" from the top of screen to the middle of vertical spacing
- * below text row "y" with vertical adjustment "adj"
+ * color "col" from the top of the screen to the middle of vertical
+ * spacing below text row "y" with vertical adjustment "adj"
  */
 #define P_GV(x, y, adj, col, font, offx, offy, spc)			\
 	Paint_DrawLine((x) * font.Width + font.Width / 2 + offx,	\
