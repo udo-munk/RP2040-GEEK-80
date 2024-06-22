@@ -125,6 +125,14 @@ void lcd_banner(void)
  *  3 F  SZHPC    IF 1
  */
 
+#if LCD_COLOR_DEPTH == 12
+#define DKBLUE		0x0007
+#define DKYELLOW	0x0880
+#else
+#define DKBLUE		0x000f
+#define DKYELLOW	0x8400
+#endif
+
 #define OFFX20	5
 #define OFFY20	0
 #define SPC20	3
@@ -136,14 +144,14 @@ void lcd_banner(void)
 #define P_C(x, y, c, col, font, offx, offy, spc)		\
 	Paint_DrawChar((x) * font.Width + offx,			\
 		       (y) * (font.Height + spc) + offy,	\
-		       c, &font, col, BLACK)
+		       c, &font, col, DKBLUE)
 #define P_C20(x, y, c, col) P_C(x, y, c, col, Font20, OFFX20, OFFY20, SPC20)
 #define P_C28(x, y, c, col) P_C(x, y, c, col, Font28, OFFX28, OFFY28, SPC28)
 
 #define P_S(x, y, s, col, font, offx, offy, spc)		\
 	Paint_DrawString((x) * font.Width + offx,		\
 			 (y) * (font.Height + spc) + offy,	\
-			 s, &font, col, BLACK)
+			 s, &font, col, DKBLUE)
 #define P_S20(x, y, c, col) P_S(x, y, c, col, Font20, OFFX20, OFFY20, SPC20)
 #define P_S28(x, y, c, col) P_S(x, y, c, col, Font28, OFFX28, OFFY28, SPC28)
 
@@ -156,31 +164,83 @@ static const char *hex = "0123456789ABCDEF";
 
 static void lcd_cpubg(void)
 {
-	Paint_Clear(BLACK);
+	Paint_Clear(DKBLUE);
 	if (cpudisp_type == Z80) {
+		Paint_DrawLine(7 * Font20.Width + Font20.Width / 2 + OFFX20,
+			       0,
+			       7 * Font20.Width + Font20.Width / 2 + OFFX20,
+			       (Font20.Height + SPC20) * 4 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		Paint_DrawLine(10 * Font20.Width + Font20.Width / 2 + OFFX20,
+			       (Font20.Height + SPC20) * 4 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       10 * Font20.Width + Font20.Width / 2 + OFFX20,
+			       (Font20.Height + SPC20) * 5 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
+		Paint_DrawLine(15 * Font20.Width + Font20.Width / 2 + OFFX20,
+			       0,
+			       15 * Font20.Width + Font20.Width / 2 + OFFX20,
+			       (Font20.Height + SPC20) * 5 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 		P_C20( 0, 0, 'A',   WHITE);
 		P_S20( 8, 0, "BC",  WHITE);
 		P_S20(16, 0, "DE",  WHITE);
+		Paint_DrawLine(0, (Font20.Height + SPC20) - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       Paint.Width - 1,
+			       (Font20.Height + SPC20) - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 		P_S20( 0, 1, "HL",  WHITE);
 		P_S20( 8, 1, "SP",  WHITE);
 		P_S20(16, 1, "PC",  WHITE);
+		Paint_DrawLine(0, (Font20.Height + SPC20) * 2 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       Paint.Width - 1,
+			       (Font20.Height + SPC20) * 2 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 		P_S20( 0, 2, "IX",  WHITE);
 		P_S20( 8, 2, "IY",  WHITE);
 		P_S20(16, 2, "AF'", WHITE);
+		Paint_DrawLine(0, (Font20.Height + SPC20) * 3 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       Paint.Width - 1,
+			       (Font20.Height + SPC20) * 3 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 		P_S20( 0, 3, "BC'", WHITE);
 		P_S20( 8, 3, "DE'", WHITE);
 		P_S20(16, 3, "HL'", WHITE);
+		Paint_DrawLine(0, (Font20.Height + SPC20) * 4 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       Paint.Width - 1,
+			       (Font20.Height + SPC20) * 4 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 		P_C20( 0, 4, 'F',   WHITE);
 		P_S20(11, 4, "IF",  WHITE);
 		P_S20(16, 4, "IR",  WHITE);
+		Paint_DrawLine(0, (Font20.Height + SPC20) * 5 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       Paint.Width - 1,
+			       (Font20.Height + SPC20) * 5 - (SPC20 + 1) / 2 + 1 + OFFY20,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 	}
 	else {
+		Paint_DrawLine(8 * Font28.Width + Font28.Width / 2 + OFFX28,
+			       0,
+			       8 * Font28.Width + Font28.Width / 2 + OFFX28,
+			       (Font28.Height + SPC28) * 4 - (SPC28 + 1) / 2 + 1 + OFFY28 - 2,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 		P_C28( 0, 0, 'A',   WHITE);
 		P_S28( 9, 0, "BC",  WHITE);
+		Paint_DrawLine(0, (Font28.Height + SPC28) - (SPC28 + 1) / 2 + 1 + OFFY28,
+			       Paint.Width - 1,
+			       (Font28.Height + SPC28) - (SPC28 + 1) / 2 + 1 + OFFY28,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 		P_S28( 0, 1, "DE",  WHITE);
 		P_S28( 9, 1, "HL",  WHITE);
+		Paint_DrawLine(0, (Font28.Height + SPC28) * 2 - (SPC28 + 1) / 2 + 1 + OFFY28,
+			       Paint.Width - 1,
+			       (Font28.Height + SPC28) * 2 - (SPC28 + 1) / 2 + 1 + OFFY28,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 		P_S28( 0, 2, "SP",  WHITE);
 		P_S28( 9, 2, "PC",  WHITE);
+		Paint_DrawLine(0, (Font28.Height + SPC28) * 3 - (SPC28 + 1) / 2 + 1 + OFFY28,
+			       Paint.Width - 1,
+			       (Font28.Height + SPC28) * 3 - (SPC28 + 1) / 2 + 1 + OFFY28,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 		P_C28( 0, 3, 'F',   WHITE);
 		P_S28(12, 3, "IF",  WHITE);
 	}
@@ -251,6 +311,12 @@ static void lcd_cpudisp(void)
 		P_C28( 6, 3, 'P', F & P_FLAG ? GREEN : RED);
 		P_C28( 7, 3, 'C', F & C_FLAG ? GREEN : RED);
 		P_C28(15, 3, '1', IFF == 3 ? GREEN : RED);
+
+		/* Hack, draws into the descenders of the "F IF" line */
+		Paint_DrawLine(0, (Font28.Height + SPC28) * 4 - (SPC28 + 1) / 2 + 1 + OFFY28 - 2,
+			       Paint.Width - 1,
+			       (Font28.Height + SPC28) * 4 - (SPC28 + 1) / 2 + 1 + OFFY28 - 2,
+			       DKYELLOW, DOT_PIXEL_DFT, LINE_STYLE_SOLID);
 	}
 }
 

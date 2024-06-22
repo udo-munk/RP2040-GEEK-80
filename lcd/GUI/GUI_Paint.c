@@ -301,27 +301,31 @@ void Paint_Clear(UWORD Color)
             ((Color & 0xf) << 4) | ((Color >> 8) & 0xf),
             Color & 0xff
         };
-        for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
+        int i = 0;
+        for (UWORD X = 0; X < Paint.WidthByte; X++)
         {
-            int i = 0;
-            for (UWORD X = 0; X < Paint.WidthByte; X++)
-            {
-                Paint.Image[Addr++] = Bytes[i++];
-                if (i == 3)
-                    i = 0;
-            }
+            Paint.Image[Addr++] = Bytes[i++];
+            if (i == 3)
+                i = 0;
+        }
+        for (UWORD Y = 1; Y < Paint.HeightByte; Y++)
+        {
+            memcpy(&Paint.Image[Addr], Paint.Image, Paint.WidthByte);
+	    Addr += Paint.WidthByte;
         }
     }
     else if (Paint.Depth == 16)
     {
         UDOUBLE Addr = 0;
-        for (UWORD Y = 0; Y < Paint.HeightByte; Y++)
+        for (UWORD X = 0; X < Paint.WidthByte / 2; X++)
         {
-            for (UWORD X = 0; X < Paint.WidthByte / 2; X++)
-            {
-                Paint.Image[Addr++] = (Color >> 8) & 0xff;
-                Paint.Image[Addr++] = Color & 0xff;
-            }
+            Paint.Image[Addr++] = (Color >> 8) & 0xff;
+            Paint.Image[Addr++] = Color & 0xff;
+        }
+        for (UWORD Y = 1; Y < Paint.HeightByte; Y++)
+        {
+            memcpy(&Paint.Image[Addr], Paint.Image, Paint.WidthByte);
+	    Addr += Paint.WidthByte;
         }
     }
 }
