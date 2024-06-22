@@ -9,7 +9,6 @@
 //       SHOULD ONLY CONSIST OF PREPROCESSOR DIRECTIVES
 // -----------------------------------------------------
 
-
 #ifndef _BOARDS_WAVESHARE_RP2040_GEEK_H
 #define _BOARDS_WAVESHARE_RP2040_GEEK_H
 
@@ -98,7 +97,7 @@
 #endif
 
 // All boards have B1 RP2040
-#ifndef PICO_RP2040_B0_SUPPORTED 
+#ifndef PICO_RP2040_B0_SUPPORTED
 #define PICO_RP2040_B0_SUPPORTED  0
 #endif
 

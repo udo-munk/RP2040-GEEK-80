@@ -1,12 +1,12 @@
 /*****************************************************************************
-* | File      	:   DEV_Config.h
-* | Author      :   
-* | Function    :   Hardware underlying interface
-* | Info        :
+* | File	:   DEV_Config.h
+* | Author	:
+* | Function	:   Hardware underlying interface
+* | Info	:
 *----------------
-* |	This version:   V1.0
-* | Date        :   2021-03-16
-* | Info        :   
+* | This version:   V1.0
+* | Date	:   2021-03-16
+* | Info	:
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
@@ -26,38 +26,69 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 ******************************************************************************/
+
 #ifndef _DEV_CONFIG_H_
 #define _DEV_CONFIG_H_
 
-#include <stdio.h>
-#include "pico/stdlib.h"
+#include <stdint.h>
+#include "hardware/gpio.h"
 #include "hardware/spi.h"
 #include "hardware/pwm.h"
+#include "pico/time.h"
 
-/**
- * data
-**/
-#define UBYTE   uint8_t
-#define UWORD   uint16_t
-#define UDOUBLE uint32_t
+#define DEV_SPI_PORT (__CONCAT(spi,WAVESHARE_RP2040_LCD_SPI))
 
-/*------------------------------------------------------------------------------------------------------*/
+extern uint DEV_pwm_slice_num;
 
-void DEV_Digital_Write(UWORD Pin, UBYTE Value);
-UBYTE DEV_Digital_Read(UWORD Pin);
+/*---------------------------------------------------------------------------*/
 
-void DEV_GPIO_Mode(UWORD Pin, UWORD Mode);
-void DEV_Digital_Write(UWORD Pin, UBYTE Value);
-UBYTE DEV_Digital_Read(UWORD Pin);
+/*
+ *	GPIO read and write
+ */
+static inline void DEV_Digital_Write(uint16_t Pin, uint8_t Value)
+{
+	gpio_put(Pin, Value);
+}
 
-void DEV_SPI_WriteByte(UBYTE Value);
-void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len);
+static inline uint8_t DEV_Digital_Read(uint16_t Pin)
+{
+	return gpio_get(Pin);
+}
 
-void DEV_Delay_ms(UDOUBLE xms);
+extern void DEV_GPIO_Mode(uint16_t Pin, uint16_t Mode);
 
-void DEV_SET_PWM(uint8_t Value);
+/*
+ *	SPI write
+ */
 
-UBYTE DEV_Module_Init(void);
-void DEV_Module_Exit(void);
+static inline void DEV_SPI_WriteByte(uint8_t Value)
+{
+	spi_write_blocking(DEV_SPI_PORT, &Value, 1);
+}
+
+static inline void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
+{
+	spi_write_blocking(DEV_SPI_PORT, pData, Len);
+}
+
+/*
+ *	Delay x ms
+ */
+static inline void DEV_Delay_ms(uint32_t xms)
+{
+	sleep_ms(xms);
+}
+
+/*
+ *	Set PWM
+ */
+static inline void DEV_Set_PWM(uint8_t Value)
+{
+	if (Value <= 100)
+		pwm_set_chan_level(DEV_pwm_slice_num, PWM_CHAN_B, Value);
+}
+
+extern void DEV_Module_Init(void);
+extern void DEV_Module_Exit(void);
 
 #endif

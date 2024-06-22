@@ -45,8 +45,8 @@ extern unsigned char fp_value;
  */
 static void prompt_fn(char *s)
 {
-      printf("Filename: ");
-      get_cmdline(s, 9);
+	printf("Filename: ");
+	get_cmdline(s, 9);
 }
 
 /*
@@ -78,8 +78,8 @@ void config(void)
 
 	while (!go_flag) {
 		printf("b - LCD brightness: %d\n", brightness);
-		printf("1 - switch CPU, currently %s\n", (cpu == Z80) ?
-							  "Z80" : "8080");
+		printf("1 - switch CPU, currently %s\n",
+		       (cpu == Z80) ? "Z80" : "8080");
 		printf("2 - CPU speed: %d MHz\n", speed);
 		printf("3 - Port 255 value: %02XH\n", fp_value);
 		printf("4 - list files\n");
