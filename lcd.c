@@ -187,14 +187,14 @@ static void lcd_cpudisp(void)
 		P_C( 5, 2, H1(IX), GREEN); P_C( 6, 2, H0(IX), GREEN);
 		P_C(11, 2, H3(IY), GREEN); P_C(12, 2, H2(IY), GREEN);
 		P_C(13, 2, H1(IY), GREEN); P_C(14, 2, H0(IY), GREEN);
-		P_C(19, 2, H1(A_), GREEN); P_C(20, 2, H1(A_), GREEN);
+		P_C(19, 2, H1(A_), GREEN); P_C(20, 2, H0(A_), GREEN);
 		P_C(21, 2, H1(F_), GREEN); P_C(22, 2, H0(F_), GREEN);
 
-		P_C( 3, 3, H1(B_), GREEN); P_C( 4, 3, H1(B_), GREEN);
+		P_C( 3, 3, H1(B_), GREEN); P_C( 4, 3, H0(B_), GREEN);
 		P_C( 5, 3, H1(C_), GREEN); P_C( 6, 3, H0(C_), GREEN);
-		P_C(11, 3, H1(D_), GREEN); P_C(12, 3, H1(D_), GREEN);
+		P_C(11, 3, H1(D_), GREEN); P_C(12, 3, H0(D_), GREEN);
 		P_C(13, 3, H1(E_), GREEN); P_C(14, 3, H0(E_), GREEN);
-		P_C(19, 3, H1(H_), GREEN); P_C(20, 3, H1(H_), GREEN);
+		P_C(19, 3, H1(H_), GREEN); P_C(20, 3, H0(H_), GREEN);
 		P_C(21, 3, H1(L_), GREEN); P_C(22, 3, H0(L_), GREEN);
 
 		P_C( 3, 4, 'S', F & S_FLAG ? GREEN : RED);
