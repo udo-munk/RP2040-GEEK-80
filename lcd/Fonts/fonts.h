@@ -40,18 +40,17 @@
 #define __FONTS_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes -----------------------------------------------------------------*/
+
 #include <stdint.h>
 
-//ASCII
-typedef struct _tFont
-{    
-  const uint8_t *table;
-  uint16_t Width;
-  uint16_t Height;
+typedef struct _tFont {
+	const uint8_t *table;
+	uint16_t Width;
+	uint16_t Height;
 } sFONT;
 
 extern sFONT Font12;	/* 6 x 12 pixels */
@@ -66,7 +65,7 @@ extern sFONT Font32;	/* 16 x 32 pixels */
 #ifdef __cplusplus
 }
 #endif
-  
+
 #endif /* __FONTS_H */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+/*********************** (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
