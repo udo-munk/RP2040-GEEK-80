@@ -18,7 +18,7 @@ static UWORD img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
 
 static volatile int refresh_flag; /* task will refresh LCD display when > 0 */
 static volatile int cpudisp_flag; /* task will draw CPU status when > 0 */
-static int curr_cpu;		/* currently shown CPU type */
+static int cpudisp_type;	/* currently shown CPU type */
 static char info_line[25];	/* last line in display */
 
 static void lcd_task(void);
@@ -40,8 +40,8 @@ void lcd_init(void)
 	Paint_SetRotate(ROTATE_0);
 
 	cpudisp_flag = 0;
+	cpudisp_type = cpu;
 	refresh_flag = 1;
-	curr_cpu = cpu;
 	snprintf(info_line, sizeof(info_line), "Z80pack RP2040-GEEK %s",
 		 USR_REL);
 	multicore_launch_core1(lcd_task);
@@ -157,7 +157,7 @@ static const char *hex = "0123456789ABCDEF";
 static void lcd_cpubg(void)
 {
 	Paint_Clear(BLACK);
-	if (curr_cpu == Z80) {
+	if (cpudisp_type == Z80) {
 		P_C20( 0, 0, 'A',   WHITE);
 		P_S20( 8, 0, "BC",  WHITE);
 		P_S20(16, 0, "DE",  WHITE);
@@ -191,7 +191,7 @@ static void lcd_cpudisp(void)
 {
 	BYTE r;
 
-	if (curr_cpu == Z80) {
+	if (cpudisp_type == Z80) {
 		P_C20( 3, 0, H1(A),  GREEN); P_C20( 4, 0, H0(A),  GREEN);
 		P_C20(11, 0, H1(B),  GREEN); P_C20(12, 0, H0(B),  GREEN);
 		P_C20(13, 0, H1(C),  GREEN); P_C20(14, 0, H0(C),  GREEN);
@@ -269,8 +269,8 @@ static void lcd_task(void)
 				/* request to finish */
 				cpudisp_flag = 0;
 			} else {
-				if (curr_cpu != cpu) {
-					curr_cpu = cpu;
+				if (cpudisp_type != cpu) {
+					cpudisp_type = cpu;
 					cpudisp_flag = 1;
 				}
 				if (cpudisp_flag == 1) {
