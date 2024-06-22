@@ -1,12 +1,12 @@
 /*****************************************************************************
-* | File      	:   DEV_Config.c
-* | Author      :   
-* | Function    :   Hardware underlying interface
-* | Info        :
+* | File	:   DEV_Config.c
+* | Author	:
+* | Function	:   Hardware underlying interface
+* | Info	:
 *----------------
-* |	This version:   V1.0
-* | Date        :   2021-03-16
-* | Info        :   
+* | This version:   V1.0
+* | Date	:   2021-03-16
+* | Info	:
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
@@ -26,108 +26,50 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 ******************************************************************************/
+
 #include "DEV_Config.h"
 
-#define SPI_PORT (__CONCAT(spi,WAVESHARE_RP2040_LCD_SPI))
+uint DEV_pwm_slice_num;
 
-uint slice_num;
-
-/**
- * GPIO read and write
-**/
-void DEV_Digital_Write(UWORD Pin, UBYTE Value)
+void DEV_Module_Init(void)
 {
-    gpio_put(Pin, Value);
+	/* SPI Config */
+	spi_init(DEV_SPI_PORT, 40 * 1000 * 1000);
+	gpio_set_function(WAVESHARE_RP2040_LCD_SCLK_PIN, GPIO_FUNC_SPI);
+	gpio_set_function(WAVESHARE_RP2040_LCD_TX_PIN, GPIO_FUNC_SPI);
+
+	/* GPIO Config */
+	gpio_init(WAVESHARE_RP2040_LCD_RST_PIN);
+	gpio_set_dir(WAVESHARE_RP2040_LCD_RST_PIN, GPIO_OUT);
+	gpio_init(WAVESHARE_RP2040_LCD_DC_PIN);
+	gpio_set_dir(WAVESHARE_RP2040_LCD_DC_PIN, GPIO_OUT);
+	gpio_init(WAVESHARE_RP2040_LCD_CS_PIN);
+	gpio_set_dir(WAVESHARE_RP2040_LCD_CS_PIN, GPIO_OUT);
+	gpio_init(WAVESHARE_RP2040_LCD_BL_PIN);
+	gpio_set_dir(WAVESHARE_RP2040_LCD_BL_PIN, GPIO_OUT);
+	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_RP2040_LCD_BL_PIN, 1);
+
+	/* PWM Config */
+	gpio_set_function(WAVESHARE_RP2040_LCD_BL_PIN, GPIO_FUNC_PWM);
+	DEV_pwm_slice_num = pwm_gpio_to_slice_num(WAVESHARE_RP2040_LCD_BL_PIN);
+	pwm_set_wrap(DEV_pwm_slice_num, 100);
+	pwm_set_chan_level(DEV_pwm_slice_num, PWM_CHAN_B, 1);
+	pwm_set_clkdiv(DEV_pwm_slice_num, 50);
+	pwm_set_enabled(DEV_pwm_slice_num, true);
 }
 
-UBYTE DEV_Digital_Read(UWORD Pin)
-{
-    return gpio_get(Pin);
-}
-
-/**
- * SPI
-**/
-void DEV_SPI_WriteByte(uint8_t Value)
-{
-    spi_write_blocking(SPI_PORT, &Value, 1);
-}
-
-void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
-{
-    spi_write_blocking(SPI_PORT, pData, Len);
-}
-
-/**
- * GPIO Mode
-**/
-void DEV_GPIO_Mode(UWORD Pin, UWORD Mode)
-{
-    gpio_init(Pin);
-    if(Mode == 0 || Mode == GPIO_IN) {
-        gpio_set_dir(Pin, GPIO_IN);
-    } else {
-        gpio_set_dir(Pin, GPIO_OUT);
-    }
-}
-
-/**
- * delay x ms
-**/
-void DEV_Delay_ms(UDOUBLE xms)
-{
-    sleep_ms(xms);
-}
-
-void DEV_GPIO_Init(void)
-{
-    DEV_GPIO_Mode(WAVESHARE_RP2040_LCD_RST_PIN, 1);
-    DEV_GPIO_Mode(WAVESHARE_RP2040_LCD_DC_PIN, 1);
-    DEV_GPIO_Mode(WAVESHARE_RP2040_LCD_CS_PIN, 1);
-    DEV_GPIO_Mode(WAVESHARE_RP2040_LCD_BL_PIN, 1);
-
-    DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
-    DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 0);
-    DEV_Digital_Write(WAVESHARE_RP2040_LCD_BL_PIN, 1);
-}
-
-/******************************************************************************
-function:	Module Initialize, the library and initialize the pins, SPI protocol
-parameter:
-Info:
-******************************************************************************/
-UBYTE DEV_Module_Init(void)
-{
-    // SPI Config
-    spi_init(SPI_PORT, 40 * 1000 * 1000);
-    gpio_set_function(WAVESHARE_RP2040_LCD_SCLK_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(WAVESHARE_RP2040_LCD_TX_PIN, GPIO_FUNC_SPI);
-
-    // GPIO Config
-    DEV_GPIO_Init();
-
-    // PWM Config
-    gpio_set_function(WAVESHARE_RP2040_LCD_BL_PIN, GPIO_FUNC_PWM);
-    slice_num = pwm_gpio_to_slice_num(WAVESHARE_RP2040_LCD_BL_PIN);
-    pwm_set_wrap(slice_num, 100);
-    pwm_set_chan_level(slice_num, PWM_CHAN_B, 1);
-    pwm_set_clkdiv(slice_num, 50);
-    pwm_set_enabled(slice_num, true);
-    
-    return 0;
-}
-
-void DEV_SET_PWM(uint8_t Value){
-    if(Value <= 100) {
-        pwm_set_chan_level(slice_num, PWM_CHAN_B, Value);
-    }
-}
-
-/******************************************************************************
-function:	Module exits, closes SPI and BCM2835 library
-parameter:
-Info:
-******************************************************************************/
 void DEV_Module_Exit(void)
 {
+	pwm_set_enabled(DEV_pwm_slice_num, false);
+	gpio_deinit(WAVESHARE_RP2040_LCD_BL_PIN);
+
+	gpio_deinit(WAVESHARE_RP2040_LCD_DC_PIN);
+	gpio_deinit(WAVESHARE_RP2040_LCD_CS_PIN);
+	gpio_deinit(WAVESHARE_RP2040_LCD_RST_PIN);
+
+	spi_deinit(DEV_SPI_PORT);
+	gpio_deinit(WAVESHARE_RP2040_LCD_SCLK_PIN);
+	gpio_deinit(WAVESHARE_RP2040_LCD_TX_PIN);
 }

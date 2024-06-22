@@ -51,7 +51,7 @@
 
 #if 0
 /* Configuration of RP2040 hardware SPI object */
-static spi_t spi = {  
+static spi_t spi = {
 	.hw_inst = spi0,  // RP2040 SPI component
 	.sck_gpio = 18,   // GPIO number (not Pico pin number)
 	.mosi_gpio = 19,
@@ -66,7 +66,7 @@ static sd_spi_if_t spi_if = {
 };
 
 /* Configuration of the SD Card socket object */
-static sd_card_t sd_card = {   
+static sd_card_t sd_card = {
 	.type = SD_IF_SPI,
 	.spi_if_p = &spi_if  // Pointer to the SPI interface driving this card
 };
@@ -101,7 +101,8 @@ uint64_t get_clock_us(void);
 /* Callbacks used by the SD library */
 size_t sd_get_num() { return 1; }
 
-sd_card_t *sd_get_by_num(size_t num) {
+sd_card_t *sd_get_by_num(size_t num)
+{
 	if (num == 0) {
 		return &sd_card;
 	} else {
@@ -185,7 +186,7 @@ NOPE:	config();		/* configure the machine */
 	f_unmount("");
 
 	/* shutdown LCD */
-	DEV_Module_Exit();
+	lcd_exit();
 
 #ifndef WANT_ICE
 	putchar('\n');
@@ -194,7 +195,6 @@ NOPE:	config();		/* configure the machine */
 #endif
 	putchar('\n');
 	stdio_flush();
-	lcd_finish();
 	sleep_ms(500);
 	return 0;
 }

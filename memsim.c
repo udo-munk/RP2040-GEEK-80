@@ -149,7 +149,7 @@ static BYTE prep_io(int drive, int track, int sector, WORD addr)
 	/* check if drive in range */
 	if ((drive < 0) || (drive > 1))
 		return FDC_STAT_DISK;
-  
+
 	/* check if track and sector in range */
 	if (track > TRK)
 		return FDC_STAT_TRACK;
@@ -202,8 +202,8 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 			return FDC_STAT_OK;
 		}
 	} else {
-			f_close(&sd_file);
-			return FDC_STAT_READ;
+		f_close(&sd_file);
+		return FDC_STAT_READ;
 	}
 }
 
@@ -230,8 +230,8 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 			return FDC_STAT_OK;
 		}
 	} else {
-			f_close(&sd_file);
-			return FDC_STAT_WRITE;
+		f_close(&sd_file);
+		return FDC_STAT_WRITE;
 	}
 }
 

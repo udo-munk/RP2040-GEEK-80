@@ -1,11 +1,11 @@
 /*****************************************************************************
-* | File        :   LCD_1IN14_V2.h
-* | Function    :   test Demo
-* | Info        :
+* | File	:   LCD_1IN14_V2.h
+* | Function	:   test Demo
+* | Info	:
 *----------------
-* |	This version:   V1.0
-* | Date        :   2021-03-16
-* | Info        :   
+* | This version:   V1.0
+* | Date	:   2021-03-16
+* | Info	:
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
@@ -24,41 +24,36 @@
 # LIABILITY WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 ******************************************************************************/
+
 #ifndef __LCD_1IN14_V2_H
 #define __LCD_1IN14_V2_H
 
-#include "DEV_Config.h"
 #include <stdint.h>
-#include <stdlib.h>     //itoa()
-#include <stdio.h>
 
-#define LCD_1IN14_V2_HEIGHT 240
-#define LCD_1IN14_V2_WIDTH 135
+#define LCD_1IN14_V2_HEIGHT	240
+#define LCD_1IN14_V2_WIDTH	135
 
-
-#define HORIZONTAL 0
-#define VERTICAL   1
+#define HORIZONTAL		0
+#define VERTICAL		1
 
 typedef struct {
-    UWORD WIDTH;
-    UWORD HEIGHT;
-    UBYTE SCAN_DIR;
+	uint16_t WIDTH;
+	uint16_t HEIGHT;
+	uint8_t SCAN_DIR;
 } LCD_1IN14_V2_ATTRIBUTES;
 
 extern LCD_1IN14_V2_ATTRIBUTES LCD_1IN14_V2;
 
-/********************************************************************************
-function:	
-			Macro definition variable name
-********************************************************************************/
-void LCD_1IN14_V2_Init(UBYTE Scan_dir);
-void LCD_1IN14_V2_Clear(UWORD Color);
-void LCD_1IN14_V2_Display(UWORD *Image);
-void LCD_1IN14_V2_Display12(UBYTE *Image);
-void LCD_1IN14_V2_DisplayWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD *Image);
-void LCD_1IN14_V2_DisplayPoint(UWORD X, UWORD Y, UWORD Color);
-void LCD_1IN14_V2_SetBacklight(UBYTE Value);
+extern void LCD_1IN14_V2_Init(uint8_t Scan_dir);
+extern void LCD_1IN14_V2_Exit(void);
+extern void LCD_1IN14_V2_Clear(uint16_t Color);
+extern void LCD_1IN14_V2_Display(uint16_t *Image);
+extern void LCD_1IN14_V2_Display12(uint8_t *Image);
+extern void LCD_1IN14_V2_DisplayWindows(uint16_t Xstart, uint16_t Ystart,
+					uint16_t Xend, uint16_t Yend,
+					uint16_t *Image);
+extern void LCD_1IN14_V2_DisplayPoint(uint16_t X, uint16_t Y, uint16_t Color);
+extern void LCD_1IN14_V2_SetBacklight(uint8_t Value);
 
 #endif

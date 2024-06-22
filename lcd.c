@@ -4,6 +4,7 @@
  * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  */
 
+#include <stdio.h>
 #include "pico/multicore.h"
 #include "lcd.h"
 #include "sim.h"
@@ -11,9 +12,9 @@
 
 /* memory image for drawing */
 #if LCD_COLOR_DEPTH == 12
-static UBYTE img[LCD_1IN14_V2_HEIGHT * ((LCD_1IN14_V2_WIDTH + 1) / 2) * 3];
+static uint8_t img[LCD_1IN14_V2_HEIGHT * ((LCD_1IN14_V2_WIDTH + 1) / 2) * 3];
 #else
-static UWORD img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
+static uint16_t img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
 #endif
 
 static volatile int refresh_flag; /* task will refresh LCD display when > 0 */
@@ -30,8 +31,8 @@ void lcd_init(void)
 	LCD_1IN14_V2_Init(HORIZONTAL);
 
 	/* use this image memory */
-	Paint_NewImage((UBYTE *) &img[0], LCD_1IN14_V2.WIDTH,
-			LCD_1IN14_V2.HEIGHT, 0, WHITE);
+	Paint_NewImage((uint8_t *) &img[0], LCD_1IN14_V2.WIDTH,
+		       LCD_1IN14_V2.HEIGHT, 0, WHITE);
 
 	/* with this depth */
 	Paint_SetDepth(LCD_COLOR_DEPTH);
@@ -66,7 +67,7 @@ void lcd_cpudisp_off(void)
 	}
 }
 
-void lcd_finish(void)
+void lcd_exit(void)
 {
 	lcd_cpudisp_off();
 
@@ -79,6 +80,8 @@ void lcd_finish(void)
 	}
 
 	multicore_reset_core1();
+
+	LCD_1IN14_V2_Exit();
 }
 
 static void lcd_refresh(void)
@@ -110,19 +113,28 @@ void lcd_banner(void)
 }
 
 /*
- *    012345678901234567890123
- *  0 A  12   BC 1234 DE 1234
- *  1 HL 1234 SP 1234 PC 1234
- *  2 IX 1234 IY 1234 AF`1234
- *  3 BC'1234 DE'1234 HL`1234
- *  4 F  SZHPNC  IF12 IR 1234
- *  5 z80pack RP2040-GEEK 1.2
+ *	CPU status displays:
  *
- *    0123456789012345
- *  0 A  12    BC 1234
- *  1 DE 1234  HL 1234
- *  2 SP 1234  PC 1234
- *  3 F  SZHPC    IF 1
+ *	Z80 CPU using Font20 (10 x 20 pixels)
+ *	-------------------------------------
+ *
+ *	  012345678901234567890123
+ *	0 A  12   BC 1234 DE 1234
+ *	1 HL 1234 SP 1234 PC 1234
+ *	2 IX 1234 IY 1234 AF`1234
+ *	3 BC'1234 DE'1234 HL`1234
+ *	4 F  SZHPNC  IF12 IR 1234
+ *	5 info_line
+ *
+ *	8080 CPU using Font28 (14 x 28 pixels)
+ *	--------------------------------------
+ *
+ *	  01234567890123456
+ *	0 A  12    BC 1234
+ *	1 DE 1234  HL 1234
+ *	2 SP 1234  PC 1234
+ *	3 F  SZHPC    IF 1
+ *	4 info_line (Font 20)
  */
 
 #if LCD_COLOR_DEPTH == 12
@@ -178,8 +190,8 @@ void lcd_banner(void)
 
 /*
  * Draw vertical grid line in the middle of text column "x" with
- * color "col" from the top of screen to the middle of vertical spacing
- * below text row "y" with vertical adjustment "adj"
+ * color "col" from the top of the screen to the middle of vertical
+ * spacing below text row "y" with vertical adjustment "adj"
  */
 #define P_GV(x, y, adj, col, font, offx, offy, spc)			\
 	Paint_DrawLine((x) * font.Width + font.Width / 2 + offx,	\
@@ -246,8 +258,7 @@ static void lcd_cpubg(void)
 		P_S20(11, 4, "IF",  WHITE);
 		P_S20(16, 4, "IR",  WHITE);
 		P_GH20(4, 0, DKYELLOW);
-	}
-	else {
+	} else {
 		/* adjustment keeps grid line outside "info_line" */
 		P_GV28(8, 3, -2, DKYELLOW);
 		P_C28( 0, 0, 'A',   WHITE);
