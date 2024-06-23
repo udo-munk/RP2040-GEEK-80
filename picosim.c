@@ -97,6 +97,7 @@ extern void init_cpu(void), init_io(void), run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 
 uint64_t get_clock_us(void);
+int get_cmdline(char *, int);
 
 /* Callbacks used by the SD library */
 size_t sd_get_num() { return 1; }
@@ -121,8 +122,28 @@ void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 }
 #endif
 
+static void draw_wait_term(int first_flag)
+{
+	if (!first_flag)
+		return;
+	Paint_Clear(BLACK);
+	Paint_DrawString(32, 35, "Waiting for", &Font32, RED, BLACK);
+	Paint_DrawString(32, 67, "  terminal ", &Font32, RED, BLACK);
+}
+
+static void draw_banner(int first_flag)
+{
+	if (!first_flag)
+		return;
+	Paint_Clear(BLACK);
+	Paint_DrawString(32, 35, "# Z80pack #", &Font32, BLACK, WHITE);
+	Paint_DrawString(32, 67, "RP2040-GEEK", &Font32, BLACK, WHITE);
+}
+
 int main(void)
 {
+	char s[2];
+
 	stdio_init_all();	/* initialize stdio */
 
 	/* initialize LCD */
@@ -130,13 +151,13 @@ int main(void)
 
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB
-	lcd_info();
+	lcd_set_draw_func(draw_wait_term);
 	while (!tud_cdc_connected())
 		sleep_ms(100);
 #endif
 
 	/* print banner */
-	lcd_banner();
+	lcd_set_draw_func(draw_banner);
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s\n", USR_COM, USR_REL);
 	printf("%s\n\n", USR_CPR);
@@ -167,8 +188,8 @@ NOPE:	config();		/* configure the machine */
 	/* power on jump into the boot ROM */
 	PC = 0xff00;
 
-	/* tell LCD refresh task to display CPU registers */
-	lcd_cpudisp_on();
+	/* tell LCD refresh task to display default infos */
+	lcd_default_draw_func();
 
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
@@ -178,9 +199,6 @@ NOPE:	config();		/* configure the machine */
 #else
 	run_cpu();
 #endif
-
-	/* tell LCD refresh task to stop displaying CPU registers */
-	lcd_cpudisp_off();
 
 	/* unmount SD card */
 	f_unmount("");
@@ -193,9 +211,10 @@ NOPE:	config();		/* configure the machine */
 	report_cpu_error();	/* check for CPU emulation errors and report */
 	report_cpu_stats();	/* print some execution statistics */
 #endif
-	putchar('\n');
+	puts("\nPress any key to restart CPU");
+	get_cmdline(s, 2);
+
 	stdio_flush();
-	sleep_ms(500);
 	return 0;
 }
 

@@ -11,8 +11,8 @@
 #include "GUI_Paint.h"
 
 extern void lcd_init(void), lcd_exit(void);
-extern void lcd_cpudisp_on(void), lcd_cpudisp_off(void);
+extern void lcd_set_draw_func(void (*)(int));
+extern void lcd_default_draw_func(void);
 extern void lcd_brightness(int);
-extern void lcd_banner(void), lcd_info(void);
 
 #endif

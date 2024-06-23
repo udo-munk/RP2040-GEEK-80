@@ -47,6 +47,7 @@ add_executable(picosim
 	../z80pack/z80core/simz80-fdcb.c
 	../z80pack/iodevices/sd-fdc.c
 	config.c
+	dazzler.c
 	memsim.c
 	iosim.c
 	lcd.c
