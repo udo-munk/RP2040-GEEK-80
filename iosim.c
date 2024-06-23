@@ -26,6 +26,7 @@
 /* Project includes */
 #include "sim.h"
 #include "simglb.h"
+#include "dazzler.h"
 
 /*
  *	Forward declarations of the I/O functions
@@ -33,8 +34,8 @@
  */
 static void p001_out(BYTE), p255_out(BYTE), hwctl_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
-extern void fdc_out(BYTE);
-extern BYTE fdc_in(void);
+extern void fdc_out(BYTE), dazzler_ctl_out(BYTE), dazzler_fmt_out(BYTE);
+extern BYTE fdc_in(void), dazzler_in(void);
 
 static BYTE sio_last;	/* last character received */
        BYTE fp_value;	/* port 255 value, can be set from ICE or config() */
@@ -48,6 +49,7 @@ BYTE (*port_in[256])(void) = {
 	[  0] = p000_in,	/* SIO status */
 	[  1] = p001_in,	/* SIO data */
 	[  4] = fdc_in,		/* FDC command */
+	[ 14] = dazzler_flags_in, /* Cromemco Dazzler flags */
 	[160] = hwctl_in,	/* virtual hardware control */
 	[255] = p255_in		/* for frontpanel */
 };
@@ -59,6 +61,8 @@ BYTE (*port_in[256])(void) = {
 void (*port_out[256])(BYTE) = {
 	[  1] = p001_out,	/* SIO data */
 	[  4] = fdc_out,	/* FDC status */
+	[ 14] = dazzler_ctl_out, /* Cromemco Dazzler control */
+	[ 15] = dazzler_format_out, /* Cromemco Dazzler format */
 	[160] = hwctl_out,	/* virtual hardware control */
 	[255] = p255_out	/* for frontpanel */
 };
