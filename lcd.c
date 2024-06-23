@@ -9,7 +9,6 @@
 #include "lcd.h"
 #include "sim.h"
 #include "simglb.h"
-#include "dazzler.h"
 
 /* memory image for drawing */
 #if LCD_COLOR_DEPTH == 12
