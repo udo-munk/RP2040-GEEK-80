@@ -123,7 +123,7 @@ void lcd_brightness(int brightness)
  * Draw character "c" at text coordinates "x, y" with color "col"
  */
 static inline void cpu_char(uint16_t x, uint16_t y, const char c,
-			    uint16_t col, sFONT *font,
+			    uint16_t col, const sFONT *font,
 			    uint16_t offx, uint16_t offy, uint16_t spc)
 {
 	Paint_FastChar(x * font->Width + offx,
@@ -148,7 +148,7 @@ static inline void cpu_char28(uint16_t x, uint16_t y, const char c,
  * text row "y" with color "col" and vertical adjustment "adj"
  */
 static inline void cpu_gridh(uint16_t y, uint16_t adj, uint16_t col,
-			     sFONT *font, uint16_t offy, uint16_t spc)
+			     const sFONT *font, uint16_t offy, uint16_t spc)
 {
 	Paint_FastHLine(0,
 			(y + 1) * (font->Height + spc)
@@ -173,7 +173,7 @@ static inline void cpu_gridh28(uint16_t y, uint16_t adj, uint16_t col)
  * spacing below text row "y" with vertical adjustment "adj"
  */
 static inline void cpu_gridv(uint16_t x, uint16_t y, uint16_t adj,
-			     uint16_t col, sFONT *font,
+			     uint16_t col, const sFONT *font,
 			     uint16_t offx, uint16_t offy, uint16_t spc)
 {
 	Paint_FastVLine(x * font->Width + font->Width / 2 + offx,
@@ -200,7 +200,7 @@ static inline void cpu_gridv28(uint16_t x, uint16_t y, uint16_t adj,
  * adjustment "adj"
  */
 static inline void cpu_gridvs(uint16_t x, uint16_t y0, uint16_t y1,
-			      uint16_t adj, uint16_t col, sFONT *font,
+			      uint16_t adj, uint16_t col, const sFONT *font,
 			      uint16_t offx, uint16_t offy, uint16_t spc)
 {
 	Paint_FastVLine(x * font->Width + font->Width / 2 + offx,
@@ -222,14 +222,14 @@ static inline void cpu_gridvs28(uint16_t x, uint16_t y0, uint16_t y1,
 	cpu_gridvs(x, y0, y1, adj, col, &Font28, OFFX28, OFFY28, SPC28);
 }
 
-static const char *hex = "0123456789ABCDEF";
+static const char *__not_in_flash("hex_table") hex = "0123456789ABCDEF";
 
 static inline char hex3(uint16_t x) { return hex[(x >> 12) & 0xf]; }
 static inline char hex2(uint16_t x) { return hex[(x >> 8) & 0xf]; }
 static inline char hex1(uint16_t x) { return hex[(x >> 4) & 0xf]; }
 static inline char hex0(uint16_t x) { return hex[x & 0xf]; }
 
-static void lcd_draw_cpu_reg(int first_flag)
+static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 {
 	BYTE r;
 	char *p;
@@ -463,7 +463,7 @@ static inline void lcd_refresh(void)
 #endif
 }
 
-static void lcd_task(void)
+static void __not_in_flash_func(lcd_task)(void)
 {
 	absolute_time_t t;
 	int64_t d;
@@ -496,6 +496,7 @@ static void lcd_task(void)
 		}
 
 		d = absolute_time_diff_us(t, get_absolute_time());
+		printf("SLEEP %llu\n", LCD_REFRESH_US - d);
 		if (d < LCD_REFRESH_US)
 			sleep_us(LCD_REFRESH_US - d);
 		else

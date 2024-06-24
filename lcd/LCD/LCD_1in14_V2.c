@@ -35,7 +35,7 @@ LCD_1IN14_V2_ATTRIBUTES LCD_1IN14_V2;
 function :	Hardware reset
 parameter:
 ******************************************************************************/
-static void LCD_1IN14_V2_Reset(void)
+static void __not_in_flash_func(LCD_1IN14_V2_Reset)(void)
 {
 	DEV_Digital_Write(WAVESHARE_RP2040_LCD_RST_PIN, 1);
 	DEV_Delay_ms(100);
@@ -50,7 +50,7 @@ function :	send command
 parameter:
 		Reg : Command register
 ******************************************************************************/
-static void LCD_1IN14_V2_SendCommand(uint8_t Reg)
+static void  __not_in_flash_func(LCD_1IN14_V2_SendCommand)(uint8_t Reg)
 {
 	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 0);
 	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
@@ -63,7 +63,7 @@ function :	send data
 parameter:
 		Data : Write data
 ******************************************************************************/
-static void LCD_1IN14_V2_SendData_8Bit(uint8_t Data)
+static void  __not_in_flash_func(LCD_1IN14_V2_SendData_8Bit)(uint8_t Data)
 {
 	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
 	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
@@ -76,7 +76,7 @@ function :	send data
 parameter:
 		Data : Write data
 ******************************************************************************/
-static void LCD_1IN14_V2_SendData_16Bit(uint16_t Data)
+static void  __not_in_flash_func(LCD_1IN14_V2_SendData_16Bit)(uint16_t Data)
 {
 	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
 	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
@@ -89,7 +89,7 @@ static void LCD_1IN14_V2_SendData_16Bit(uint16_t Data)
 function :	Initialize the LCD register
 parameter:
 ******************************************************************************/
-static void LCD_1IN14_V2_InitReg(void)
+static void  __not_in_flash_func(LCD_1IN14_V2_InitReg)(void)
 {
 	LCD_1IN14_V2_SendCommand(0x3a);
 	LCD_1IN14_V2_SendData_8Bit(0x05);
@@ -168,7 +168,7 @@ function:	Set the resolution and scanning method of the screen
 parameter:
 		Scan_dir:   Scan direction
 ********************************************************************************/
-static void LCD_1IN14_V2_SetAttributes(uint8_t Scan_dir)
+static void  __not_in_flash_func(LCD_1IN14_V2_SetAttributes)(uint8_t Scan_dir)
 {
 	/* Get the screen scan direction */
 	LCD_1IN14_V2.SCAN_DIR = Scan_dir;
@@ -194,7 +194,7 @@ static void LCD_1IN14_V2_SetAttributes(uint8_t Scan_dir)
 function :	Initialize the LCD
 parameter:
 ********************************************************************************/
-void LCD_1IN14_V2_Init(uint8_t Scan_dir)
+void  __not_in_flash_func(LCD_1IN14_V2_Init)(uint8_t Scan_dir)
 {
 	/* initialize LCD device */
 	DEV_Module_Init();
@@ -211,7 +211,7 @@ void LCD_1IN14_V2_Init(uint8_t Scan_dir)
 	LCD_1IN14_V2_InitReg();
 }
 
-void LCD_1IN14_V2_Exit(void)
+void  __not_in_flash_func(LCD_1IN14_V2_Exit)(void)
 {
 	LCD_1IN14_V2_SetBacklight(0);
 
@@ -226,8 +226,9 @@ parameter:
 		Xend	:   X direction end coordinates
 		Yend	:   Y direction end coordinates
 ********************************************************************************/
-void LCD_1IN14_V2_SetWindows(uint16_t Xstart, uint16_t Ystart,
-			     uint16_t Xend, uint16_t Yend)
+void  __not_in_flash_func(LCD_1IN14_V2_SetWindows)(uint16_t Xstart,
+						   uint16_t Ystart,
+						   uint16_t Xend, uint16_t Yend)
 {
 	uint8_t x, y;
 
@@ -254,7 +255,7 @@ void LCD_1IN14_V2_SetWindows(uint16_t Xstart, uint16_t Ystart,
 function :	Clear screen
 parameter:
 ******************************************************************************/
-void LCD_1IN14_V2_Clear(uint16_t Color)
+void  __not_in_flash_func(LCD_1IN14_V2_Clear)(uint16_t Color)
 {
 	uint16_t j, i;
 
@@ -274,7 +275,7 @@ void LCD_1IN14_V2_Clear(uint16_t Color)
 function :	Sends the 16-bit image buffer in RAM to displays
 parameter:
 ******************************************************************************/
-void LCD_1IN14_V2_Display(uint16_t *Image)
+void  __not_in_flash_func(LCD_1IN14_V2_Display)(uint16_t *Image)
 {
 	uint16_t j;
 
@@ -292,7 +293,7 @@ void LCD_1IN14_V2_Display(uint16_t *Image)
 function :	Sends the 12-bit image buffer in RAM to displays
 parameter:
 ******************************************************************************/
-void LCD_1IN14_V2_Display12(uint8_t *Image)
+void  __not_in_flash_func(LCD_1IN14_V2_Display12)(uint8_t *Image)
 {
 	uint16_t j;
 	const uint16_t n = ((LCD_1IN14_V2.WIDTH + 1) / 2) * 3;
@@ -319,8 +320,11 @@ parameter:
 		Yend	:   Y direction end coordinates
 		Image	:   Written content
 ******************************************************************************/
-void LCD_1IN14_V2_DisplayWindows(uint16_t Xstart, uint16_t Ystart,
-				 uint16_t Xend, uint16_t Yend, uint16_t *Image)
+void  __not_in_flash_func(LCD_1IN14_V2_DisplayWindows)(uint16_t Xstart,
+						       uint16_t Ystart,
+						       uint16_t Xend,
+						       uint16_t Yend,
+						       uint16_t *Image)
 {
 	uint32_t Addr = 0;
 	uint16_t j;
@@ -344,7 +348,8 @@ parameter:
 		Y	:   Y coordinates
 		Color	:   Color
 ******************************************************************************/
-void LCD_1IN14_V2_DisplayPoint(uint16_t X, uint16_t Y, uint16_t Color)
+void  __not_in_flash_func(LCD_1IN14_V2_DisplayPoint)(uint16_t X, uint16_t Y,
+						     uint16_t Color)
 {
 	LCD_1IN14_V2_SetWindows(X, Y, X, Y);
 	LCD_1IN14_V2_SendData_16Bit(Color);
@@ -355,7 +360,7 @@ function :	Set backlight brightness of LCD
 parameter:
 		Value	:   Brightness
 ******************************************************************************/
-void LCD_1IN14_V2_SetBacklight(uint8_t Value)
+void  __not_in_flash_func(LCD_1IN14_V2_SetBacklight)(uint8_t Value)
 {
 	DEV_Set_PWM(Value);
 }

@@ -17,13 +17,13 @@
 /* Graphics stuff */
 #if LCD_COLOR_DEPTH == 12
 /* 444 colors and grays */
-static uint16_t colors[16] = {
+static const uint16_t __not_in_flash("color_map") colors[16] = {
 	0x0000, 0x0800, 0x0080, 0x0880,
 	0x0008, 0x0808, 0x0088, 0x0888,
 	0x0000, 0x0f00, 0x00f0, 0x0ff0,
 	0x000f, 0x0f0f, 0x00ff, 0x0fff
 };
-static uint16_t grays[16] = {
+static const uint16_t __not_in_flash("color_map") grays[16] = {
 	0x0000, 0x0111, 0x0222, 0x0333,
 	0x0444, 0x0555, 0x0666, 0x0777,
 	0x0888, 0x0999, 0x0aaa, 0x0bbb,
@@ -31,13 +31,13 @@ static uint16_t grays[16] = {
 };
 #else
 /* 565 colors and grays */
-static uint16_t colors[16] = {
+static const uint16_t __not_in_flash("color_map") colors[16] = {
 	0x0000, 0x8000, 0x0400, 0x8400,
 	0x0010, 0x8010, 0x0410, 0x8410,
 	0x0000, 0xf800, 0x07e0, 0xffe0,
 	0x001f, 0xf81f, 0x07ff, 0xffff
 };
-static uint16_t grays[16] = {
+static const uint16_t __not_in_flash("color_map") grays[16] = {
 	0x0000, 0x1082, 0x2104, 0x31a6,
 	0x4228, 0x52aa, 0x632c, 0x73ae,
 	0x8c51, 0x9cd3, 0xad55, 0xbdd7,
@@ -47,7 +47,7 @@ static uint16_t grays[16] = {
 
 #define CROMEMCO_W 17
 #define CROMEMCO_H 132
-static const uint8_t cromemco[] = {
+static const uint8_t __not_in_flash("cromemco_logo") cromemco[] = {
 	0x01, 0xf8, 0x00, 0x03, 0xfe, 0x00, 0x03, 0xff, 0x00, 0x03, 0xff, 0x00,
 	0x07, 0x3f, 0x80, 0x06, 0x03, 0x80, 0x03, 0x01, 0x80, 0x03, 0xf1, 0x80,
 	0x03, 0xff, 0x80, 0x01, 0xff, 0x80, 0x00, 0xff, 0x80, 0x00, 0x7f, 0x00,
@@ -116,7 +116,7 @@ static inline void pixel_4(uint16_t x, uint16_t y, uint16_t color)
 }
 
 /* draw pixels for one frame in hires */
-static void draw_hires(void)
+static void __not_in_flash_func(draw_hires)(void)
 {
 	int x, y, i;
 	WORD addr = dma_addr;
@@ -207,11 +207,12 @@ static void draw_hires(void)
 }
 
 /* draw pixels for one frame in lowres */
-static void draw_lowres(void)
+static void __not_in_flash_func(draw_lowres)(void)
 {
 	int x, y, i;
 	WORD addr = dma_addr;
-	uint16_t color, *cmap;
+	uint16_t color;
+	const uint16_t *cmap;
 
 	cmap = (format & 16) ? colors : grays;
 	/* get size of DMA memory and draw the pixels */
@@ -285,7 +286,7 @@ static void draw_lowres(void)
 	}
 }
 
-static void dazzler_draw(int first_flag)
+static void __not_in_flash_func(dazzler_draw)(int first_flag)
 {
 	int i, j, bw;
 	const uint8_t *p;

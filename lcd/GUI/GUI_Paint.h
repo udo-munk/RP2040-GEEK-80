@@ -170,7 +170,8 @@ static inline void Paint_FastPixel(uint16_t x, uint16_t y, uint16_t color)
  *	color depth LCD_COLOR_DEPTH.
  */
 static inline void Paint_FastChar(uint16_t x, uint16_t y, const char c,
-				  sFONT *font, uint16_t fgc, uint16_t bgc)
+				  const sFONT *font, uint16_t fgc,
+				  uint16_t bgc)
 {
 	int fwnb = (font->Width & 7) != 0; /* font width not divisible by 8 */
 	const uint8_t *p = &font->table[(c - ' ') * font->Height *
@@ -230,8 +231,8 @@ void Paint_SetPixel(uint16_t Xpoint, uint16_t Ypoint, uint16_t Color);
 void Paint_SetDepth(uint8_t depth);
 
 void Paint_Clear(uint16_t Color);
-void Paint_ClearWindows(uint16_t Xstart, uint16_t Ystart,
-			uint16_t Xend, uint16_t Yend, uint16_t Color);
+void Paint_ClearWindow(uint16_t Xstart, uint16_t Ystart,
+		       uint16_t Xend, uint16_t Yend, uint16_t Color);
 
 /* Drawing */
 void Paint_DrawPoint(uint16_t Xpoint, uint16_t Ypoint, uint16_t Color,
@@ -250,30 +251,30 @@ void Paint_DrawCircle(uint16_t X_Center, uint16_t Y_Center, uint16_t Radius,
 
 /* Display string */
 void Paint_DrawChar(uint16_t Xstart, uint16_t Ystart, const char Acsii_Char,
-		    sFONT *Font, uint16_t Color_Foreground,
+		    const sFONT *Font, uint16_t Color_Foreground,
 		    uint16_t Color_Background);
 void Paint_DrawString(uint16_t Xstart, uint16_t Ystart, const char *pString,
-		      sFONT *Font, uint16_t Color_Foreground,
+		      const sFONT *Font, uint16_t Color_Foreground,
 		      uint16_t Color_Background);
 void Paint_DrawNum(uint16_t Xpoint, uint16_t Ypoint, double Nummber,
-		   sFONT *Font, uint16_t Digit, uint16_t Color_Foreground,
+		   const sFONT *Font, uint16_t Digit, uint16_t Color_Foreground,
 		   uint16_t Color_Background);
 void Paint_DrawTime(uint16_t Xstart, uint16_t Ystart, PAINT_TIME *pTime,
-		    sFONT *Font, uint16_t Color_Foreground,
+		    const sFONT *Font, uint16_t Color_Foreground,
 		    uint16_t Color_Background);
 
 /* Pic */
-void Paint_DrawBitMap(const unsigned char *image_buffer);
-void Paint_DrawBitMap_Block(const unsigned char *image_buffer, uint8_t Region);
+void Paint_DrawBitMap(const uint8_t *image_buffer);
+void Paint_DrawBitMap_Block(const uint8_t *image_buffer, uint8_t Region);
 
-void Paint_DrawImage(const unsigned char *image,
+void Paint_DrawImage(const uint8_t *image,
 		     uint16_t xStart, uint16_t yStart,
 		     uint16_t W_Image, uint16_t H_Image) ;
-void Paint_DrawImage1(const unsigned char *image,
+void Paint_DrawImage1(const uint8_t *image,
 		      uint16_t xStart, uint16_t yStart,
 		      uint16_t W_Image, uint16_t H_Image);
-void Paint_BmpWindows(unsigned char x, unsigned char y,
-		      const unsigned char *pBmp,
-		      unsigned char chWidth, unsigned char chHeight);
+void Paint_BmpWindows(uint8_t x, uint8_t y,
+		      const uint8_t *pBmp,
+		      uint8_t chWidth, uint8_t chHeight);
 
 #endif
