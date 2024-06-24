@@ -27,6 +27,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "dazzler.h"
+#include "lcd.h"
 
 /*
  *	Forward declarations of the I/O functions
@@ -208,6 +209,7 @@ static void hwctl_out(BYTE data)
 	if (data & 64) {
 		reset_cpu();
 		PC = 0xff00;	/* power on jump */
+		lcd_default_draw_func();
 		return;
 	}
 
