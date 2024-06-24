@@ -7,10 +7,11 @@
  * Licensed under the SIL Open Font License, Version 1.1
  */
 
+#include "pico/platform.h"
 #include "fonts.h"
 #include "fontbits.h"
 
-static uint8_t Font32_Table[] = {
+static uint8_t __not_in_flash("font_table") Font32_Table[] = {
 	________, ________,
 	________, ________,
 	________, ________,
@@ -3147,7 +3148,7 @@ static uint8_t Font32_Table[] = {
 	________, ________
 };
 
-sFONT Font32 = {
+const sFONT __not_in_flash("font_data") Font32 = {
 	Font32_Table,
 	16, /* Width */
 	32, /* Height */
