@@ -136,6 +136,90 @@ typedef struct {
 } PAINT_TIME;
 extern PAINT_TIME sPaint_time;
 
+/*
+ *	Fast Paint_SetPixel inline function. No out of bounds coordinate
+ *	checking. No support for rotation or mirroring. Only works with
+ *	color depth LCD_COLOR_DEPTH.
+ */
+#if LCD_COLOR_DEPTH == 12
+static inline void Paint_FastPixel(uint16_t x, uint16_t y, uint16_t color)
+{
+	int32_t Addr = ((x + 1) / 2) * 3 + y * Paint.WidthByte;
+	if ((x & 1) == 0) {
+		Paint.Image[Addr] = (color >> 4) & 0xff;
+		Paint.Image[Addr + 1] = ((color & 0x0f) << 4) |
+			(Paint.Image[Addr + 1] & 0x0f);
+	} else {
+		Paint.Image[Addr - 2] = ((color >> 8) & 0x0f) |
+			(Paint.Image[Addr - 2] & 0xf0);
+		Paint.Image[Addr - 1] = color & 0xff;
+	}
+}
+#else
+static inline void Paint_FastPixel(uint16_t x, uint16_t y, uint16_t color)
+{
+	int32_t Addr = x * 2 + y * Paint.WidthByte;
+	Paint.Image[Addr] = (color >> 8) & 0xff;
+	Paint.Image[Addr + 1] = color & 0xff;
+}
+#endif
+
+/*
+ *	Fast Paint_DrawChar inline function. No out of bounds coordinate
+ *	checking. No support for rotation or mirroring. Only works with
+ *	color depth LCD_COLOR_DEPTH.
+ */
+static inline void Paint_FastChar(uint16_t x, uint16_t y, const char c,
+				  sFONT *font, uint16_t fgc, uint16_t bgc)
+{
+	int fwnb = (font->Width & 7) != 0; /* font width not divisible by 8 */
+	const uint8_t *p = &font->table[(c - ' ') * font->Height *
+					((font->Width >> 3) + fwnb)];
+	uint16_t i, j;
+
+	for (i = 0; i < font->Height; i++) {
+		for (j = 0; j < font->Width; j++) {
+			if (*p & (0x80 >> (j & 7)))
+				Paint_FastPixel(x + j, y + i, fgc);
+			else
+				Paint_FastPixel(x + j, y + i, bgc);
+			if ((j & 7) == 7)
+				p++;
+		}
+		if (fwnb)
+			p++;
+	}
+}
+
+/*
+ *	Fast draw horizontal line inline function. No out of bounds coordinate
+ *	checking. No support for rotation or mirroring. Only works with
+ *	color depth LCD_COLOR_DEPTH.
+ */
+static inline void Paint_FastHLine(uint16_t x, uint16_t y, uint16_t w,
+				   uint16_t col)
+{
+	uint16_t i;
+
+	for (i = 0; i < w; i++)
+		Paint_FastPixel(x + i, y, col);
+}
+
+/*
+ *	Fast draw vertical line inline function. No out of bounds coordinate
+ *	checking. No support for rotation or mirroring. Only works with
+ *	color depth LCD_COLOR_DEPTH.
+ */
+static inline void Paint_FastVLine(uint16_t x, uint16_t y, uint16_t h,
+				   uint16_t col)
+{
+	uint16_t i;
+
+	for (i = 0; i < h; i++)
+		Paint_FastPixel(x, y + i, col);
+}
+
+
 /* Init and clear */
 void Paint_NewImage(uint8_t *image, uint16_t Width, uint16_t Height,
 		    uint16_t Rotate, uint16_t Color);

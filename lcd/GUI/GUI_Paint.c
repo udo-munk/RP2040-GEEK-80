@@ -128,8 +128,7 @@ parameter:
     Ypoint : At point Y
     Color  : Painted colors
 ******************************************************************************/
-void __time_critical_func(Paint_SetPixel)(uint16_t Xpoint, uint16_t Ypoint,
-					  uint16_t Color)
+void Paint_SetPixel(uint16_t Xpoint, uint16_t Ypoint, uint16_t Color)
 {
 	uint16_t X, Y;
 	uint32_t Addr;
@@ -315,9 +314,8 @@ parameter:
     Dot_Pixel	: point size
     Dot_Style	: point Style
 ******************************************************************************/
-void __time_critical_func(Paint_DrawPoint)(uint16_t Xpoint, uint16_t Ypoint,
-					   uint16_t Color, DOT_PIXEL Dot_Pixel,
-					   DOT_STYLE Dot_Style)
+void Paint_DrawPoint(uint16_t Xpoint, uint16_t Ypoint, uint16_t Color,
+		     DOT_PIXEL Dot_Pixel, DOT_STYLE Dot_Style)
 {
 	int16_t XDir_Num, YDir_Num;
 
@@ -358,10 +356,10 @@ parameter:
     Line_width : Line width
     Line_Style : Solid and dotted lines
 ******************************************************************************/
-void __time_critical_func(Paint_DrawLine)(uint16_t Xstart, uint16_t Ystart,
-					  uint16_t Xend, uint16_t Yend,
-					  uint16_t Color, DOT_PIXEL Line_width,
-					  LINE_STYLE Line_Style)
+void Paint_DrawLine(uint16_t Xstart, uint16_t Ystart,
+		    uint16_t Xend, uint16_t Yend,
+		    uint16_t Color, DOT_PIXEL Line_width,
+		    LINE_STYLE Line_Style)
 {
 	uint16_t Xpoint, Ypoint;
 	int dx, dy, XAddway, YAddway, Esp;
@@ -443,7 +441,7 @@ void Paint_DrawRectangle(uint16_t Xstart, uint16_t Ystart,
 	}
 
 	if (Draw_Fill) {
-		for (Ypoint = Ystart; Ypoint < Yend; Ypoint++)
+		for (Ypoint = Ystart; Ypoint <= Yend; Ypoint++)
 			Paint_DrawLine(Xstart, Ypoint, Xend, Ypoint,
 				       Color, Line_width, LINE_STYLE_SOLID);
 	} else {
@@ -583,11 +581,9 @@ parameter:
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
 ******************************************************************************/
-void __time_critical_func(Paint_DrawChar)(uint16_t Xpoint, uint16_t Ypoint,
-					  const char Acsii_Char,
-					  sFONT *Font,
-					  uint16_t Color_Foreground,
-					  uint16_t Color_Background)
+void Paint_DrawChar(uint16_t Xpoint, uint16_t Ypoint, const char Acsii_Char,
+		    sFONT *Font, uint16_t Color_Foreground,
+		    uint16_t Color_Background)
 {
 	uint16_t Page, Column;
 	uint32_t Char_Offset;
