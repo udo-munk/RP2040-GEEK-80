@@ -14,7 +14,8 @@
  * 31-MAY-2024 use USB UART
  * 09-JUN-2024 implemented boot ROM
  * 13-JUN-2024 ported to RP2040-GEEK
- * 15-JUN-2024 add access to RP2040-GEEK LCD display
+ * 15-JUN-2024 added access to RP2040-GEEK LCD display
+ * 24-JUN-2024 added emulation of Cromemco Dazzler
  */
 
 /* Raspberry SDK and FatFS includes */
@@ -88,7 +89,7 @@ static sd_card_t sd_card = {
 FATFS fs;       /* FatFs on MicroSD */
 FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
-char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.BIN */
+char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.DSK */
 
 /* CPU speed */
 int speed = CPU_SPEED;
