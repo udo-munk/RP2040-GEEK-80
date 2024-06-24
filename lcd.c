@@ -496,7 +496,6 @@ static void __not_in_flash_func(lcd_task)(void)
 		}
 
 		d = absolute_time_diff_us(t, get_absolute_time());
-		printf("SLEEP %llu\n", LCD_REFRESH_US - d);
 		if (d < LCD_REFRESH_US)
 			sleep_us(LCD_REFRESH_US - d);
 		else
