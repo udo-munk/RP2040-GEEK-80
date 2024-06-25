@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2024 by Udo Munk
+ * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  *
  * I/O simulation for picosim
  *
@@ -13,6 +13,7 @@
  * 31-MAY-2024 added hardware control port for z80pack machines
  * 08-JUN-2024 implemented system reset
  * 09-JUN-2024 implemented boot ROM
+ * 24-JUN-2024 added emulation of Cromemco Dazzler
  */
 
 /* Raspberry SDK includes */
