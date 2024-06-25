@@ -11,7 +11,7 @@ devices installed and configured. The SDK manual has detailed instructions
 how to install on all major PC platforms, it is available here:
 [Raspberry Pi Pico Documentation](https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html)
 
-Then clone the GitHup repositories:
+Then clone the GitHub repositories:
 
 1. clone z80pack: git clone https://github.com/udo-munk/z80pack.git
 2. checkout dev branch: cd z80pack; git checkout dev; cd ..
@@ -37,4 +37,3 @@ DISKS80
 
 Into the CODE80 directory copy all the .bin files from src-examples.
 Into the DISKS80 directory copy the disk images from disks.
-In CONF80 create an empty text file CFG.DAT.

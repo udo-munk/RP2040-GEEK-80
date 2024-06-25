@@ -181,7 +181,7 @@ again:
 	}
 
 	/* try to save config file */
-	sd_res = f_open(&sd_file, cfg, FA_WRITE);
+	sd_res = f_open(&sd_file, cfg, FA_WRITE | FA_CREATE_ALWAYS);
 	if (sd_res == FR_OK) {
 		f_write(&sd_file, &cpu, sizeof(cpu), &br);
 		f_write(&sd_file, &speed, sizeof(speed), &br);

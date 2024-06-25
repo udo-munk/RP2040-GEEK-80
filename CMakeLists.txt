@@ -82,7 +82,7 @@ target_compile_options(picosim PUBLIC
 	$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wextra>
 	$<$<COMPILE_LANG_AND_ID:C,Clang>:-Weverything>
 	$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wno-unused-parameter>
-	)
+)
 
 target_link_libraries(picosim
 	pico_multicore
