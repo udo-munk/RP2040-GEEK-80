@@ -1,0 +1,390 @@
+Z80/8080-Macro-Assembler  Release 2.1
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ; LIFE .... VERSION 2.0
+                       2      2 ; WRITTEN BY ED HALL
+                       3      3 ; ASSEMBLED BY GORDEN FRENCH
+                       4      4 ; AND RDM
+                       5      5 ;
+                       6      6 ; RETYPED FROM MANUAL APRIL 2015, UDO MUNK
+                       7      7 ; THIS VERSION MODIFIED FOR ALTAIR 88SIO REV 1 = PICOSIM
+                       8      8 ;
+                       9      9 ;
+                      10     10 ; CNTL-A IS USED TO DEPOSIT A CELL OF LIFE ON THE SCREEN.
+                      11     11 ; CNTL-N, O, I AND H STEP THE CURSOR UP, DOWN, RIGHT, AND
+                      12     12 ; LEFT RESPECTIVELY. CNTL-B CAN BE USED TO ERASE THE SCREEN.
+                      13     13 ; ONCE THE INITIAL COLONY IS COMPLETE, CNTL-D IS USED TO
+                      14     14 ; START THE EVOLUTION OF THE CELLS. DURING THE COLORFUL
+                      15     15 ; EVOLUTION OF THE CELLS THE LETTER F ON YOUR KEYBOARD
+                      16     16 ; CAN BE USED TO FREEZE THE PICTURE. HIT THE LETTER G TO
+                      17     17 ; GO AND THE LETTER S TO STOP.
+                      18     18
+0009  =               19     19 RED     EQU  9
+000a  =               20     20 GREEN   EQU  10
+000c  =               21     21 BLUE    EQU  12
+0800  =               22     22 STACK   EQU  800H
+0800  =               23     23 DISPLY  EQU  800H
+d800  =               24     24 TIME    EQU  0D800H
+                      25     25 ;DAV     EQU  32                 ; FOR ALTAIR 88SIO REV 0
+                      26     26 ;TBE     EQU  2
+0001  =               27     27 DAV     EQU  1                   ; FOR ALTAIR 88SIO REV 1
+0080  =               28     28 TBE     EQU  128
+                      29     29 ;DAV     EQU  1                  ; FOR ALTAIR 88SIO-2
+                      30     30 ;TBE     EQU  2
+0000  =               31     31 DELAY   EQU  0
+                      32     32
+0000  c3 03 00        33     33         JMP  START
+0003  31 00 08        34     34 START:  LXI  SP,STACK
+0006  cd 6e 01        35     35         CALL INIT
+0009  cd 93 01        36     36 MAN20:  CALL SETUP
+000c  cd 2d 00        37     37 MAN30:  CALL GEN
+000f  db 01           38     38 FRZE:   IN   1
+0011  fe 46           39     39         CPI  'F'
+0013  ca 0f 00        40     40         JZ   FRZE
+0016  cd 42 00        41     41         CALL CHANGE
+0019  db 01           42     42 STP:    IN   1
+001b  fe 53           43     43         CPI  'S'
+001d  ca 09 00        44     44         JZ   MAN20
+0020  db ff           45     45 MAN40:  IN   255
+0022  17              46     46         RAL
+0023  da 20 00        47     47         JC   MAN40
+0026  17              48     48         RAL
+0027  da 09 00        49     49         JC   MAN20
+002a  c3 0c 00        50     50         JMP  MAN30
+002d  01 00 00        51     51 GEN:    LXI  B,0
+0030  cd 84 00        52     52 GEN20:  CALL UPDATE
+0033  3e 40           53     53         MVI  A,64
+0035  0c              54     54         INR  C
+0036  b9              55     55         CMP  C
+0037  c2 30 00        56     56         JNZ  GEN20
+003a  0e 00           57     57         MVI  C,0
+003c  04              58     58         INR  B
+003d  b8              59     59         CMP  B
+003e  c2 30 00        60     60         JNZ  GEN20
+0041  c9              61     61         RET
+0042  01 00 00        62     62 CHANGE: LXI  B,0
+0045  cd e9 00        63     63 CHN15:  CALL GTCOL
+0048  fe 09           64     64         CPI  RED
+004a  c2 55 00        65     65         JNZ  CHN20
+004d  3e 00           66     66         MVI  A,0
+004f  cd fa 00        67     67         CALL PTCOL
+0052  c3 5f 00        68     68         JMP  CHN30
+0055  fe 0a           69     69 CHN20:  CPI  GREEN
+0057  c2 5f 00        70     70         JNZ  CHN30
+005a  3e 0c           71     71         MVI  A,BLUE
+005c  cd fa 00        72     72         CALL PTCOL
+005f  3e 40           73     73 CHN30:  MVI  A,64
+0061  0c              74     74         INR  C
+0062  b9              75     75         CMP  C
+0063  c2 45 00        76     76         JNZ  CHN15
+0066  0e 00           77     77         MVI  C,0
+0068  04              78     78         INR  B
+0069  b8              79     79         CMP  B
+006a  c2 45 00        80     80         JNZ  CHN15
+006d  c9              81     81         RET
+006e  21 00 08        82     82 CDISP:  LXI  H,DISPLY
+0071  11 00 f8        83     83         LXI  D,-2048
+0074  06 00           84     84 CLEAR:  MVI  B,0
+0076  3e 00           85     85 FILL:   MVI  A,0
+0078  ba              86     86 FLL12:  CMP  D
+0079  c2 7e 00        87     87         JNZ  FLL20
+007c  bb              88     88         CMP  E
+007d  c8              89     89         RZ
+007e  70              90     90 FLL20:  MOV  M,B
+007f  13              91     91         INX  D
+0080  23              92     92         INX  H
+0081  c3 78 00        93     93         JMP  FLL12
+0084  c5              94     94 UPDATE: PUSH B
+0085  3e 00           95     95         MVI  A,0
+0087  b9              96     96         CMP  C
+0088  c2 9c 00        97     97         JNZ  UPD10
+008b  0d              98     98         DCR  C
+008c  cd cc 00        99     99         CALL UPROW
+008f  32 2e 02       100    100         STA  ROWA
+0092  c1             101    101         POP  B
+0093  c5             102    102         PUSH B
+0094  cd cc 00       103    103         CALL UPROW
+0097  32 30 02       104    104         STA  ROWB
+009a  c1             105    105         POP  B
+009b  c5             106    106         PUSH B
+009c  0c             107    107 UPD10:  INR  C
+009d  cd cc 00       108    108         CALL UPROW
+00a0  21 30 02       109    109         LXI  H,ROWB
+00a3  46             110    110         MOV  B,M
+00a4  77             111    111         MOV  M,A
+00a5  80             112    112         ADD  B
+00a6  2b             113    113         DCX  H
+00a7  4e             114    114         MOV  C,M
+00a8  70             115    115         MOV  M,B
+00a9  81             116    116         ADD  C
+00aa  57             117    117         MOV  D,A
+00ab  c1             118    118         POP  B
+00ac  c8             119    119         RZ
+00ad  d5             120    120         PUSH D
+00ae  cd e9 00       121    121         CALL GTCOL
+00b1  d1             122    122         POP  D
+00b2  fe 00          123    123         CPI  0
+00b4  ca c3 00       124    124         JZ   UPD20
+00b7  7a             125    125         MOV  A,D
+00b8  fe 03          126    126         CPI  3
+00ba  c8             127    127         RZ
+00bb  fe 04          128    128         CPI  4
+00bd  c8             129    129         RZ
+00be  3e 09          130    130         MVI  A,RED
+00c0  c3 fa 00       131    131         JMP  PTCOL
+00c3  7a             132    132 UPD20:  MOV  A,D
+00c4  fe 03          133    133         CPI  3
+00c6  c0             134    134         RNZ
+00c7  3e 0a          135    135         MVI  A,GREEN
+00c9  c3 fa 00       136    136         JMP  PTCOL
+00cc  05             137    137 UPROW:  DCR  B
+00cd  16 00          138    138         MVI  D,0
+00cf  cd dc 00       139    139         CALL UPONE
+00d2  04             140    140         INR  B
+00d3  cd dc 00       141    141         CALL UPONE
+00d6  04             142    142         INR  B
+00d7  cd dc 00       143    143         CALL UPONE
+00da  7a             144    144         MOV  A,D
+00db  c9             145    145         RET
+00dc  d5             146    146 UPONE:  PUSH D
+00dd  cd e9 00       147    147         CALL GTCOL
+00e0  d1             148    148         POP  D
+00e1  fe 00          149    149         CPI  0
+00e3  c8             150    150         RZ
+00e4  fe 0a          151    151         CPI  10
+00e6  c8             152    152         RZ
+00e7  14             153    153         INR  D
+00e8  c9             154    154         RET
+00e9  cd 16 01       155    155 GTCOL:  CALL FNDCOL
+00ec  7e             156    156         MOV  A,M
+00ed  da f3 00       157    157         JC   GT20
+00f0  e6 0f          158    158         ANI  15
+00f2  c9             159    159         RET
+00f3  e6 f0          160    160 GT20:   ANI  240
+00f5  07             161    161         RLC
+00f6  07             162    162         RLC
+00f7  07             163    163         RLC
+00f8  07             164    164         RLC
+00f9  c9             165    165         RET
+00fa  e6 0f          166    166 PTCOL:  ANI  15
+00fc  f5             167    167         DB   0F5H
+00fd  cd 16 01       168    168         CALL FNDCOL
+0100  d1             169    169         POP  D
+0101  da 0a 01       170    170         JC   PTC20
+0104  7e             171    171         MOV  A,M
+0105  e6 f0          172    172         ANI  240
+0107  82             173    173         ADD  D
+0108  77             174    174         MOV  M,A
+0109  c9             175    175         RET
+010a  7a             176    176 PTC20:  MOV  A,D
+010b  07             177    177         RLC
+010c  07             178    178         RLC
+010d  07             179    179         RLC
+010e  07             180    180         RLC
+010f  57             181    181         MOV  D,A
+0110  7e             182    182         MOV  A,M
+0111  e6 0f          183    183         ANI  15
+0113  82             184    184         ADD  D
+0114  77             185    185         MOV  M,A
+0115  c9             186    186         RET
+0116  21 00 08       187    187 FNDCOL: LXI  H,DISPLY
+0119  78             188    188         MOV  A,B
+011a  e6 20          189    189         ANI  32
+011c  ca 23 01       190    190         JZ   FND20
+011f  11 00 02       191    191         LXI  D,512
+0122  19             192    192         DAD  D
+0123  79             193    193 FND20:  MOV  A,C
+0124  e6 20          194    194         ANI  32
+0126  ca 2d 01       195    195         JZ   FND30
+0129  11 00 04       196    196         LXI  D,1024
+012c  19             197    197         DAD  D
+012d  79             198    198 FND30:  MOV  A,C
+012e  e6 1f          199    199         ANI  31
+0130  07             200    200         RLC
+0131  07             201    201         RLC
+0132  07             202    202         RLC
+0133  17             203    203         RAL
+0134  5f             204    204         MOV  E,A
+0135  3e 00          205    205         MVI  A,0
+0137  17             206    206         RAL
+0138  57             207    207         MOV  D,A
+0139  19             208    208         DAD  D
+013a  78             209    209         MOV  A,B
+013b  1f             210    210         RAR
+013c  f5             211    211         DB   0F5H
+013d  e6 0f          212    212         ANI  15
+013f  5f             213    213         MOV  E,A
+0140  16 00          214    214         MVI  D,0
+0142  19             215    215         DAD  D
+0143  f1             216    216         DB   0F1H
+0144  c9             217    217         RET
+0145  db 00          218    218 CHECK:  IN   0
+0147  ee 01          219    219 	XRI  DAV
+0149  e6 01          220    220         ANI  DAV
+014b  c0             221    221         RNZ
+014c  0c             222    222         INR  C
+014d  c2 45 01       223    223         JNZ  CHECK
+0150  04             224    224         INR  B
+0151  c2 45 01       225    225         JNZ  CHECK
+0154  c9             226    226         RET
+0155  db 00          227    227 TTYONE: IN   0
+0157  ee 80          228    228 	XRI  TBE
+0159  e6 80          229    229         ANI  TBE
+015b  ca 55 01       230    230         JZ   TTYONE
+015e  78             231    231         MOV  A,B
+015f  d3 01          232    232         OUT  1
+0161  c9             233    233         RET
+0162  46             234    234 TTYOUT: MOV  B,M
+0163  3e 00          235    235         MVI  A,0
+0165  b8             236    236         CMP  B
+0166  c8             237    237         RZ
+0167  cd 55 01       238    238         CALL TTYONE
+016a  23             239    239         INX  H
+016b  c3 62 01       240    240         JMP  TTYOUT
+016e  cd 6e 00       241    241 INIT:   CALL CDISP
+0171  3e 84          242    242         MVI  A,132
+0173  d3 0e          243    243         OUT  14
+0175  3e b0          244    244         MVI  A,176
+0177  d3 0f          245    245         OUT  15
+0179  21 32 02       246    246         LXI  H,IDENT
+017c  cd 62 01       247    247         CALL TTYOUT
+017f  cd 45 01       248    248 INT20:  CALL CHECK
+                     249    249 ;       JZ   INT20               ; INSERT JZ INT20 HERE FOR INST
+0182  db 01          250    250         IN   1
+0184  47             251    251         MOV  B,A
+0185  cd 55 01       252    252         CALL TTYONE
+0188  e6 7f          253    253         ANI  127
+018a  fe 59          254    254         CPI  89
+018c  c9             255    255         RET                     ; INSERT RZ HERE FOR INST
+018d  21 4c 02       256    256         LXI  H,INST
+0190  cd 62 01       257    257         CALL TTYOUT
+0193  21 4e 02       258    258 SETUP:  LXI  H,ENTER
+0196  cd 62 01       259    259         CALL TTYOUT
+0199  cd 6e 00       260    260         CALL CDISP
+019c  01 00 00       261    261         LXI  B,0
+019f  cd fd 01       262    262 STP20:  CALL GTCHR
+01a2  21 c4 01       263    263         LXI  H,TAB
+01a5  e6 7f          264    264         ANI  7FH
+01a7  57             265    265         MOV  D,A
+01a8  97             266    266 STP30:  SUB  A
+01a9  be             267    267         CMP  M
+01aa  ca 9f 01       268    268         JZ   STP20
+01ad  7a             269    269         MOV  A,D
+01ae  be             270    270         CMP  M
+01af  ca b8 01       271    271         JZ   STP40
+01b2  23             272    272         INX  H
+01b3  23             273    273         INX  H
+01b4  23             274    274         INX  H
+01b5  c3 a8 01       275    275         JMP  STP30
+01b8  23             276    276 STP40:  INX  H
+01b9  5e             277    277         MOV  E,M
+01ba  23             278    278         INX  H
+01bb  56             279    279         MOV  D,M
+01bc  eb             280    280         XCHG
+01bd  cd c3 01       281    281         CALL INDEX
+01c0  c3 9f 01       282    282         JMP  STP20
+01c3  e9             283    283 INDEX:  PCHL
+01c4  01             284    284 TAB:    DB   1
+01c5  ed 01          285    285         DW   ON
+01c7  02             286    286         DB   2
+01c8  f4 01          287    287         DW   OFF
+01ca  04             288    288         DB   4
+01cb  e3 01          289    289         DW   THRU
+01cd  08             290    290         DB   8
+01ce  fb 01          291    291         DW   BACK
+01d0  09             292    292         DB   9
+01d1  f2 01          293    293         DW   FWD
+01d3  0f             294    294         DB   15
+01d4  eb 01          295    295         DW   DOWN
+01d6  0b             296    296         DB   11
+01d7  e5 01          297    297         DW   HOME
+01d9  0d             298    298         DB   13
+01da  e9 01          299    299         DW   RETURN
+01dc  0e             300    300         DB   14
+01dd  f9 01          301    301         DW   UP
+01df  00             302    302         DB   0
+01e0  00             303    303         DB   0
+01e1  00             304    304         DB   0
+01e2  00             305    305         DB   0
+01e3  c1             306    306 THRU:   POP  B
+01e4  c9             307    307         RET
+01e5  01 00 00       308    308 HOME:   LXI  B,0
+01e8  c9             309    309         RET
+01e9  06 00          310    310 RETURN: MVI  B,0
+01eb  0c             311    311 DOWN:   INR  C
+01ec  c9             312    312         RET
+01ed  3e 0f          313    313 ON:     MVI  A,15
+01ef  cd fa 00       314    314 BOTH:   CALL PTCOL
+01f2  04             315    315 FWD:    INR  B
+01f3  c9             316    316         RET
+01f4  3e 00          317    317 OFF:    MVI  A,0
+01f6  c3 ef 01       318    318         JMP  BOTH
+01f9  0d             319    319 UP:     DCR  C
+01fa  c9             320    320         RET
+01fb  05             321    321 BACK:   DCR  B
+01fc  c9             322    322         RET
+01fd  cd e9 00       323    323 GTCHR:  CALL GTCOL
+0200  f5             324    324         DB   0F5H
+0201  c5             325    325 GTC20:  PUSH B
+0202  3e 0c          326    326         MVI  A,12
+0204  cd fa 00       327    327         CALL PTCOL
+0207  01 00 00       328    328         LXI  B,DELAY
+020a  cd 45 01       329    329         CALL CHECK
+020d  c2 2a 02       330    330         JNZ  GTC40
+0210  c1             331    331         POP  B
+0211  c5             332    332         PUSH B
+0212  3e 00          333    333         MVI  A,0
+0214  cd fa 00       334    334         CALL PTCOL
+0217  01 00 00       335    335         LXI  B,DELAY
+021a  cd 45 01       336    336         CALL CHECK
+021d  c1             337    337         POP  B
+021e  ca 01 02       338    338         JZ   GTC20
+0221  f1             339    339 GTC30:  POP  PSW
+0222  cd fa 00       340    340         CALL PTCOL
+0225  db 01          341    341         IN   1
+0227  d3 01          342    342         OUT  1
+0229  c9             343    343         RET
+022a  c1             344    344 GTC40:  POP  B
+022b  c3 21 02       345    345         JMP  GTC30
+022e  00 00          346    346 ROWA:   DW   0
+0230  00 00          347    347 ROWB:   DW   0
+0232  4c 49          348    348 IDENT:  DW   'IL'
+0234  46 45          349    349         DW   'EF'
+0236  2e 2e          350    350         DW   '..'
+0238  2e 2e          351    351         DW   '..'
+023a  56 45          352    352         DW   'EV'
+023c  52 53          353    353         DW   'SR'
+023e  49 4f          354    354         DW   'OI'
+0240  4e 20          355    355         DW   ' N'
+0242  32 2e          356    356         DW   '.2'
+0244  30 20          357    357         DW   ' 0'
+0246  0d 0a          358    358         DW   0A0DH
+0248  0a 0a          359    359         DW   0A0AH
+024a  00 00          360    360         DW   0
+024c  00 00          361    361 INST:   DW   0
+024e  45 4e          362    362 ENTER:  DW   'NE'
+0250  54 45          363    363         DW   'ET'
+0252  52 20          364    364         DW   ' R'
+0254  44 41          365    365         DW   'AD'
+0256  54 41          366    366         DW   'AT'
+0258  0d 0a          367    367         DW   0A0DH
+025a  00 00          368    368         DW   0
+                     369    369
+025c                 370    370         END
+
+Symbol table
+
+BACK   01fb    BLUE   000c    BOTH   01ef    CDISP  006e    CHANGE 0042
+CHECK  0145    CHN15  0045    CHN20  0055    CHN30  005f    CLEAR  0074*
+DAV    0001    DELAY  0000    DISPLY 0800    DOWN   01eb    ENTER  024e
+FILL   0076*   FLL12  0078    FLL20  007e    FND20  0123    FND30  012d
+FNDCOL 0116    FRZE   000f    FWD    01f2    GEN    002d    GEN20  0030
+GREEN  000a    GT20   00f3    GTC20  0201    GTC30  0221    GTC40  022a
+GTCHR  01fd    GTCOL  00e9    HOME   01e5    IDENT  0232    INDEX  01c3
+INIT   016e    INST   024c    INT20  017f*   MAN20  0009    MAN30  000c
+MAN40  0020    OFF    01f4    ON     01ed    PTC20  010a    PTCOL  00fa
+RED    0009    RETURN 01e9    ROWA   022e    ROWB   0230    SETUP  0193
+STACK  0800    START  0003    STP    0019*   STP20  019f    STP30  01a8
+STP40  01b8    TAB    01c4    TBE    0080    THRU   01e3    TIME   d800*
+TTYONE 0155    TTYOUT 0162    UP     01f9    UPD10  009c    UPD20  00c3
+UPDATE 0084    UPONE  00dc    UPROW  00cc
