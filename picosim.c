@@ -26,6 +26,7 @@
 #endif
 #include "pico/stdlib.h"
 #include "pico/time.h"
+#include "hardware/adc.h"
 #include "f_util.h"
 #include "ff.h"
 #include "hw_config.h"
@@ -149,6 +150,14 @@ int main(void)
 
 	/* initialize LCD */
 	lcd_init();
+
+	/*
+	 * initialize hardware AD converter, enable onboard
+	 * temperature sensor and select its channel
+	 */
+	adc_init();
+	adc_set_temp_sensor_enabled(true);
+	adc_select_input(4);
 
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB
