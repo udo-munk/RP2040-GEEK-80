@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 #include "pico/multicore.h"
+#include "hardware/adc.h"
+#include "hardware/divider.h"
 #include "lcd.h"
 #include "sim.h"
 #include "simglb.h"
@@ -20,7 +22,7 @@ static uint16_t img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
 static void (*volatile lcd_draw_func)(int);
 static volatile int lcd_task_busy;
 
-static char info_line[25];	/* last line in CPU display */
+static char info_line[16];	/* last line in CPU display */
 
 static void lcd_draw_cpu_reg(int);
 static void lcd_task(void);
@@ -42,8 +44,7 @@ void lcd_init(void)
 	Paint_SetRotate(ROTATE_0);
 
 	/* initialize here to not waste time in draw function */
-	snprintf(info_line, sizeof(info_line), "Z80pack RP2040-GEEK %s",
-		 USR_REL);
+	snprintf(info_line, sizeof(info_line), "Z80pack %s", USR_REL);
 
 	/* launch LCD draw & refresh task */
 	multicore_launch_core1(lcd_task);
@@ -90,7 +91,7 @@ void lcd_brightness(int brightness)
  *	2 IX 1234 IY 1234 AF`1234
  *	3 BC'1234 DE'1234 HL`1234
  *	4 F  SZHPNC  IF12 IR 1234
- *	5 info_line
+ *	5 info_line        xx.xxC
  *
  *	8080 CPU using Font28 (14 x 28 pixels)
  *	--------------------------------------
@@ -229,11 +230,24 @@ static inline char hex2(uint16_t x) { return hex[(x >> 8) & 0xf]; }
 static inline char hex1(uint16_t x) { return hex[(x >> 4) & 0xf]; }
 static inline char hex0(uint16_t x) { return hex[x & 0xf]; }
 
+static float __not_in_flash_func(read_onboard_temp)(void)
+{
+	/* 12-bit conversion, assume max value == ADC_VREF == 3.3 V */
+	const float conversionFactor = 3.3f / (1 << 12);
+
+	float adc = (float) adc_read() * conversionFactor;
+	float tempC = 27.0f - (adc - 0.706f) / 0.001721f;
+
+	return tempC;
+}
+
 static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 {
 	BYTE r;
 	char *p;
-	static int cpu_type;
+	int temp;
+	divmod_result_t res;
+	static int cpu_type, count;
 
 	if (first_flag || (cpu_type != cpu)) {
 		/* if first call or new CPU type, draw static background */
@@ -332,8 +346,11 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 			cpu_char28(12, 3, 'I', WHITE);
 			cpu_char28(13, 3, 'F', WHITE);
 		}
+		/* info-line          .  C  */
 		for (p = info_line; *p; p++)
 			cpu_char20(p - info_line, 5, *p, BRRED);
+		cpu_char20(19, 5, '.', BRRED);
+		cpu_char20(22, 5, 'C', BRRED);
 	} else {
 		if (cpu_type == Z80) {
 			/* 012345678901234567890123 */
@@ -450,6 +467,20 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 			 * the refresh code.
 			 */
 			cpu_gridh28(3, 2, DKYELLOW);
+		}
+		/* update temperature every second */
+		if (++count == 30) {
+			/*                  xx xx   */
+			count = 0;
+			temp = (int) (read_onboard_temp() * 100.0f + 0.5f);
+			res = hw_divider_divmod_u32(temp, 10);
+			cpu_char20(21, 5, '0' + to_remainder_u32(res), BRRED);
+			res = hw_divider_divmod_u32(to_quotient_u32(res), 10);
+			cpu_char20(20, 5, '0' + to_remainder_u32(res), BRRED);
+			res = hw_divider_divmod_u32(to_quotient_u32(res), 10);
+			cpu_char20(18, 5, '0' + to_remainder_u32(res), BRRED);
+			res = hw_divider_divmod_u32(to_quotient_u32(res), 10);
+			cpu_char20(17, 5, '0' + to_remainder_u32(res), BRRED);
 		}
 	}
 }

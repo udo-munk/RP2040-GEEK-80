@@ -93,6 +93,7 @@ target_link_libraries(picosim
 	Fonts
 	Config
 	hardware_spi
+	hardware_adc
 )
 
 pico_add_extra_outputs(picosim)
