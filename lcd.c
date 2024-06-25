@@ -230,7 +230,7 @@ static inline char hex2(uint16_t x) { return hex[(x >> 8) & 0xf]; }
 static inline char hex1(uint16_t x) { return hex[(x >> 4) & 0xf]; }
 static inline char hex0(uint16_t x) { return hex[x & 0xf]; }
 
-float __not_in_flash_func(read_onboard_temp)(void)
+static float __not_in_flash_func(read_onboard_temp)(void)
 {
 	/* 12-bit conversion, assume max value == ADC_VREF == 3.3 V */
 	const float conversionFactor = 3.3f / (1 << 12);
