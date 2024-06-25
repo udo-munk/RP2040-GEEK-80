@@ -2,7 +2,13 @@ Z80ASMDIR = ../../z80pack/z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
 Z80ASMFLAGS = -fb -l -T -sn -p0
 
-all: serial.bin tb.bin test8080.bin micro80.bin
+all: life.bin micro80.bin serial.bin tb.bin test8080.bin
+
+life.bin: life.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMFLAGS) -8 $<
+
+micro80.bin: micro80.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMFLAGS) -8 $<
 
 serial.bin: serial.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) $<
@@ -12,9 +18,6 @@ tb.bin: tb.asm $(Z80ASM)
 
 test8080.bin: test8080.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 -dONCPM=0 $<
-
-micro80.bin: micro80.asm $(Z80ASM)
-	$(Z80ASM) $(Z80ASMFLAGS) -8 $<
 
 $(Z80ASM): FORCE
 	$(MAKE) -C $(Z80ASMDIR)
@@ -26,7 +29,7 @@ install:
 uninstall:
 
 clean:
-	rm -f serial.bin tb.bin test8080.bin
+	rm -f life.bin micro80.bin serial.bin tb.bin test8080.bin
 
 distclean: clean
 
