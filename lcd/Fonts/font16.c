@@ -11,7 +11,7 @@
 #include "fonts.h"
 #include "fontbits.h"
 
-static uint8_t __not_in_flash("font_table") Font16_Table[] = {
+static const uint8_t __not_in_flash("font_table") Font16_Table[] = {
 	________,
 	________,
 	________,

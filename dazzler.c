@@ -45,9 +45,9 @@ static const uint16_t __not_in_flash("color_map") grays[16] = {
 };
 #endif
 
-#define CROMEMCO_W 17
-#define CROMEMCO_H 132
-static const uint8_t __not_in_flash("cromemco_logo") cromemco[] = {
+#define CROMEMCO_WIDTH	17
+#define CROMEMCO_HEIGHT	132
+static const uint8_t __not_in_flash("cromemco") cromemco[] = {
 	0x01, 0xf8, 0x00, 0x03, 0xfe, 0x00, 0x03, 0xff, 0x00, 0x03, 0xff, 0x00,
 	0x07, 0x3f, 0x80, 0x06, 0x03, 0x80, 0x03, 0x01, 0x80, 0x03, 0xf1, 0x80,
 	0x03, 0xff, 0x80, 0x01, 0xff, 0x80, 0x00, 0xff, 0x80, 0x00, 0x7f, 0x00,
@@ -81,6 +81,44 @@ static const uint8_t __not_in_flash("cromemco_logo") cromemco[] = {
 	0x70, 0x0e, 0x00, 0xe0, 0x07, 0x00, 0xe0, 0x07, 0x00, 0xe0, 0x07, 0x80,
 	0xf0, 0x07, 0x80, 0x7c, 0x0f, 0x80, 0x7f, 0xff, 0x80, 0x3f, 0xff, 0x80,
 	0x3f, 0xff, 0x00, 0x1f, 0xff, 0x00, 0x07, 0xfe, 0x00, 0x03, 0xfc, 0x00
+};
+
+#define DAZZLER_WIDTH	21
+#define DAZZLER_HEIGHT	130
+static const uint8_t __not_in_flash("dazzler") dazzler[] = {
+	0x80, 0x00, 0x08, 0xc0, 0x00, 0x18, 0xe0, 0x00, 0x38, 0xff, 0xff, 0xf8,
+	0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8,
+	0xe0, 0x00, 0x18, 0xc0, 0x00, 0x18, 0xc0, 0x00, 0x18, 0xc0, 0x00, 0x18,
+	0xc0, 0x00, 0x18, 0x60, 0x00, 0x38, 0x7c, 0x01, 0xf0, 0x3f, 0xff, 0xf0,
+	0x1f, 0xff, 0xe0, 0x9f, 0xff, 0xe0, 0xcf, 0xff, 0xc0, 0xf3, 0xff, 0x00,
+	0xfc, 0x18, 0x00, 0xff, 0x80, 0x00, 0xc3, 0xe0, 0x00, 0x81, 0xfc, 0x00,
+	0x01, 0x1f, 0x80, 0x01, 0x03, 0xf0, 0x01, 0x0f, 0xf8, 0x01, 0xff, 0xf8,
+	0x83, 0xff, 0xf8, 0xff, 0xff, 0xe0, 0xff, 0xff, 0x00, 0xff, 0xf8, 0x00,
+	0xff, 0xc0, 0x00, 0xfe, 0x00, 0x00, 0xf8, 0x00, 0x00, 0xc0, 0x00, 0x00,
+	0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0xe0, 0x03, 0xf8,
+	0xf8, 0x01, 0xf8, 0xfc, 0x00, 0x78, 0xff, 0x00, 0x38, 0xff, 0xc0, 0x18,
+	0xff, 0xf0, 0x18, 0xdf, 0xfc, 0x18, 0xc7, 0xff, 0x18, 0xc3, 0xff, 0x98,
+	0xc0, 0xff, 0xf8, 0xc0, 0x3f, 0xf8, 0xc0, 0x1f, 0xf8, 0xe0, 0x07, 0xf8,
+	0xf8, 0x01, 0xf8, 0xfc, 0x00, 0x78, 0xfc, 0x00, 0x38, 0x00, 0x00, 0x00,
+	0x80, 0x03, 0xf8, 0xe0, 0x01, 0xf8, 0xf8, 0x00, 0x78, 0xfe, 0x00, 0x38,
+	0xff, 0x80, 0x18, 0xff, 0xe0, 0x18, 0xff, 0xf8, 0x18, 0xdf, 0xfe, 0x18,
+	0xc7, 0xff, 0x18, 0xc1, 0xff, 0xd8, 0xc0, 0x7f, 0xf8, 0xc0, 0x3f, 0xf8,
+	0xc0, 0x0f, 0xf8, 0xe0, 0x03, 0xf8, 0xf8, 0x00, 0xf8, 0xfc, 0x00, 0x78,
+	0xfc, 0x00, 0x18, 0x00, 0x00, 0x00, 0x80, 0x00, 0x08, 0xc0, 0x00, 0x38,
+	0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8,
+	0xff, 0xff, 0xf8, 0xc0, 0x00, 0x18, 0xc0, 0x00, 0x18, 0xc0, 0x00, 0x08,
+	0xc0, 0x00, 0x00, 0xc0, 0x00, 0x00, 0xc0, 0x00, 0x00, 0xe0, 0x00, 0x00,
+	0xfc, 0x00, 0x00, 0xfe, 0x00, 0x00, 0x06, 0x00, 0x00, 0x80, 0x00, 0x18,
+	0xc0, 0x00, 0x38, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8,
+	0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xc0, 0x20, 0x18, 0xc0, 0x20, 0x18,
+	0xc0, 0x20, 0x18, 0xc0, 0x70, 0x18, 0xc1, 0xfc, 0x18, 0xc1, 0xfc, 0x18,
+	0xe0, 0x00, 0x78, 0xf8, 0x03, 0xf8, 0xfc, 0x01, 0xf8, 0x1c, 0x00, 0x00,
+	0x80, 0x00, 0x08, 0xc0, 0x00, 0x18, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8,
+	0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8,
+	0xc0, 0x20, 0x08, 0xc0, 0xe0, 0x08, 0x41, 0xf0, 0x18, 0x07, 0xf0, 0x18,
+	0x1f, 0xfe, 0x78, 0x7f, 0xff, 0xf8, 0xff, 0x8f, 0xf8, 0xff, 0x0f, 0xf0,
+	0xfc, 0x07, 0xf0, 0xf8, 0x03, 0xc0, 0xf0, 0x00, 0x00, 0xc0, 0x00, 0x00,
+	0xc0, 0x00, 0x00, 0x80, 0x00, 0x00
 };
 
 /* DAZZLER stuff */
@@ -120,24 +158,25 @@ static void __not_in_flash_func(draw_hires)(void)
 {
 	int x, y, i;
 	WORD addr = dma_addr;
-	uint16_t color;
+	unsigned int color[2];
 
 	/* set color or grayscale from lower nibble in graphics format */
 	i = format & 0x0f;
-	color = (format & 16) ? colors[i] : grays[i];
+	color[0] = BLACK;
+	color[1] = (format & 16) ? colors[i] : grays[i];
 
 	if (format & 32) {	/* 2048 bytes memory */
 		for (y = 0; y < 64; y += 2) {
 			for (x = 0; x < 64;) {
 				i = dma_read(addr);
-				pixel(x, y, (i & 1) ? color : BLACK);
-				pixel(x + 1, y, (i & 2) ? color : BLACK);
-				pixel(x, y + 1, (i & 4) ? color : BLACK);
-				pixel(x + 1, y + 1, (i & 8) ? color : BLACK);
-				pixel(x + 2, y, (i & 16) ? color : BLACK);
-				pixel(x + 3, y, (i & 32) ? color : BLACK);
-				pixel(x + 2, y + 1, (i & 64) ? color : BLACK);
-				pixel(x + 3, y + 1, (i & 128) ? color : BLACK);
+				pixel(x, y, color[i & 1]);
+				pixel(x + 1, y, color[(i >> 1) & 1]);
+				pixel(x, y + 1, color[(i >> 2) & 1]);
+				pixel(x + 1, y + 1, color[(i >> 3) & 1]);
+				pixel(x + 2, y, color[(i >> 4) & 1]);
+				pixel(x + 3, y, color[(i >> 5) & 1]);
+				pixel(x + 2, y + 1, color[(i >> 6) & 1]);
+				pixel(x + 3, y + 1, color[(i >> 7) & 1]);
 				x += 4;
 				addr++;
 			}
@@ -145,14 +184,14 @@ static void __not_in_flash_func(draw_hires)(void)
 		for (y = 0; y < 64; y += 2) {
 			for (x = 64; x < 128;) {
 				i = dma_read(addr);
-				pixel(x, y, (i & 1) ? color : BLACK);
-				pixel(x + 1, y, (i & 2) ? color : BLACK);
-				pixel(x, y + 1, (i & 4) ? color : BLACK);
-				pixel(x + 1, y + 1, (i & 8) ? color : BLACK);
-				pixel(x + 2, y, (i & 16) ? color : BLACK);
-				pixel(x + 3, y, (i & 32) ? color : BLACK);
-				pixel(x + 2, y + 1, (i & 64) ? color : BLACK);
-				pixel(x + 3, y + 1, (i & 128) ? color : BLACK);
+				pixel(x, y, color[i & 1]);
+				pixel(x + 1, y, color[(i >> 1) & 1]);
+				pixel(x, y + 1, color[(i >> 2) & 1]);
+				pixel(x + 1, y + 1, color[(i >> 3) & 1]);
+				pixel(x + 2, y, color[(i >> 4) & 1]);
+				pixel(x + 3, y, color[(i >> 5) & 1]);
+				pixel(x + 2, y + 1, color[(i >> 6) & 1]);
+				pixel(x + 3, y + 1, color[(i >> 7) & 1]);
 				x += 4;
 				addr++;
 			}
@@ -160,14 +199,14 @@ static void __not_in_flash_func(draw_hires)(void)
 		for (y = 64; y < 128; y += 2) {
 			for (x = 0; x < 64;) {
 				i = dma_read(addr);
-				pixel(x, y, (i & 1) ? color : BLACK);
-				pixel(x + 1, y, (i & 2) ? color : BLACK);
-				pixel(x, y + 1, (i & 4) ? color : BLACK);
-				pixel(x + 1, y + 1, (i & 8) ? color : BLACK);
-				pixel(x + 2, y, (i & 16) ? color : BLACK);
-				pixel(x + 3, y, (i & 32) ? color : BLACK);
-				pixel(x + 2, y + 1, (i & 64) ? color : BLACK);
-				pixel(x + 3, y + 1, (i & 128) ? color : BLACK);
+				pixel(x, y, color[i & 1]);
+				pixel(x + 1, y, color[(i >> 1) & 1]);
+				pixel(x, y + 1, color[(i >> 2) & 1]);
+				pixel(x + 1, y + 1, color[(i >> 3) & 1]);
+				pixel(x + 2, y, color[(i >> 4) & 1]);
+				pixel(x + 3, y, color[(i >> 5) & 1]);
+				pixel(x + 2, y + 1, color[(i >> 6) & 1]);
+				pixel(x + 3, y + 1, color[(i >> 7) & 1]);
 				x += 4;
 				addr++;
 			}
@@ -175,14 +214,14 @@ static void __not_in_flash_func(draw_hires)(void)
 		for (y = 64; y < 128; y += 2) {
 			for (x = 64; x < 128;) {
 				i = dma_read(addr);
-				pixel(x, y, (i & 1) ? color : BLACK);
-				pixel(x + 1, y, (i & 2) ? color : BLACK);
-				pixel(x, y + 1, (i & 4) ? color : BLACK);
-				pixel(x + 1, y + 1, (i & 8) ? color : BLACK);
-				pixel(x + 2, y, (i & 16) ? color : BLACK);
-				pixel(x + 3, y, (i & 32) ? color : BLACK);
-				pixel(x + 2, y + 1, (i & 64) ? color : BLACK);
-				pixel(x + 3, y + 1, (i & 128) ? color : BLACK);
+				pixel(x, y, color[i & 1]);
+				pixel(x + 1, y, color[(i >> 1) & 1]);
+				pixel(x, y + 1, color[(i >> 2) & 1]);
+				pixel(x + 1, y + 1, color[(i >> 3) & 1]);
+				pixel(x + 2, y, color[(i >> 4) & 1]);
+				pixel(x + 3, y, color[(i >> 5) & 1]);
+				pixel(x + 2, y + 1, color[(i >> 6) & 1]);
+				pixel(x + 3, y + 1, color[(i >> 7) & 1]);
 				x += 4;
 				addr++;
 			}
@@ -191,14 +230,14 @@ static void __not_in_flash_func(draw_hires)(void)
 		for (y = 0; y < 64; y += 2) {
 			for (x = 0; x < 64;) {
 				i = dma_read(addr);
-				pixel_2(x, y, (i & 1) ? color : BLACK);
-				pixel_2(x + 1, y, (i & 2) ? color : BLACK);
-				pixel_2(x, y + 1, (i & 4) ? color : BLACK);
-				pixel_2(x + 1, y + 1, (i & 8) ? color : BLACK);
-				pixel_2(x + 2, y, (i & 16) ? color : BLACK);
-				pixel_2(x + 3, y, (i & 32) ? color : BLACK);
-				pixel_2(x + 2, y + 1, (i & 64) ? color : BLACK);
-				pixel_2(x + 3, y + 1, (i & 128) ? color : BLACK);
+				pixel_2(x, y, color[i & 1]);
+				pixel_2(x + 1, y, color[(i >> 1) & 1]);
+				pixel_2(x, y + 1, color[(i >> 2) & 1]);
+				pixel_2(x + 1, y + 1, color[(i >> 3) & 1]);
+				pixel_2(x + 2, y, color[(i >> 4) & 1]);
+				pixel_2(x + 3, y, color[(i >> 5) & 1]);
+				pixel_2(x + 2, y + 1, color[(i >> 6) & 1]);
+				pixel_2(x + 3, y + 1, color[(i >> 7) & 1]);
 				x += 4;
 				addr++;
 			}
@@ -219,12 +258,11 @@ static void __not_in_flash_func(draw_lowres)(void)
 	if (format & 32) {	/* 2048 bytes memory */
 		for (y = 0; y < 32; y++) {
 			for (x = 0; x < 32;) {
-				i = dma_read(addr) & 0x0f;
-				color = cmap[i];
+				i = dma_read(addr);
+				color = cmap[i & 0x0f];
 				pixel_2(x, y, color);
 				x++;
-				i = (dma_read(addr) & 0xf0) >> 4;
-				color = cmap[i];
+				color = cmap[(i >> 4) & 0x0f];
 				pixel_2(x, y, color);
 				x++;
 				addr++;
@@ -232,12 +270,11 @@ static void __not_in_flash_func(draw_lowres)(void)
 		}
 		for (y = 0; y < 32; y++) {
 			for (x = 32; x < 64;) {
-				i = dma_read(addr) & 0x0f;
-				color = cmap[i];
+				i = dma_read(addr);
+				color = cmap[i & 0x0f];
 				pixel_2(x, y, color);
 				x++;
-				i = (dma_read(addr) & 0xf0) >> 4;
-				color = cmap[i];
+				color = cmap[(i >> 4) & 0x0f];
 				pixel_2(x, y, color);
 				x++;
 				addr++;
@@ -245,12 +282,11 @@ static void __not_in_flash_func(draw_lowres)(void)
 		}
 		for (y = 32; y < 64; y++) {
 			for (x = 0; x < 32;) {
-				i = dma_read(addr) & 0x0f;
-				color = cmap[i];
+				i = dma_read(addr);
+				color = cmap[i & 0x0f];
 				pixel_2(x, y, color);
 				x++;
-				i = (dma_read(addr) & 0xf0) >> 4;
-				color = cmap[i];
+				color = cmap[(i >> 4) & 0x0f];
 				pixel_2(x, y, color);
 				x++;
 				addr++;
@@ -258,12 +294,11 @@ static void __not_in_flash_func(draw_lowres)(void)
 		}
 		for (y = 32; y < 64; y++) {
 			for (x = 32; x < 64;) {
-				i = dma_read(addr) & 0x0f;
-				color = cmap[i];
+				i = dma_read(addr);
+				color = cmap[i & 0x0f];
 				pixel_2(x, y, color);
 				x++;
-				i = (dma_read(addr) & 0xf0) >> 4;
-				color = cmap[i];
+				color = cmap[(i >> 4) & 0x0f];
 				pixel_2(x, y, color);
 				x++;
 				addr++;
@@ -272,12 +307,11 @@ static void __not_in_flash_func(draw_lowres)(void)
 	} else {		/* 512 bytes memory */
 		for (y = 0; y < 32; y++) {
 			for (x = 0; x < 32;) {
-				i = dma_read(addr) & 0x0f;
-				color = cmap[i];
+				i = dma_read(addr);
+				color = cmap[i & 0x0f];
 				pixel_4(x, y, color);
 				x++;
-				i = (dma_read(addr) & 0xf0) >> 4;
-				color = cmap[i];
+				color = cmap[(i >> 4) & 0x0f];
 				pixel_4(x, y, color);
 				x++;
 				addr++;
@@ -286,25 +320,27 @@ static void __not_in_flash_func(draw_lowres)(void)
 	}
 }
 
-static void __not_in_flash_func(dazzler_draw)(int first_flag)
+static inline void draw_bitmap(const uint8_t *bitmap, int width, int height,
+			       int x, int y)
 {
 	int i, j, bw;
-	const uint8_t *p;
 
+	bw = (width + 7) / 8;
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			if (*(bitmap + (j >> 3)) & (0x80 >> (j & 7)))
+				Paint_FastPixel(x + j, y + i, BRRED);
+		}
+		bitmap += bw;
+	}
+}
+
+static void __not_in_flash_func(dazzler_draw)(int first_flag)
+{
 	if (first_flag) {
 		Paint_Clear(BLACK);
-		p = cromemco;
-		bw = (CROMEMCO_W + 7) / 8;
-		for (i = 0; i < CROMEMCO_H; i++) {
-			for (j = 0; j < CROMEMCO_W; j++) {
-				if (*(p + (j >> 3)) & (0x80 >> (j & 7)))
-					Paint_FastPixel(10 + j, 1 + i, BRRED);
-			}
-			p += bw;
-		}
-		Paint_SetRotate(ROTATE_90);
-		Paint_DrawString(18, 4, "DAZZLER", &Font28, BRRED, BLACK);
-		Paint_SetRotate(ROTATE_0);
+		draw_bitmap(cromemco, CROMEMCO_WIDTH, CROMEMCO_HEIGHT, 14, 1);
+		draw_bitmap(dazzler, DAZZLER_WIDTH, DAZZLER_HEIGHT, 209, 2);
 		return;
 	}
 

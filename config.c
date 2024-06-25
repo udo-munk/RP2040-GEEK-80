@@ -54,7 +54,7 @@ static void prompt_fn(char *s)
  */
 void config(void)
 {
-	const char *cfg = "/CONF80/CFG.TXT";
+	const char *cfg = "/CONF80/CFG.DAT";
 	const char *cpath = "/CODE80";
 	const char *cext = "*.BIN";
 	const char *dpath = "/DISKS80";
