@@ -469,7 +469,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 			cpu_gridh28(3, 2, DKYELLOW);
 		}
 		/* update temperature every second */
-		if (++count == 30) {
+		if (++count == LCD_REFRESH) {
 			/*                  xx xx   */
 			count = 0;
 			temp = (int) (read_onboard_temp() * 100.0f + 0.5f);
@@ -493,6 +493,8 @@ static inline void lcd_refresh(void)
 	LCD_1IN14_V2_Display(&img[0]);
 #endif
 }
+
+#define LCD_REFRESH_US (1000000 / LCD_REFRESH)
 
 static void __not_in_flash_func(lcd_task)(void)
 {
