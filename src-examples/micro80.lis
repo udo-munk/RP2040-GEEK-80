@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0	Mon May 27 21:05:52 2024
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1         TITLE '8080 MICROCHESS'
@@ -52,7 +52,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       49     49 ;
                       50     50 ; ADDITIONAL DAZZLER GRAPHICS OUTPUT
                       51     51 ;
-0000  #               52     52 DAZZLER SET  0
+0001  #               52     52 DAZZLER SET  1
                       53     53 
                       54     54 ;
                       55     55 ; TERMINAL I/O PATCH OPTIONS FOR STANDALONE
@@ -1445,16 +1445,16 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      930   1442 ;
                      931   1443         IF   COORD
                      932   1444         ORG  024AH + OFFSET     ;PATCH IN ROUTINES FOR BOARD COORDINATES
-024a  21 2a 0e       933   1445         LXI  H,CTEXT - OFFSET
-024d  cd 00 0e       934   1446         CALL DISP1 - OFFSET
-0250  3a 29 0e       935   1447         LDA  DDAT - OFFSET
+024a  21 a3 0f       933   1445         LXI  H,CTEXT - OFFSET
+024d  cd 79 0f       934   1446         CALL DISP1 - OFFSET
+0250  3a a2 0f       935   1447         LDA  DDAT - OFFSET
 0253  c6 30          936   1448         ADI  30H
 0255  47             937   1449         MOV  B,A
-0256  cd 14 0e       938   1450         CALL DISP3 - OFFSET
+0256  cd 8d 0f       938   1450         CALL DISP3 - OFFSET
 0259  00             939   1451         NOP
 025a  00             940   1452         NOP
                      941   1453         ORG  02B1H + OFFSET
-02b1  cd 23 0e       942   1454         CALL DISP4 - OFFSET
+02b1  cd 9c 0f       942   1454         CALL DISP4 - OFFSET
                      943   1455         ENDIF
                      944   1456 
                      945   1457 ;
@@ -1471,371 +1471,383 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      956   1468         IF   DAZZLER
                      957   1469 
                      958   1470         ORG  6 + OFFSET         ;PATCH THIRD INSTRUCTION TO CALL
-                     959   1471         CALL DINIT - OFFSET     ;THE DAZZLER INITIALISATION
+0006  cd 0d 0e       959   1471         CALL DINIT - OFFSET     ;THE DAZZLER INITIALISATION
                      960   1472 
                      961   1473         ORG  0059H + OFFSET     ;PATCH IN DATA INITALISATION
-                     962   1474         CALL IDATA - OFFSET
+0059  cd 1c 0e       962   1474         CALL IDATA - OFFSET
                      963   1475 
                      964   1476         ORG  0242H + OFFSET     ;PATCH CALL TO CUSTOM BOARD DISPLAY
-                     965   1477         CALL DDISP - OFFSET
+0242  cd 25 0e       965   1477         CALL DDISP - OFFSET
                      966   1478 
                      967   1479         ORG  05C3H + OFFSET     ;PATCH IN SUBROUTINE TO SWITCH PIECE COLOR
-                     968   1480         CALL SWC - OFFSET
+05c3  cd 00 0e       968   1480         CALL SWC - OFFSET
                      969   1481 
                      970   1482         ORG  0E00H + OFFSET     ;DAZZLER OUTPUT ROUTINES GO HERE
                      971   1483 
-                     972   1484 SWC:    PUSH PSW                ;SWITCH PIECE COLOR
-                     973   1485         LDA  DAT1 - OFFSET
-                     974   1486         CMA
-                     975   1487         STA  DAT1 - OFFSET
-                     976   1488         POP  PSW
-                     977   1489         LXI  H,09EDH
-                     978   1490         RET
+0e00  f5             972   1484 SWC:    PUSH PSW                ;SWITCH PIECE COLOR
+0e01  3a 40 0f       973   1485         LDA  DAT1 - OFFSET
+0e04  2f             974   1486         CMA
+0e05  32 40 0f       975   1487         STA  DAT1 - OFFSET
+0e08  f1             976   1488         POP  PSW
+0e09  21 ed 09       977   1489         LXI  H,09EDH
+0e0c  c9             978   1490         RET
                      979   1491 
-                     980   1492 DINIT:                          ;INITIALISE DAZZLER
-                     981   1493         MVI  A,8CH              ;DAZZLER ON, VIDEO MEMORY @ 1800H
-                     982   1494         OUT  0EH
-                     983   1495         MVI  A,30H              ;NORMAL COLOR MODE, 64X64
-                     984   1496         OUT  0FH
-                     985   1497         CALL DBOARD - OFFSET    ;DRAW CHESS BOARD
-                     986   1498         LXI  H,0B6DH
-                     987   1499         RET
+0e0d                 980   1492 DINIT:                          ;INITIALISE DAZZLER
+0e0d  3e 8c          981   1493         MVI  A,8CH              ;DAZZLER ON, VIDEO MEMORY @ 1800H
+0e0f  d3 0e          982   1494         OUT  0EH
+0e11  3e 30          983   1495         MVI  A,30H              ;NORMAL COLOR MODE, 64X64
+0e13  d3 0f          984   1496         OUT  0FH
+0e15  cd 2c 0e       985   1497         CALL DBOARD - OFFSET    ;DRAW CHESS BOARD
+0e18  21 6d 0b       986   1498         LXI  H,0B6DH
+0e1b  c9             987   1499         RET
                      988   1500 
-                     989   1501 IDATA:                          ;INITIALISE DATA
-                     990   1502         MVI  A,0FFH             ;PIECE COLOR BLACK
-                     991   1503         STA  DAT1 - OFFSET
-                     992   1504         CALL 015CH
-                     993   1505         RET
+0e1c                 989   1501 IDATA:                          ;INITIALISE DATA
+0e1c  3e ff          990   1502         MVI  A,0FFH             ;PIECE COLOR BLACK
+0e1e  32 40 0f       991   1503         STA  DAT1 - OFFSET
+0e21  cd 5c 01       992   1504         CALL 015CH
+0e24  c9             993   1505         RET
                      994   1506 
-                     995   1507 DDISP:                          ;CUSTOM BOARD DISPLAY
-                     996   1508         CALL DBOARD - OFFSET    ;DRAW CHESS BOAD
-                     997   1509         CALL DPIECE - OFFSET    ;DRAW CHESS PIECES
-                     998   1510         RET
+0e25                 995   1507 DDISP:                          ;CUSTOM BOARD DISPLAY
+0e25  cd 2c 0e       996   1508         CALL DBOARD - OFFSET    ;DRAW CHESS BOAD
+0e28  cd 65 0e       997   1509         CALL DPIECE - OFFSET    ;DRAW CHESS PIECES
+0e2b  c9             998   1510         RET
                      999   1511 
-                    1000   1512 DBOARD: MVI  B,10H              ;DRAW CHESS BOARD
-                    1001   1513         LXI  D,1801H
-                    1002   1514         LXI  H,1800H            ;DAZZLER VIDEO MEMORY @ 1800H
-                    1003   1515 DB1:    PUSH B
-                    1004   1516         MVI  A,03H
-                    1005   1517         MVI  B,10H
-                    1006   1518 DB2:    PUSH B
-                    1007   1519         MVI  B,0                ;DRAW FIELDS
-                    1008   1520 DBP1:   MVI  M,33H              ;WHITE FIELD AS GREEN
-                    1009   1521         MOV  C,A
-                    1010   1522         CALL LDIR
-                    1011   1523         INX  D
-                    1012   1524         INX  H
-                    1013   1525 DBP2:   MVI  M,99H              ;BLACK FIELD AS RED
-                    1014   1526         MOV  C,A
-                    1015   1527         CALL LDIR
-                    1016   1528         INX  D
-                    1017   1529         INX  H
-                    1018   1530         POP  B
-                    1019   1531         DCR  B
-                    1020   1532         JNZ  DB2 - OFFSET
-                    1021   1533         LDA  DBP1 + 1 - OFFSET  ;FLIP COLORS AND DRAW NEXT ROW OF FIELDS
-                    1022   1534         MOV  B,A
-                    1023   1535         LDA  DBP2 + 1 - OFFSET
-                    1024   1536         STA  DBP1 + 1 - OFFSET
-                    1025   1537         MOV  A,B
-                    1026   1538         STA  DBP2 + 1 - OFFSET
-                    1027   1539         POP  B
-                    1028   1540         DCR  B
-                    1029   1541         JNZ  DB1 - OFFSET
-                    1030   1542         RET
+0e2c  06 10         1000   1512 DBOARD: MVI  B,10H              ;DRAW CHESS BOARD
+0e2e  11 01 18      1001   1513         LXI  D,1801H
+0e31  21 00 18      1002   1514         LXI  H,1800H            ;DAZZLER VIDEO MEMORY @ 1800H
+0e34  c5            1003   1515 DB1:    PUSH B
+0e35  3e 03         1004   1516         MVI  A,03H
+0e37  06 10         1005   1517         MVI  B,10H
+0e39  c5            1006   1518 DB2:    PUSH B
+0e3a  06 00         1007   1519         MVI  B,0                ;DRAW FIELDS
+0e3c  36 33         1008   1520 DBP1:   MVI  M,33H              ;WHITE FIELD AS GREEN
+0e3e  4f            1009   1521         MOV  C,A
+0e3f  cd bf 0f      1010   1522         CALL LDIR
+0e42  13            1011   1523         INX  D
+0e43  23            1012   1524         INX  H
+0e44  36 99         1013   1525 DBP2:   MVI  M,99H              ;BLACK FIELD AS RED
+0e46  4f            1014   1526         MOV  C,A
+0e47  cd bf 0f      1015   1527         CALL LDIR
+0e4a  13            1016   1528         INX  D
+0e4b  23            1017   1529         INX  H
+0e4c  c1            1018   1530         POP  B
+0e4d  05            1019   1531         DCR  B
+0e4e  c2 39 0e      1020   1532         JNZ  DB2 - OFFSET
+0e51  3a 3d 0e      1021   1533         LDA  DBP1 + 1 - OFFSET  ;FLIP COLORS AND DRAW NEXT ROW OF FIELDS
+0e54  47            1022   1534         MOV  B,A
+0e55  3a 45 0e      1023   1535         LDA  DBP2 + 1 - OFFSET
+0e58  32 3d 0e      1024   1536         STA  DBP1 + 1 - OFFSET
+0e5b  78            1025   1537         MOV  A,B
+0e5c  32 45 0e      1026   1538         STA  DBP2 + 1 - OFFSET
+0e5f  c1            1027   1539         POP  B
+0e60  05            1028   1540         DCR  B
+0e61  c2 34 0e      1029   1541         JNZ  DB1 - OFFSET
+0e64  c9            1030   1542         RET
                     1031   1543 
-                    1032   1544 DPIECE:                         ;DRAW CHESS PIECES
-                    1033   1545         LXI  D,09ECH            ;PIECE ADDRESS TABLE - 1
-                    1034   1546         MVI  B,02H
-                    1035   1547 DPIE0:  PUSH B
-                    1036   1548         LXI  H,PTAB - 6 - OFFSET ;PIECE GRAPHICS TABLE - 1 ENTRY
-                    1037   1549         SHLD DAT2 - OFFSET
-                    1038   1550         MVI  B,08H
-                    1039   1551 DPIE1:  PUSH B
-                    1040   1552         CALL DONEP - OFFSET
-                    1041   1553         POP  B
-                    1042   1554         DCR  B
-                    1043   1555         JNZ  DPIE1 - OFFSET
-                    1044   1556         MVI  B,08H
-                    1045   1557 DPIE2:  PUSH B
-                    1046   1558         CALL DONEP - OFFSET
-                    1047   1559         LXI  B,0FFFAH           ;BC = -6
-                    1048   1560         LHLD DAT2 - OFFSET
-                    1049   1561         DAD  B
-                    1050   1562         SHLD DAT2 - OFFSET
-                    1051   1563         POP  B
-                    1052   1564         DCR  B
-                    1053   1565         JNZ  DPIE2 - OFFSET
-                    1054   1566         LDA  DAT1 - OFFSET
-                    1055   1567         CMA
-                    1056   1568         STA  DAT1 - OFFSET
-                    1057   1569         POP  B
-                    1058   1570         DCR  B
-                    1059   1571         JNZ  DPIE0 - OFFSET
-                    1060   1572         RET
+0e65                1032   1544 DPIECE:                         ;DRAW CHESS PIECES
+0e65  11 ec 09      1033   1545         LXI  D,09ECH            ;PIECE ADDRESS TABLE - 1
+0e68  06 02         1034   1546         MVI  B,02H
+0e6a  c5            1035   1547 DPIE0:  PUSH B
+0e6b  21 3d 0f      1036   1548         LXI  H,PTAB - 6 - OFFSET ;PIECE GRAPHICS TABLE - 1 ENTRY
+0e6e  22 41 0f      1037   1549         SHLD DAT2 - OFFSET
+0e71  06 08         1038   1550         MVI  B,08H
+0e73  c5            1039   1551 DPIE1:  PUSH B
+0e74  cd 9e 0e      1040   1552         CALL DONEP - OFFSET
+0e77  c1            1041   1553         POP  B
+0e78  05            1042   1554         DCR  B
+0e79  c2 73 0e      1043   1555         JNZ  DPIE1 - OFFSET
+0e7c  06 08         1044   1556         MVI  B,08H
+0e7e  c5            1045   1557 DPIE2:  PUSH B
+0e7f  cd 9e 0e      1046   1558         CALL DONEP - OFFSET
+0e82  01 fa ff      1047   1559         LXI  B,0FFFAH           ;BC = -6
+0e85  2a 41 0f      1048   1560         LHLD DAT2 - OFFSET
+0e88  09            1049   1561         DAD  B
+0e89  22 41 0f      1050   1562         SHLD DAT2 - OFFSET
+0e8c  c1            1051   1563         POP  B
+0e8d  05            1052   1564         DCR  B
+0e8e  c2 7e 0e      1053   1565         JNZ  DPIE2 - OFFSET
+0e91  3a 40 0f      1054   1566         LDA  DAT1 - OFFSET
+0e94  2f            1055   1567         CMA
+0e95  32 40 0f      1056   1568         STA  DAT1 - OFFSET
+0e98  c1            1057   1569         POP  B
+0e99  05            1058   1570         DCR  B
+0e9a  c2 6a 0e      1059   1571         JNZ  DPIE0 - OFFSET
+0e9d  c9            1060   1572         RET
                     1061   1573 
-                    1062   1574 DONEP:                          ;DRAW ONE PIECE
-                    1063   1575         INX  D                  ;DE -> NEXT PIECE IN TABLE
-                    1064   1576         PUSH D
-                    1065   1577         CALL SUB1 - OFFSET
-                    1066   1578         LXI  B,6                ;6 BYTES PER PIECE GRAPHICS
-                    1067   1579         LHLD DAT2 - OFFSET
-                    1068   1580         DAD  B
-                    1069   1581         SHLD DAT2 - OFFSET
-                    1070   1582         CALL SUB2 - OFFSET
-                    1071   1583         POP  D
-                    1072   1584         RET
+0e9e                1062   1574 DONEP:                          ;DRAW ONE PIECE
+0e9e  13            1063   1575         INX  D                  ;DE -> NEXT PIECE IN TABLE
+0e9f  d5            1064   1576         PUSH D
+0ea0  cd b2 0e      1065   1577         CALL SUB1 - OFFSET
+0ea3  01 06 00      1066   1578         LXI  B,6                ;6 BYTES PER PIECE GRAPHICS
+0ea6  2a 41 0f      1067   1579         LHLD DAT2 - OFFSET
+0ea9  09            1068   1580         DAD  B
+0eaa  22 41 0f      1069   1581         SHLD DAT2 - OFFSET
+0ead  cd ef 0e      1070   1582         CALL SUB2 - OFFSET
+0eb0  d1            1071   1583         POP  D
+0eb1  c9            1072   1584         RET
                     1073   1585 
-                    1074   1586 SUB1:   XCHG                    ;BIT FIDDLING TO GET PIECE GRAPHICS ON BOARD
-                    1075   1587         MOV  A,M
-                    1076   1588         ANI  80H
-                    1077   1589         MOV  A,M
-                    1078   1590         JZ   SUB11 - OFFSET
-                    1079   1591         POP  D
-                    1080   1592         LXI  B,6
-                    1081   1593         LHLD DAT2 - OFFSET
-                    1082   1594         DAD  B
-                    1083   1595         SHLD DAT2 - OFFSET
-                    1084   1596         POP  D
-                    1085   1597         RET
-                    1086   1598 SUB11:  RRC
-                    1087   1599         MOV  B,A
-                    1088   1600         RLC
-                    1089   1601         RLC
-                    1090   1602         RLC
-                    1091   1603         MOV  C,A
-                    1092   1604         RLC
-                    1093   1605         MOV  E,A
-                    1094   1606         RLC
-                    1095   1607         ANI  4
-                    1096   1608         MOV  D,A
-                    1097   1609         MOV  A,E
-                    1098   1610         ANI  1
-                    1099   1611         ORA  D
-                    1100   1612         MOV  D,A
-                    1101   1613         MOV  A,B
-                    1102   1614         ANI  2
-                    1103   1615         ORA  D
-                    1104   1616         MOV  D,A
-                    1105   1617         MVI  A,18H
-                    1106   1618         ORA  D
-                    1107   1619         MOV  D,A
-                    1108   1620         MOV  A,E
-                    1109   1621         ANI  80H
-                    1110   1622         MOV  E,A
-                    1111   1623         MOV  A,C
-                    1112   1624         ANI  0CH
-                    1113   1625         ORA  E
-                    1114   1626         PUSH PSW
-                    1115   1627         ORI  16
-                    1116   1628         MOV  E,A
-                    1117   1629         POP  PSW
-                    1118   1630         RET
+0eb2  eb            1074   1586 SUB1:   XCHG                    ;BIT FIDDLING TO GET PIECE GRAPHICS ON BOARD
+0eb3  7e            1075   1587         MOV  A,M
+0eb4  e6 80         1076   1588         ANI  80H
+0eb6  7e            1077   1589         MOV  A,M
+0eb7  ca c7 0e      1078   1590         JZ   SUB11 - OFFSET
+0eba  d1            1079   1591         POP  D
+0ebb  01 06 00      1080   1592         LXI  B,6
+0ebe  2a 41 0f      1081   1593         LHLD DAT2 - OFFSET
+0ec1  09            1082   1594         DAD  B
+0ec2  22 41 0f      1083   1595         SHLD DAT2 - OFFSET
+0ec5  d1            1084   1596         POP  D
+0ec6  c9            1085   1597         RET
+0ec7  0f            1086   1598 SUB11:  RRC
+0ec8  47            1087   1599         MOV  B,A
+0ec9  07            1088   1600         RLC
+0eca  07            1089   1601         RLC
+0ecb  07            1090   1602         RLC
+0ecc  4f            1091   1603         MOV  C,A
+0ecd  07            1092   1604         RLC
+0ece  5f            1093   1605         MOV  E,A
+0ecf  07            1094   1606         RLC
+0ed0  e6 04         1095   1607         ANI  4
+0ed2  57            1096   1608         MOV  D,A
+0ed3  7b            1097   1609         MOV  A,E
+0ed4  e6 01         1098   1610         ANI  1
+0ed6  b2            1099   1611         ORA  D
+0ed7  57            1100   1612         MOV  D,A
+0ed8  78            1101   1613         MOV  A,B
+0ed9  e6 02         1102   1614         ANI  2
+0edb  b2            1103   1615         ORA  D
+0edc  57            1104   1616         MOV  D,A
+0edd  3e 18         1105   1617         MVI  A,18H
+0edf  b2            1106   1618         ORA  D
+0ee0  57            1107   1619         MOV  D,A
+0ee1  7b            1108   1620         MOV  A,E
+0ee2  e6 80         1109   1621         ANI  80H
+0ee4  5f            1110   1622         MOV  E,A
+0ee5  79            1111   1623         MOV  A,C
+0ee6  e6 0c         1112   1624         ANI  0CH
+0ee8  b3            1113   1625         ORA  E
+0ee9  f5            1114   1626         PUSH PSW
+0eea  f6 10         1115   1627         ORI  16
+0eec  5f            1116   1628         MOV  E,A
+0eed  f1            1117   1629         POP  PSW
+0eee  c9            1118   1630         RET
                     1119   1631 
-                    1120   1632 SUB2:   MOV  B,C
-                    1121   1633 SUB22:  MOV  A,M
-                    1122   1634         ANI  32
-                    1123   1635         CNZ  SUB4 - OFFSET
-                    1124   1636         INX  D
-                    1125   1637         MOV  A,M
-                    1126   1638         ANI  16
-                    1127   1639         CNZ  SUB3 - OFFSET
-                    1128   1640         MOV  A,M
-                    1129   1641         ANI  8
-                    1130   1642         CNZ  SUB4 - OFFSET
-                    1131   1643         INX  D
-                    1132   1644         MOV  A,M
-                    1133   1645         ANI  4
-                    1134   1646         CNZ  SUB3 - OFFSET
-                    1135   1647         MOV  A,M
-                    1136   1648         ANI  2
-                    1137   1649         CNZ  SUB4 - OFFSET
-                    1138   1650         INX  D
-                    1139   1651         MOV  A,M
-                    1140   1652         ANI  1
-                    1141   1653         CNZ  SUB3 - OFFSET
-                    1142   1654         PUSH H
-                    1143   1655         LXI  H,000DH
-                    1144   1656         DAD  D
-                    1145   1657         XCHG
-                    1146   1658         POP  H
-                    1147   1659         INX  H
-                    1148   1660         DCR  B
-                    1149   1661         JNZ  SUB22 - OFFSET
-                    1150   1662         RET
+0eef  41            1120   1632 SUB2:   MOV  B,C
+0ef0  7e            1121   1633 SUB22:  MOV  A,M
+0ef1  e6 20         1122   1634         ANI  32
+0ef3  c4 32 0f      1123   1635         CNZ  SUB4 - OFFSET
+0ef6  13            1124   1636         INX  D
+0ef7  7e            1125   1637         MOV  A,M
+0ef8  e6 10         1126   1638         ANI  16
+0efa  c4 24 0f      1127   1639         CNZ  SUB3 - OFFSET
+0efd  7e            1128   1640         MOV  A,M
+0efe  e6 08         1129   1641         ANI  8
+0f00  c4 32 0f      1130   1642         CNZ  SUB4 - OFFSET
+0f03  13            1131   1643         INX  D
+0f04  7e            1132   1644         MOV  A,M
+0f05  e6 04         1133   1645         ANI  4
+0f07  c4 24 0f      1134   1646         CNZ  SUB3 - OFFSET
+0f0a  7e            1135   1647         MOV  A,M
+0f0b  e6 02         1136   1648         ANI  2
+0f0d  c4 32 0f      1137   1649         CNZ  SUB4 - OFFSET
+0f10  13            1138   1650         INX  D
+0f11  7e            1139   1651         MOV  A,M
+0f12  e6 01         1140   1652         ANI  1
+0f14  c4 24 0f      1141   1653         CNZ  SUB3 - OFFSET
+0f17  e5            1142   1654         PUSH H
+0f18  21 0d 00      1143   1655         LXI  H,000DH
+0f1b  19            1144   1656         DAD  D
+0f1c  eb            1145   1657         XCHG
+0f1d  e1            1146   1658         POP  H
+0f1e  23            1147   1659         INX  H
+0f1f  05            1148   1660         DCR  B
+0f20  c2 f0 0e      1149   1661         JNZ  SUB22 - OFFSET
+0f23  c9            1150   1662         RET
                     1151   1663 
-                    1152   1664 SUB3:   XCHG
-                    1153   1665         MOV  A,M
-                    1154   1666         ANI  0F0H
-                    1155   1667         MOV  C,A
-                    1156   1668         LDA  DAT1 - OFFSET
-                    1157   1669         ANI  00FH
-                    1158   1670         ORA  C
-                    1159   1671         MOV  M,A
-                    1160   1672         XCHG
-                    1161   1673         RET
+0f24  eb            1152   1664 SUB3:   XCHG
+0f25  7e            1153   1665         MOV  A,M
+0f26  e6 f0         1154   1666         ANI  0F0H
+0f28  4f            1155   1667         MOV  C,A
+0f29  3a 40 0f      1156   1668         LDA  DAT1 - OFFSET
+0f2c  e6 0f         1157   1669         ANI  00FH
+0f2e  b1            1158   1670         ORA  C
+0f2f  77            1159   1671         MOV  M,A
+0f30  eb            1160   1672         XCHG
+0f31  c9            1161   1673         RET
                     1162   1674 
-                    1163   1675 SUB4:   XCHG
-                    1164   1676         MOV  A,M
-                    1165   1677         ANI  00FH
-                    1166   1678         MOV  C,A
-                    1167   1679         LDA  DAT1 - OFFSET
-                    1168   1680         ANI  0F0H
-                    1169   1681         ORA  C
-                    1170   1682         MOV  M,A
-                    1171   1683         XCHG
-                    1172   1684         RET
+0f32  eb            1163   1675 SUB4:   XCHG
+0f33  7e            1164   1676         MOV  A,M
+0f34  e6 0f         1165   1677         ANI  00FH
+0f36  4f            1166   1678         MOV  C,A
+0f37  3a 40 0f      1167   1679         LDA  DAT1 - OFFSET
+0f3a  e6 f0         1168   1680         ANI  0F0H
+0f3c  b1            1169   1681         ORA  C
+0f3d  77            1170   1682         MOV  M,A
+0f3e  eb            1171   1683         XCHG
+0f3f  c9            1172   1684         RET
                     1173   1685 
-                    1174   1686 DAT1:   DB   0FFH                       ;PIECE COLOR
-                    1175   1687 DAT2:   DW   0                          ;PIECE LOCATION
+0f40  ff            1174   1686 DAT1:   DB   0FFH                       ;PIECE COLOR
+0f41  00 00         1175   1687 DAT2:   DW   0                          ;PIECE LOCATION
                     1176   1688 
-                    1177   1689 PTAB:   DB   0CH,3FH,33H,21H,33H,1EH    ;PIECE GRAPHICS
-                    1178   1690         DB   00H,2DH,3FH,2DH,3FH,3FH
-                    1179   1691         DB   2DH,3FH,1EH,1EH,1EH,1EH
-                    1180   1692         DB   2DH,3FH,1EH,1EH,1EH,1EH
-                    1181   1693         DB   0CH,1CH,3FH,1EH,0CH,3FH
-                    1182   1694         DB   0CH,1CH,3FH,1EH,0CH,3FH
-                    1183   1695         DB   08H,1EH,3FH,37H,07H,0FH
-                    1184   1696         DB   08H,1EH,3FH,37H,07H,0FH
-                    1185   1697         DB   00H,0CH,0CH,1EH,3FH,3FH
-                    1186   1698 
-                    1187   1699         ENDIF
-                    1188   1700 
-                    1189   1701 ;
-                    1190   1702 ; RELOCATABLE PATCH TO DISPLAY SMALL BOARD WITH COORDINATES
-                    1191   1703 ;
-                    1192   1704         IF   COORD
-                    1193   1705 
-0e00  cd da 01      1194   1706 DISP1:  CALL 01DAH
-0e03  cd 0c 0e      1195   1707         CALL DISP2 - OFFSET
-0e06  21 b6 0c      1196   1708         LXI  H,0CB6H
-0e09  c3 da 01      1197   1709         JMP  01DAH
-                    1198   1710 
-0e0c  06 20         1199   1711 DISP2:  MVI  B,20H
-0e0e  cd bf 09      1200   1712         CALL 09BFH
-0e11  c3 bf 09      1201   1713         JMP  09BFH
-                    1202   1714 
-0e14  cd bf 09      1203   1715 DISP3:  CALL 09BFH
-0e17  04            1204   1716         INR  B
-0e18  78            1205   1717         MOV  A,B
-0e19  e6 07         1206   1718         ANI  07H
-0e1b  32 29 0e      1207   1719         STA  DDAT - OFFSET
-0e1e  06 20         1208   1720         MVI  B,20H
-0e20  c3 bf 09      1209   1721         JMP  09BFH
-                    1210   1722 
-0e23  cd 0c 0e      1211   1723 DISP4:  CALL DISP2 - OFFSET
-0e26  c3 da 01      1212   1724         JMP  01DAH
-                    1213   1725 
-0e29  00            1214   1726 DDAT:   DB   0
-0e2a  20 20 20 20   1215   1727 CTEXT:  DB   '     0  1  2  3  4  5  6  7',0DH
-0e2e  20 30 20 20   1215   1728
-0e32  31 20 20 32   1215   1729
-0e36  20 20 33 20   1215   1730
-0e3a  20 34 20 20   1215   1731
-0e3e  35 20 20 36   1215   1732
-0e42  20 20 37 0d   1215   1733
-                    1216   1734 
-                    1217   1735         ENDIF
-                    1218   1736 
-                    1219   1737 ;
-                    1220   1738 ; PATCH TO RUN IT UNDER CP/M
-                    1221   1739 ;
-                    1222   1740         IF   CPM
-                    1223   1741 
-                    1224   1742         ORG  0 + OFFSET         ;PATCH FIRST INSTRUCTION TO JUMP
-                    1225   1743         JMP  CPMIN              ;TO THE CP/M PATCH
-                    1226   1744 
-                    1227   1745         ORG  01D7H + OFFSET     ;PATCH HLT FOR STANDALONE TO
-                    1228   1746         JMP  CPMOUT             ;RETURN TO CP/M
-                    1229   1747 
-                    1230   1748         ORG  0DE6H + OFFSET     ;PATCH TERMINAL OUT FOR CP/M
-                    1231   1749         MOV  C,B
-                    1232   1750         CALL CONOUT
-                    1233   1751         RET
-                    1234   1752 
-                    1235   1753         ORG  0DF1H + OFFSET     ;PATCH TERMINAL IN FOR CP/M
-                    1236   1754         CALL CONIN
-                    1237   1755         ANI  7FH
-                    1238   1756         MOV  B,A
-                    1239   1757         RET
-                    1240   1758 
-                    1241   1759         ORG  1000H + OFFSET     ;CP/M PATCH AREA
-                    1242   1760 CPMIN:  LHLD 1                  ;BIOS WARM BOOT -> HL
-                    1243   1761         LXI  B,6                ;BIOS CONIN -> HL
-                    1244   1762         DAD  B
-                    1245   1763         INX  H
-                    1246   1764         MOV  A,M                ;STORE ADR. FOR CONIN
-                    1247   1765         STA  CONIN + 1
-                    1248   1766         INX  H
-                    1249   1767         MOV  A,M
-                    1250   1768         STA  CONIN + 2
-                    1251   1769         LHLD 1                  ;BIOS WARM BOOT -> HL
-                    1252   1770         LXI  B,9                ;BIOS CONOUT -> HL
-                    1253   1771         DAD  B
-                    1254   1772         INX  H
-                    1255   1773         MOV  A,M                ;STORE ADR. FOR CONOUT
-                    1256   1774         STA  CONOUT + 1
-                    1257   1775         INX  H
-                    1258   1776         MOV  A,M
-                    1259   1777         STA  CONOUT + 2
-                    1260   1778         LDA  3                  ;GET THE IOBYTE
-                    1261   1779         LXI  SP,STACK
-                    1262   1780         LXI  H,0                ;FOR CP/M WE NEED TO SAVE 00-7FH
-                    1263   1781         LXI  D,SAVE
-                    1264   1782         LXI  B,0080H
-                    1265   1783         CALL LDIR
-                    1266   1784         LXI  H,OFFSET           ;NOW MOVE THE PROGRAM DOWN TO 0
-                    1267   1785         LXI  D,0
-                    1268   1786         LXI  B,0FFFH
-                    1269   1787         CALL LDIR
-                    1270   1788         STA  3                  ;RESTORE THE IOBYTE, BIOS MIGHT NEED IT
-                    1271   1789         LXI  SP,0D82H           ;FIRST INSTRUCTION JUST PATCHED ABOVE
-                    1272   1790         CALL 09ACH              ;SECOND INSTRUCTION DESTROYED BY IOBYTE
-                    1273   1791         JMP  6                  ;GO TO MICROCHESS
-                    1274   1792 
-                    1275   1793 CPMOUT: LXI  SP,STACK
-                    1276   1794         LXI  H,SAVE             ;RESTORE 00-7FH FOR CP/M
-                    1277   1795         LXI  D,0
-                    1278   1796         LXI  B,0080H
-                    1279   1797         CALL LDIR
-                    1280   1798         IF   DAZZLER
-                    1281   1799         XRA  A                  ;SWITCH DAZZLER OFF
-                    1282   1800         OUT  0EH
-                    1283   1801         ENDIF
-                    1284   1802         RST  0                  ;AND THEN RETURN TO CP/M
-                    1285   1803 
-                    1286   1804 CONIN:  JMP  0                  ;CALL BIOS CONSOLE IN
-                    1287   1805 CONOUT: JMP  0                  ;CALL BIOS CONSOLE OUT
-                    1288   1806 
-                    1289   1807 SAVE:   DS   80H
-                    1290   1808         DS   16
-                    1291   1809 STACK:
-                    1292   1810 
-                    1293   1811         ENDIF
-                    1294   1812 
-                    1295   1813 ;
-                    1296   1814 ; SUPPORT ROUTINE TO AVOID USING Z80 LDIR INSTRUCTION
-                    1297   1815 ;
-                    1298   1816         IF   CPM OR DAZZLER
-                    1299   1817 LDIR:   PUSH PSW
-                    1300   1818 LDIR1:  MOV  A,M
-                    1301   1819         STAX D
-                    1302   1820         INX  H
-                    1303   1821         INX  D
-                    1304   1822         DCX  B
-                    1305   1823         MOV  A,B
-                    1306   1824         ORA  C
-                    1307   1825         JNZ  LDIR1
-                    1308   1826         POP  PSW
-                    1309   1827         RET
-                    1310   1828         ENDIF
-                    1311   1829 
-0e46                1312   1830         END
+0f43  0c 3f 33 21   1177   1689 PTAB:   DB   0CH,3FH,33H,21H,33H,1EH    ;PIECE GRAPHICS
+0f47  33 1e         1177   1690
+0f49  00 2d 3f 2d   1178   1691         DB   00H,2DH,3FH,2DH,3FH,3FH
+0f4d  3f 3f         1178   1692
+0f4f  2d 3f 1e 1e   1179   1693         DB   2DH,3FH,1EH,1EH,1EH,1EH
+0f53  1e 1e         1179   1694
+0f55  2d 3f 1e 1e   1180   1695         DB   2DH,3FH,1EH,1EH,1EH,1EH
+0f59  1e 1e         1180   1696
+0f5b  0c 1c 3f 1e   1181   1697         DB   0CH,1CH,3FH,1EH,0CH,3FH
+0f5f  0c 3f         1181   1698
+0f61  0c 1c 3f 1e   1182   1699         DB   0CH,1CH,3FH,1EH,0CH,3FH
+0f65  0c 3f         1182   1700
+0f67  08 1e 3f 37   1183   1701         DB   08H,1EH,3FH,37H,07H,0FH
+0f6b  07 0f         1183   1702
+0f6d  08 1e 3f 37   1184   1703         DB   08H,1EH,3FH,37H,07H,0FH
+0f71  07 0f         1184   1704
+0f73  00 0c 0c 1e   1185   1705         DB   00H,0CH,0CH,1EH,3FH,3FH
+0f77  3f 3f         1185   1706
+                    1186   1707 
+                    1187   1708         ENDIF
+                    1188   1709 
+                    1189   1710 ;
+                    1190   1711 ; RELOCATABLE PATCH TO DISPLAY SMALL BOARD WITH COORDINATES
+                    1191   1712 ;
+                    1192   1713         IF   COORD
+                    1193   1714 
+0f79  cd da 01      1194   1715 DISP1:  CALL 01DAH
+0f7c  cd 85 0f      1195   1716         CALL DISP2 - OFFSET
+0f7f  21 b6 0c      1196   1717         LXI  H,0CB6H
+0f82  c3 da 01      1197   1718         JMP  01DAH
+                    1198   1719 
+0f85  06 20         1199   1720 DISP2:  MVI  B,20H
+0f87  cd bf 09      1200   1721         CALL 09BFH
+0f8a  c3 bf 09      1201   1722         JMP  09BFH
+                    1202   1723 
+0f8d  cd bf 09      1203   1724 DISP3:  CALL 09BFH
+0f90  04            1204   1725         INR  B
+0f91  78            1205   1726         MOV  A,B
+0f92  e6 07         1206   1727         ANI  07H
+0f94  32 a2 0f      1207   1728         STA  DDAT - OFFSET
+0f97  06 20         1208   1729         MVI  B,20H
+0f99  c3 bf 09      1209   1730         JMP  09BFH
+                    1210   1731 
+0f9c  cd 85 0f      1211   1732 DISP4:  CALL DISP2 - OFFSET
+0f9f  c3 da 01      1212   1733         JMP  01DAH
+                    1213   1734 
+0fa2  00            1214   1735 DDAT:   DB   0
+0fa3  20 20 20 20   1215   1736 CTEXT:  DB   '     0  1  2  3  4  5  6  7',0DH
+0fa7  20 30 20 20   1215   1737
+0fab  31 20 20 32   1215   1738
+0faf  20 20 33 20   1215   1739
+0fb3  20 34 20 20   1215   1740
+0fb7  35 20 20 36   1215   1741
+0fbb  20 20 37 0d   1215   1742
+                    1216   1743 
+                    1217   1744         ENDIF
+                    1218   1745 
+                    1219   1746 ;
+                    1220   1747 ; PATCH TO RUN IT UNDER CP/M
+                    1221   1748 ;
+                    1222   1749         IF   CPM
+                    1223   1750 
+                    1224   1751         ORG  0 + OFFSET         ;PATCH FIRST INSTRUCTION TO JUMP
+                    1225   1752         JMP  CPMIN              ;TO THE CP/M PATCH
+                    1226   1753 
+                    1227   1754         ORG  01D7H + OFFSET     ;PATCH HLT FOR STANDALONE TO
+                    1228   1755         JMP  CPMOUT             ;RETURN TO CP/M
+                    1229   1756 
+                    1230   1757         ORG  0DE6H + OFFSET     ;PATCH TERMINAL OUT FOR CP/M
+                    1231   1758         MOV  C,B
+                    1232   1759         CALL CONOUT
+                    1233   1760         RET
+                    1234   1761 
+                    1235   1762         ORG  0DF1H + OFFSET     ;PATCH TERMINAL IN FOR CP/M
+                    1236   1763         CALL CONIN
+                    1237   1764         ANI  7FH
+                    1238   1765         MOV  B,A
+                    1239   1766         RET
+                    1240   1767 
+                    1241   1768         ORG  1000H + OFFSET     ;CP/M PATCH AREA
+                    1242   1769 CPMIN:  LHLD 1                  ;BIOS WARM BOOT -> HL
+                    1243   1770         LXI  B,6                ;BIOS CONIN -> HL
+                    1244   1771         DAD  B
+                    1245   1772         INX  H
+                    1246   1773         MOV  A,M                ;STORE ADR. FOR CONIN
+                    1247   1774         STA  CONIN + 1
+                    1248   1775         INX  H
+                    1249   1776         MOV  A,M
+                    1250   1777         STA  CONIN + 2
+                    1251   1778         LHLD 1                  ;BIOS WARM BOOT -> HL
+                    1252   1779         LXI  B,9                ;BIOS CONOUT -> HL
+                    1253   1780         DAD  B
+                    1254   1781         INX  H
+                    1255   1782         MOV  A,M                ;STORE ADR. FOR CONOUT
+                    1256   1783         STA  CONOUT + 1
+                    1257   1784         INX  H
+                    1258   1785         MOV  A,M
+                    1259   1786         STA  CONOUT + 2
+                    1260   1787         LDA  3                  ;GET THE IOBYTE
+                    1261   1788         LXI  SP,STACK
+                    1262   1789         LXI  H,0                ;FOR CP/M WE NEED TO SAVE 00-7FH
+                    1263   1790         LXI  D,SAVE
+                    1264   1791         LXI  B,0080H
+                    1265   1792         CALL LDIR
+                    1266   1793         LXI  H,OFFSET           ;NOW MOVE THE PROGRAM DOWN TO 0
+                    1267   1794         LXI  D,0
+                    1268   1795         LXI  B,0FFFH
+                    1269   1796         CALL LDIR
+                    1270   1797         STA  3                  ;RESTORE THE IOBYTE, BIOS MIGHT NEED IT
+                    1271   1798         LXI  SP,0D82H           ;FIRST INSTRUCTION JUST PATCHED ABOVE
+                    1272   1799         CALL 09ACH              ;SECOND INSTRUCTION DESTROYED BY IOBYTE
+                    1273   1800         JMP  6                  ;GO TO MICROCHESS
+                    1274   1801 
+                    1275   1802 CPMOUT: LXI  SP,STACK
+                    1276   1803         LXI  H,SAVE             ;RESTORE 00-7FH FOR CP/M
+                    1277   1804         LXI  D,0
+                    1278   1805         LXI  B,0080H
+                    1279   1806         CALL LDIR
+                    1280   1807         IF   DAZZLER
+                    1281   1808         XRA  A                  ;SWITCH DAZZLER OFF
+                    1282   1809         OUT  0EH
+                    1283   1810         ENDIF
+                    1284   1811         RST  0                  ;AND THEN RETURN TO CP/M
+                    1285   1812 
+                    1286   1813 CONIN:  JMP  0                  ;CALL BIOS CONSOLE IN
+                    1287   1814 CONOUT: JMP  0                  ;CALL BIOS CONSOLE OUT
+                    1288   1815 
+                    1289   1816 SAVE:   DS   80H
+                    1290   1817         DS   16
+                    1291   1818 STACK:
+                    1292   1819 
+                    1293   1820         ENDIF
+                    1294   1821 
+                    1295   1822 ;
+                    1296   1823 ; SUPPORT ROUTINE TO AVOID USING Z80 LDIR INSTRUCTION
+                    1297   1824 ;
+                    1298   1825         IF   CPM OR DAZZLER
+0fbf  f5            1299   1826 LDIR:   PUSH PSW
+0fc0  7e            1300   1827 LDIR1:  MOV  A,M
+0fc1  12            1301   1828         STAX D
+0fc2  23            1302   1829         INX  H
+0fc3  13            1303   1830         INX  D
+0fc4  0b            1304   1831         DCX  B
+0fc5  78            1305   1832         MOV  A,B
+0fc6  b1            1306   1833         ORA  C
+0fc7  c2 c0 0f      1307   1834         JNZ  LDIR1
+0fca  f1            1308   1835         POP  PSW
+0fcb  c9            1309   1836         RET
+                    1310   1837         ENDIF
+                    1311   1838 
+0fcc                1312   1839         END
 
 Symbol table
 
-CAUTO   0001    COORD   0001    CPM     0000    CTEXT   0e2a    DAZZLER 0000 
-DDAT    0e29    DISP1   0e00    DISP2   0e0c    DISP3   0e14    DISP4   0e23 
+CAUTO   0001    COORD   0001    CPM     0000    CTEXT   0fa3    DAT1    0f40 
+DAT2    0f41    DAZZLER 0001    DB1     0e34    DB2     0e39    DBOARD  0e2c 
+DBP1    0e3c    DBP2    0e44    DDAT    0fa2    DDISP   0e25    DINIT   0e0d 
+DISP1   0f79    DISP2   0f85    DISP3   0f8d    DISP4   0f9c    DONEP   0e9e 
+DPIE0   0e6a    DPIE1   0e73    DPIE2   0e7e    DPIECE  0e65    IDATA   0e1c 
 IMSAI   0000    L000    0000*   L010    0010*   L020    0020*   L030    0030*
 L040    0040*   L050    0050*   L060    0060*   L070    0070*   L080    0080*
 L090    0090*   L0A0    00a0*   L0B0    00b0*   L0C0    00c0*   L0D0    00d0*
@@ -1881,11 +1893,13 @@ LCC0    0cc0*   LCDO    0cd0*   LCE0    0ce0*   LCF0    0cf0*   LD00    0d00*
 LD10    0d10*   LD20    0d20*   LD30    0d30*   LD40    0d40*   LD50    0d50*
 LD60    0d60*   LD70    0d70*   LD80    0d80*   LD90    0d90*   LDA0    0da0*
 LDB0    0db0*   LDC0    0dc0*   LDD0    0dd0*   LDE0    0de0*   LDF0    0df0*
-LE00    0e00*   LE10    0e10*   LE20    0e20*   LE30    0e30*   LE40    0e40*
-LE50    0e50*   LE60    0e60*   LE70    0e70*   LE80    0e80*   LE90    0e90*
-LEA0    0ea0*   LEB0    0eb0*   LEC0    0ec0*   LED0    0ed0*   LEE0    0ee0*
-LEF0    0ef0*   LF00    0f00*   LF10    0f10*   LF20    0f20*   LF30    0f30*
-LF40    0f40*   LF50    0f50*   LF60    0f60*   LF70    0f70*   LF80    0f80*
-LF90    0f90*   LFA0    0fa0*   LFB0    0fb0*   LFC0    0fc0*   LFD0    0fd0*
-LFE0    0fe0*   LFF0    0ff0*   MAUTO   0001    MITS    0001    OFFSET  0000 
-SMALLD  0000    TTYI    0df1    TTYO    0de6    
+LDIR    0fbf    LDIR1   0fc0    LE00    0e00*   LE10    0e10*   LE20    0e20*
+LE30    0e30*   LE40    0e40*   LE50    0e50*   LE60    0e60*   LE70    0e70*
+LE80    0e80*   LE90    0e90*   LEA0    0ea0*   LEB0    0eb0*   LEC0    0ec0*
+LED0    0ed0*   LEE0    0ee0*   LEF0    0ef0*   LF00    0f00*   LF10    0f10*
+LF20    0f20*   LF30    0f30*   LF40    0f40*   LF50    0f50*   LF60    0f60*
+LF70    0f70*   LF80    0f80*   LF90    0f90*   LFA0    0fa0*   LFB0    0fb0*
+LFC0    0fc0*   LFD0    0fd0*   LFE0    0fe0*   LFF0    0ff0*   MAUTO   0001 
+MITS    0001    OFFSET  0000    PTAB    0f43    SMALLD  0000    SUB1    0eb2 
+SUB11   0ec7    SUB2    0eef    SUB22   0ef0    SUB3    0f24    SUB4    0f32 
+SWC     0e00    TTYI    0df1    TTYO    0de6    
