@@ -207,9 +207,9 @@ static void hwctl_out(BYTE data)
 	}
 
 	if (data & 64) {
-		reset_cpu();
-		PC = 0xff00;	/* power on jump */
-		dazzler_ctl_out(0);
+		reset_cpu();		/* reset CPU */
+		PC = 0xff00;		/* power on jump to boot ROM */
+		dazzler_ctl_out(0);	/* switch Dazzler off */
 		return;
 	}
 
