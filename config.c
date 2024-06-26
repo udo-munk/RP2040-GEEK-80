@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include "hardware/rtc.h"
 #include "f_util.h"
 #include "ff.h"
 #include "sim.h"
@@ -29,7 +30,7 @@
 
 extern FIL sd_file;
 extern FRESULT sd_res;
-extern char disks[2][22];
+extern char disks[4][22];
 extern int speed;
 extern BYTE fp_value;
 
@@ -50,6 +51,28 @@ static void prompt_fn(char *s)
 }
 
 /*
+ * get an integer with range check
+ */
+static int get_int(char *prompt, int min_val, int max_val)
+{
+	int i;
+	char s[7];
+
+	for (;;) {
+		printf("Enter %s: ", prompt);
+		get_cmdline(s, 6);
+		if (s[0] == '\0')
+			return -1;
+		i = atoi(s);
+		if (i < min_val || i > max_val) {
+			printf("Invalid %s: range %d - %d\n",
+			       prompt, min_val, max_val);
+		} else
+			return i;
+	}
+}
+
+/*
  * Configuration dialog for the machine
  */
 void config(void)
@@ -61,7 +84,10 @@ void config(void)
 	const char *dext = "*.DSK";
 	char s[10];
 	unsigned int br;
-	int go_flag = 0, brightness = DEFAULT_BRIGHTNESS;
+	int go_flag = 0, brightness = DEFAULT_BRIGHTNESS, i;
+	datetime_t t;
+	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
+				       "Thu", "Fri", "Sat" };
 
 	/* try to read config file */
 	sd_res = f_open(&sd_file, cfg, FA_READ);
@@ -69,30 +95,43 @@ void config(void)
 		f_read(&sd_file, &cpu, sizeof(cpu), &br);
 		f_read(&sd_file, &speed, sizeof(speed), &br);
 		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
+		f_read(&sd_file, &brightness, sizeof(brightness), &br);
+		f_read(&sd_file, &t, sizeof(datetime_t), &br);
 		f_read(&sd_file, &disks[0], 22, &br);
 		f_read(&sd_file, &disks[1], 22, &br);
-		f_read(&sd_file, &brightness, sizeof(brightness), &br);
+		f_read(&sd_file, &disks[2], 22, &br);
+		f_read(&sd_file, &disks[3], 22, &br);
 		f_close(&sd_file);
 	}
 	lcd_brightness(brightness);
+	rtc_set_datetime(&t);
+	sleep_us(64);
 
 	while (!go_flag) {
+		if (rtc_get_datetime(&t)) {
+			printf("Current time: %s %04d-%02d-%02d "
+			       "%02d:%02d:%02d\n", dotw[t.dotw],
+			       t.year, t.month, t.day, t.hour, t.min, t.sec);
+		}
 		printf("b - LCD brightness: %d\n", brightness);
-		printf("1 - switch CPU, currently %s\n",
+		printf("t - set date and time\n");
+		printf("c - switch CPU, currently %s\n",
 		       (cpu == Z80) ? "Z80" : "8080");
-		printf("2 - CPU speed: %d MHz\n", speed);
-		printf("3 - Port 255 value: %02XH\n", fp_value);
-		printf("4 - list files\n");
-		printf("5 - load file\n");
-		printf("6 - list disks\n");
-		printf("7 - Disk 0: %s\n", disks[0]);
-		printf("8 - Disk 1: %s\n", disks[1]);
-		printf("9 - run machine\n\n");
+		printf("s - CPU speed: %d MHz\n", speed);
+		printf("p - Port 255 value: %02XH\n", fp_value);
+		printf("f - list files\n");
+		printf("r - load file\n");
+		printf("d - list disks\n");
+		printf("0 - Disk 0: %s\n", disks[0]);
+		printf("1 - Disk 1: %s\n", disks[1]);
+		printf("2 - Disk 2: %s\n", disks[2]);
+		printf("3 - Disk 3: %s\n", disks[3]);
+		printf("g - run machine\n\n");
 		printf("Command: ");
 		get_cmdline(s, 2);
 		putchar('\n');
 
-		switch (*s) {
+		switch (tolower((unsigned char) *s)) {
 		case 'b':
 			printf("Value (0-100): ");
 			get_cmdline(s, 4);
@@ -106,21 +145,40 @@ void config(void)
 			lcd_brightness((uint8_t) brightness);
 			break;
 
-		case '1':
+		case 't':
+			if ((i = get_int("weekday", 0, 6)) >= 0)
+				t.dotw = i;
+			if ((i = get_int("year", 0, 4096)) >= 0)
+				t.year = i;
+			if ((i = get_int("month", 1, 12)) >= 0)
+				t.month = i;
+			if ((i = get_int("day", 1, 31)) >= 0)
+				t.day = i;
+			if ((i = get_int("hour", 0, 23)) >= 0)
+				t.hour = i;
+			if ((i = get_int("minute", 0, 59)) >= 0)
+				t.min = i;
+			if ((i = get_int("second", 0, 59)) >= 0)
+				t.sec = i;
+			rtc_set_datetime(&t);
+			sleep_us(64);
+			break;
+
+		case 'c':
 			if (cpu == Z80)
 				switch_cpu(I8080);
 			else
 				switch_cpu(Z80);
 			break;
 
-		case '2':
+		case 's':
 			printf("Value in MHz, 0=unlimited: ");
 			get_cmdline(s, 2);
 			putchar('\n');
 			speed = atoi((const char *) &s);
 			break;
 
-		case '3':
+		case 'p':
 again:
 			printf("Value in Hex: ");
 			get_cmdline(s, 3);
@@ -135,23 +193,23 @@ again:
 				     *(s + 1) - 'A' + 10);
 			break;
 
-		case '4':
+		case 'f':
 			my_ls(cpath, cext);
 			printf("\n\n");
 			break;
 
-		case '5':
+		case 'r':
 			prompt_fn(s);
 			load_file(s);
 			putchar('\n');
 			break;
 
-		case '6':
+		case 'd':
 			my_ls(dpath, dext);
 			printf("\n\n");
 			break;
 
-		case '7':
+		case '0':
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[0][0] = 0x0;
@@ -161,7 +219,7 @@ again:
 			}
 			break;
 
-		case '8':
+		case '1':
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[1][0] = 0x0;
@@ -171,7 +229,27 @@ again:
 			}
 			break;
 
-		case '9':
+		case '2':
+			prompt_fn(s);
+			if (strlen(s) == 0) {
+				disks[2][0] = 0x0;
+				putchar('\n');
+			} else {
+				mount_disk(2, s);
+			}
+			break;
+
+		case '3':
+			prompt_fn(s);
+			if (strlen(s) == 0) {
+				disks[3][0] = 0x0;
+				putchar('\n');
+			} else {
+				mount_disk(3, s);
+			}
+			break;
+
+		case 'g':
 			go_flag = 1;
 			break;
 
@@ -186,9 +264,12 @@ again:
 		f_write(&sd_file, &cpu, sizeof(cpu), &br);
 		f_write(&sd_file, &speed, sizeof(speed), &br);
 		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
+		f_write(&sd_file, &brightness, sizeof(brightness), &br);
+		f_write(&sd_file, &t, sizeof(datetime_t), &br);
 		f_write(&sd_file, &disks[0], 22, &br);
 		f_write(&sd_file, &disks[1], 22, &br);
-		f_write(&sd_file, &brightness, sizeof(brightness), &br);
+		f_write(&sd_file, &disks[2], 22, &br);
+		f_write(&sd_file, &disks[3], 22, &br);
 		f_close(&sd_file);
 	}
 }

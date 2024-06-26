@@ -30,6 +30,7 @@
 #include "f_util.h"
 #include "ff.h"
 #include "hw_config.h"
+#include "rtc.h"
 
 /* Project includes */
 #include "sim.h"
@@ -90,7 +91,7 @@ static sd_card_t sd_card = {
 FATFS fs;       /* FatFs on MicroSD */
 FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
-char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.DSK */
+char disks[4][22]; /* path name for 2 disk images /DISKS80/filename.DSK */
 
 /* CPU speed */
 int speed = CPU_SPEED;
@@ -147,6 +148,8 @@ int main(void)
 	char s[2];
 
 	stdio_init_all();	/* initialize stdio */
+
+	time_init();		/* initialize FatFS RTC */
 
 	/* initialize LCD */
 	lcd_init();

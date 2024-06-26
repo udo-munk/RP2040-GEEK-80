@@ -28,7 +28,7 @@
 
 extern FIL sd_file;
 extern FRESULT sd_res;
-extern char disks[2][22];
+extern char disks[4][22];
 
 /* 64KB non banked memory */
 #define MEMSIZE 65536
@@ -112,6 +112,8 @@ void load_file(char *name)
 	}
 	if (sd_res != FR_OK)
 		printf("f_read error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
+	else
+		printf("loaded file \"%s\" (%d bytes)\n", name, i + br);
 
 	f_close(&sd_file);
 }
@@ -147,7 +149,7 @@ static BYTE prep_io(int drive, int track, int sector, WORD addr)
 	FSIZE_t pos;
 
 	/* check if drive in range */
-	if ((drive < 0) || (drive > 1))
+	if ((drive < 0) || (drive > 3))
 		return FDC_STAT_DISK;
 
 	/* check if track and sector in range */
