@@ -48,6 +48,10 @@ static void prompt_fn(char *s)
 {
 	printf("Filename: ");
 	get_cmdline(s, 9);
+	while (*s) {
+		*s = toupper((unsigned char) *s);
+		s++;
+	}
 }
 
 /*

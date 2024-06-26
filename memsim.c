@@ -53,7 +53,7 @@ void init_memory(void)
 
 static void complain(void)
 {
-	printf("File not found\n\n");
+	puts("File not found\n");
 }
 
 /*
@@ -124,10 +124,18 @@ void load_file(char *name)
 void mount_disk(int drive, char *name)
 {
 	char SFN[22];
+	int i;
 
 	strcpy(SFN, "/DISKS80/");
 	strcat(SFN, name);
 	strcat(SFN, ".DSK");
+
+	for (i = 0; i < 4; i++) {
+		if (i != drive && strcmp(disks[i], SFN) == 0) {
+			puts("Disk already mounted\n");
+			return;
+		}
+	}
 
 	/* try to open file */
 	sd_res = f_open(&sd_file, SFN, FA_READ);
