@@ -113,7 +113,7 @@ void load_file(char *name)
 	if (sd_res != FR_OK)
 		printf("f_read error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 	else
-		printf("loaded file \"%s\" (%d bytes)\n", name, i + br);
+		printf("loaded file \"%s\" (%d bytes)\n", SFN, i + br);
 
 	f_close(&sd_file);
 }
