@@ -148,11 +148,8 @@ int main(void)
 	char s[2];
 
 	stdio_init_all();	/* initialize stdio */
-
 	time_init();		/* initialize FatFS RTC */
-
-	/* initialize LCD */
-	lcd_init();
+	lcd_init();		/* initialize LCD */
 
 	/*
 	 * initialize hardware AD converter, enable onboard
