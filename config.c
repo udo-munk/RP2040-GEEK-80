@@ -148,7 +148,7 @@ void config(void)
 		case 't':
 			if ((i = get_int("weekday", 0, 6)) >= 0)
 				t.dotw = i;
-			if ((i = get_int("year", 0, 4096)) >= 0)
+			if ((i = get_int("year", 0, 4095)) >= 0)
 				t.year = i;
 			if ((i = get_int("month", 1, 12)) >= 0)
 				t.month = i;
