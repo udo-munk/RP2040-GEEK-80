@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2024 by Udo Munk
+ * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  *
  * This module configures the machine appropriate for the
  * Z80/8080 software we want to run on it.
