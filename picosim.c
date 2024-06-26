@@ -183,16 +183,7 @@ int main(void)
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
-NOPE:	config();		/* configure the machine */
-
-	/* check if there are disks in the drives */
-	if (strlen(disks[0]) != 0) {
-		/* they will try this for sure, so ... */
-		if (!strcmp(disks[0], disks[1])) {
-			printf("Not with this config dude\n");
-			goto NOPE;
-		}
-	}
+	config();		/* configure the machine */
 
 	/* setup speed of the CPU */
 	f_flag = speed;
