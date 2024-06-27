@@ -88,7 +88,7 @@ void config(void)
 	const char *dext = "*.DSK";
 	char s[10];
 	unsigned int br;
-	int go_flag = 0, brightness = DEFAULT_BRIGHTNESS, i;
+	int go_flag = 0, brightness = DEFAULT_BRIGHTNESS, rotated = 0, i;
 	datetime_t t;
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
@@ -100,6 +100,7 @@ void config(void)
 		f_read(&sd_file, &speed, sizeof(speed), &br);
 		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
 		f_read(&sd_file, &brightness, sizeof(brightness), &br);
+		f_read(&sd_file, &rotated, sizeof(rotated), &br);
 		f_read(&sd_file, &t, sizeof(datetime_t), &br);
 		f_read(&sd_file, &disks[0], 22, &br);
 		f_read(&sd_file, &disks[1], 22, &br);
@@ -108,6 +109,7 @@ void config(void)
 		f_close(&sd_file);
 	}
 	lcd_brightness(brightness);
+	lcd_set_rotated(rotated);
 	rtc_set_datetime(&t);
 	sleep_us(64);
 
@@ -118,6 +120,7 @@ void config(void)
 			       t.year, t.month, t.day, t.hour, t.min, t.sec);
 		}
 		printf("b - LCD brightness: %d\n", brightness);
+		printf("m - rotate LCD\n");
 		printf("t - set date and time\n");
 		printf("c - switch CPU, currently %s\n",
 		       (cpu == Z80) ? "Z80" : "8080");
@@ -149,6 +152,10 @@ void config(void)
 			lcd_brightness((uint8_t) brightness);
 			break;
 
+		case 'm':
+			rotated = !rotated;
+			lcd_set_rotated(rotated);
+			break;
 		case 't':
 			if ((i = get_int("weekday", 0, 6)) >= 0)
 				t.dotw = i;
@@ -269,6 +276,7 @@ again:
 		f_write(&sd_file, &speed, sizeof(speed), &br);
 		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
 		f_write(&sd_file, &brightness, sizeof(brightness), &br);
+		f_write(&sd_file, &rotated, sizeof(rotated), &br);
 		f_write(&sd_file, &t, sizeof(datetime_t), &br);
 		f_write(&sd_file, &disks[0], 22, &br);
 		f_write(&sd_file, &disks[1], 22, &br);

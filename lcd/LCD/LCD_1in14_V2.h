@@ -34,8 +34,8 @@
 #define LCD_1IN14_V2_HEIGHT	240
 #define LCD_1IN14_V2_WIDTH	135
 
-#define HORIZONTAL		0
-#define VERTICAL		1
+#define LCD_HORIZONTAL		0
+#define LCD_VERTICAL		1
 
 typedef struct {
 	uint16_t WIDTH;
@@ -47,6 +47,7 @@ extern LCD_1IN14_V2_ATTRIBUTES LCD_1IN14_V2;
 
 extern void LCD_1IN14_V2_Init(uint8_t Scan_dir);
 extern void LCD_1IN14_V2_Exit(void);
+extern void LCD_1IN14_V2_SetRotated(uint8_t Rotated);
 extern void LCD_1IN14_V2_Clear(uint16_t Color);
 extern void LCD_1IN14_V2_Display(uint16_t *Image);
 extern void LCD_1IN14_V2_Display12(uint8_t *Image);

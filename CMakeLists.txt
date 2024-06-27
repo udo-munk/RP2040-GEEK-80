@@ -63,9 +63,9 @@ target_compile_definitions(picosim PRIVATE
 	PICO_STACK_SIZE=4096
 	PICO_CORE1_STACK_SIZE=4096
 	PICO_HEAP_SIZE=8192
-	# LCD_COLOR_DEPTH can be 12 or 16 bits
+	# LCD frame buffer color depth (12 or 16 bits)
 	LCD_COLOR_DEPTH=12
-	# LCD_REFRESH in Hz
+	# LCD refresh rate in Hz (30 works well with 12-bit frame buffer)
 	LCD_REFRESH=30
 )
 
@@ -73,32 +73,34 @@ target_compile_definitions(picosim INTERFACE
 	PICO_DEFAULT_UART=0
 )
 
-target_compile_options(picosim PUBLIC
-	### GNU/Clang C Options
-	$<$<COMPILE_LANG_AND_ID:C,GNU>:-fdiagnostics-color=always>
-	$<$<COMPILE_LANG_AND_ID:C,Clang>:-fcolor-diagnostics>
-
-	$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wall>
-	$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wextra>
-	$<$<COMPILE_LANG_AND_ID:C,Clang>:-Weverything>
-	$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wno-unused-parameter>
-)
+# compiler diagnostic options
+if (PICO_C_COMPILER_IS_GNU)
+	target_compile_options(picosim PUBLIC -fdiagnostics-color=always)
+elseif (PICO_C_COMPILER_IS_CLANG)
+	target_compile_options(picosim PUBLIC -fcolor-diagnostics)
+endif ()
+target_compile_options(picosim PUBLIC -Wall -Wextra)
+if (PICO_C_COMPILER_IS_CLANG)
+	target_compile_options(picosim PUBLIC -Weverything)
+endif ()
+# -Wno-unused-parameter because no-OS-FatFS-SD-SDIO-SPI-RPi-Pico isn't clean
+target_compile_options(picosim PUBLIC -Wno-unused-parameter)
 
 target_link_libraries(picosim
+	hardware_adc
+	hardware_spi
 	pico_multicore
 	pico_stdlib
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
-	LCD
-	GUI
-	Fonts
 	Config
-	hardware_spi
-	hardware_adc
+	LCD
+	Fonts
+	GUI
 )
 
 pico_add_extra_outputs(picosim)
 
-set_property(TARGET picosim APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--print-memory-usage")
+target_link_options(picosim PRIVATE -Xlinker --print-memory-usage)
 
 pico_set_program_name(picosim "z80pack picosim")
 pico_set_program_description(picosim "z80pack on Waveshare RP2040-GEEK")
