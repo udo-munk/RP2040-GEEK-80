@@ -323,15 +323,24 @@ static void __not_in_flash_func(draw_lowres)(void)
 static inline void draw_bitmap(const uint8_t *bitmap, int width, int height,
 			       int x, int y)
 {
-	int i, j, bw;
+	int i, j;
+	uint8_t m;
 
-	bw = (width + 7) / 8;
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) {
-			if (*(bitmap + (j >> 3)) & (0x80 >> (j & 7)))
-				Paint_FastPixel(x + j, y + i, BRRED);
+	for (j = 0; j < height; j++) {
+		m = 0x80;
+		for (i = 0; i < width; i++) {
+			if (*bitmap & m)
+				Paint_FastPixel(x, y, BRRED);
+			if ((m >>= 1) == 0) {
+				m = 0x80;
+				bitmap++;
+			}
+			x++;
 		}
-		bitmap += bw;
+		if (width & 7)
+			bitmap++;
+		x -= width;
+		y++;
 	}
 }
 

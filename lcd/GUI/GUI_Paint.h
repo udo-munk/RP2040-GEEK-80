@@ -144,15 +144,15 @@ extern PAINT_TIME sPaint_time;
 #if LCD_COLOR_DEPTH == 12
 static inline void Paint_FastPixel(uint16_t x, uint16_t y, uint16_t color)
 {
-	int32_t Addr = ((x + 1) / 2) * 3 + y * Paint.WidthByte;
-	if ((x & 1) == 0) {
+	int32_t Addr = (x / 2) * 3 + y * Paint.WidthByte;
+	if ((x % 2) == 0) {
 		Paint.Image[Addr] = (color >> 4) & 0xff;
 		Paint.Image[Addr + 1] = ((color & 0x0f) << 4) |
 			(Paint.Image[Addr + 1] & 0x0f);
 	} else {
-		Paint.Image[Addr - 2] = ((color >> 8) & 0x0f) |
-			(Paint.Image[Addr - 2] & 0xf0);
-		Paint.Image[Addr - 1] = color & 0xff;
+		Paint.Image[Addr + 1] = ((color >> 8) & 0x0f) |
+			(Paint.Image[Addr + 1] & 0xf0);
+		Paint.Image[Addr + 2] = color & 0xff;
 	}
 }
 #else
@@ -173,22 +173,27 @@ static inline void Paint_FastChar(uint16_t x, uint16_t y, const char c,
 				  const sFONT *font, uint16_t fgc,
 				  uint16_t bgc)
 {
-	int fwnb = (font->Width & 7) != 0; /* font width not divisible by 8 */
-	const uint8_t *p = &font->table[(c - ' ') * font->Height *
-					((font->Width >> 3) + fwnb)];
+	const uint8_t *p = &font->table[(c & 0x7f) * font->CharByte];
 	uint16_t i, j;
+	uint8_t m;
 
-	for (i = 0; i < font->Height; i++) {
-		for (j = 0; j < font->Width; j++) {
-			if (*p & (0x80 >> (j & 7)))
-				Paint_FastPixel(x + j, y + i, fgc);
+	for (j = 0; j < font->Height; j++) {
+		m = 0x80;
+		for (i = 0; i < font->Width; i++) {
+			if (*p & m)
+				Paint_FastPixel(x, y, fgc);
 			else
-				Paint_FastPixel(x + j, y + i, bgc);
-			if ((j & 7) == 7)
+				Paint_FastPixel(x, y, bgc);
+			if ((m >>= 1) == 0) {
+				m = 0x80;
 				p++;
+			}
+			x++;
 		}
-		if (fwnb)
+		if (font->FractByte)
 			p++;
+		x -= font->Width;
+		y++;
 	}
 }
 
@@ -200,10 +205,8 @@ static inline void Paint_FastChar(uint16_t x, uint16_t y, const char c,
 static inline void Paint_FastHLine(uint16_t x, uint16_t y, uint16_t w,
 				   uint16_t col)
 {
-	uint16_t i;
-
-	for (i = 0; i < w; i++)
-		Paint_FastPixel(x + i, y, col);
+	while (w--)
+		Paint_FastPixel(x++, y, col);
 }
 
 /*
@@ -214,10 +217,8 @@ static inline void Paint_FastHLine(uint16_t x, uint16_t y, uint16_t w,
 static inline void Paint_FastVLine(uint16_t x, uint16_t y, uint16_t h,
 				   uint16_t col)
 {
-	uint16_t i;
-
-	for (i = 0; i < h; i++)
-		Paint_FastPixel(x, y + i, col);
+	while (h--)
+		Paint_FastPixel(x, y++, col);
 }
 
 

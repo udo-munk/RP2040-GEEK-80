@@ -93,15 +93,15 @@ void __not_in_flash_func(Paint_SetPixel)(uint16_t Xpoint, uint16_t Ypoint,
 		Addr = X + Y * Paint.WidthByte;
 		Paint.Image[Addr] = Color & 0xff;
 	} else if (Paint.Depth == 12) {
-		Addr = ((X + 1) / 2) * 3 + Y * Paint.WidthByte;
+		Addr = (X / 2) * 3 + Y * Paint.WidthByte;
 		if ((X % 2) == 0) {
 			Paint.Image[Addr] = (Color >> 4) & 0xff;
 			Rdata = Paint.Image[Addr + 1] & 0x0f;
 			Paint.Image[Addr + 1] = ((Color & 0x0f) << 4) | Rdata;
 		} else {
-			Rdata = Paint.Image[Addr - 2] & 0xf0;
-			Paint.Image[Addr - 2] = Rdata | ((Color >> 8) & 0x0f);
-			Paint.Image[Addr - 1] = Color & 0xff;
+			Rdata = Paint.Image[Addr + 1] & 0xf0;
+			Paint.Image[Addr + 1] = Rdata | ((Color >> 8) & 0x0f);
+			Paint.Image[Addr + 2] = Color & 0xff;
 		}
 	} else if (Paint.Depth == 16) {
 		Addr = X * 2 + Y * Paint.WidthByte;
