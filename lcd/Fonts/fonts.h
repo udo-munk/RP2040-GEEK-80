@@ -49,6 +49,9 @@ extern "C" {
 
 typedef struct _tFont {
 	const uint8_t *table;
+	uint16_t WidthByte;	/* Width in Bytes */
+	uint16_t CharByte;	/* Bytes per glyph */
+	uint16_t FractByte;	/* Width not divisible by 8? */
 	uint16_t Width;
 	uint16_t Height;
 } sFONT;
@@ -58,6 +61,7 @@ extern const sFONT Font14;	/* 8 x 14 pixels */
 extern const sFONT Font16;	/* 8 x 16 pixels */
 extern const sFONT Font18;	/* 10 x 18 pixels */
 extern const sFONT Font20;	/* 10 x 20 pixels */
+extern const sFONT Font22;	/* 11 x 22 pixels */
 extern const sFONT Font24;	/* 12 x 24 pixels */
 extern const sFONT Font28;	/* 14 x 28 pixels */
 extern const sFONT Font32;	/* 16 x 32 pixels */

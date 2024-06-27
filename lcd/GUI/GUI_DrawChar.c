@@ -20,6 +20,7 @@ void __not_in_flash_func(Paint_DrawChar)(uint16_t Xpoint, uint16_t Ypoint,
 {
 	uint16_t Page, Column;
 	uint32_t Char_Offset;
+	uint8_t Mask;
 	const unsigned char *ptr;
 
 	if (Xpoint >= Paint.Width || Ypoint >= Paint.Height) {
@@ -28,16 +29,16 @@ void __not_in_flash_func(Paint_DrawChar)(uint16_t Xpoint, uint16_t Ypoint,
 		return;
 	}
 
-	Char_Offset = (Acsii_Char - ' ') * Font->Height *
-		      (Font->Width / 8 + (Font->Width % 8 ? 1 : 0));
+	Char_Offset = (Acsii_Char & 0x7f) * Font->CharByte;
 	ptr = &Font->table[Char_Offset];
 
 	for (Page = 0; Page < Font->Height; Page++) {
+		Mask = 0x80;
 		for (Column = 0; Column < Font->Width; Column++) {
 
 			/* To determine whether the font background color and
 			   screen background color is consistent */
-			if (*ptr & (0x80 >> (Column % 8))) {
+			if (*ptr & Mask) {
 				Paint_SetPixel(Xpoint + Column, Ypoint + Page,
 					       Color_Foreground);
 				/* Paint_DrawPoint(Xpoint + Column,
@@ -55,10 +56,13 @@ void __not_in_flash_func(Paint_DrawChar)(uint16_t Xpoint, uint16_t Ypoint,
 						   DOT_STYLE_DFT); */
 			}
 			/* One pixel is 8 bits */
-			if (Column % 8 == 7)
+			Mask = Mask >> 1;
+			if (Mask == 0) {
+				Mask = 0x80;
 				ptr++;
+			}
 		} /* Write a line */
-		if (Font->Width % 8 != 0)
+		if (Font->FractByte)
 			ptr++;
 	} /* Write all */
 }

@@ -11,19 +11,13 @@ void __not_in_flash_func(Paint_SetDepth)(uint8_t depth)
 {
 	if (depth == 1) {
 		Paint.Depth = depth;
-		Paint.WidthByte = (Paint.WidthMemory % 8 == 0) ?
-				  (Paint.WidthMemory / 8) :
-				  (Paint.WidthMemory / 8 + 1);
+		Paint.WidthByte = (Paint.WidthMemory + 7) / 8;
 	} else if (depth == 2) {
 		Paint.Depth = depth;
-		Paint.WidthByte = (Paint.WidthMemory % 4 == 0) ?
-				  (Paint.WidthMemory / 4) :
-				  (Paint.WidthMemory / 4 + 1);
+		Paint.WidthByte = (Paint.WidthMemory + 3) / 4;
 	} else if (depth == 4) {
 		Paint.Depth = depth;
-		Paint.WidthByte = (Paint.WidthMemory % 2 == 0) ?
-				  (Paint.WidthMemory / 2) :
-				  (Paint.WidthMemory / 2 + 1);
+		Paint.WidthByte = (Paint.WidthMemory + 1) / 2;
 	} else if (depth == 8) {
 		Paint.Depth = depth;
 		Paint.WidthByte = Paint.WidthMemory;
