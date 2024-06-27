@@ -21,6 +21,7 @@ static uint16_t img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
 
 static void (*volatile lcd_draw_func)(int);
 static volatile int lcd_task_busy;
+static volatile int lcd_rotated;
 
 static char info_line[16];	/* last line in CPU display */
 
@@ -31,7 +32,7 @@ void lcd_init(void)
 {
 	/* initialize LCD device */
 	/* set orientation, x = 240 width and y = 135 height */
-	LCD_1IN14_V2_Init(HORIZONTAL);
+	LCD_1IN14_V2_Init(LCD_HORIZONTAL);
 
 	/* use this image memory */
 	Paint_NewImage((uint8_t *) &img[0], LCD_1IN14_V2.WIDTH,
@@ -64,9 +65,14 @@ void lcd_exit(void)
 	LCD_1IN14_V2_Exit();
 }
 
-void lcd_default_draw_func(void)
+void lcd_brightness(int brightness)
 {
-	lcd_set_draw_func(lcd_draw_cpu_reg);
+	LCD_1IN14_V2_SetBacklight((uint8_t) brightness);
+}
+
+void lcd_set_rotated(int rotated)
+{
+	lcd_rotated = rotated;
 }
 
 void lcd_set_draw_func(void (*draw_func)(int))
@@ -74,9 +80,9 @@ void lcd_set_draw_func(void (*draw_func)(int))
 	lcd_draw_func = draw_func;
 }
 
-void lcd_brightness(int brightness)
+void lcd_default_draw_func(void)
 {
-	LCD_1IN14_V2_SetBacklight((uint8_t) brightness);
+	lcd_set_draw_func(lcd_draw_cpu_reg);
 }
 
 /*
@@ -487,6 +493,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 
 static inline void lcd_refresh(void)
 {
+	LCD_1IN14_V2_SetRotated(lcd_rotated);
 #if LCD_COLOR_DEPTH == 12
 	LCD_1IN14_V2_Display12(&img[0]);
 #else
