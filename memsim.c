@@ -203,19 +203,22 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 {
 	BYTE stat;
 	unsigned int br;
+	register int i;
 
 	/* prepare for sector read */
 	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
 		return stat;
 
 	/* read sector into memory */
-	sd_res = f_read(&sd_file, &memory[addr], SEC_SZ, &br);
+	sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br);
 	if (sd_res == FR_OK) {
 		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
 			return FDC_STAT_READ;
 		} else {
 			f_close(&sd_file);
+			for (i = 0; i < SEC_SZ; i++)
+				dma_write(addr + i, dsk_buf[i]);
 			return FDC_STAT_OK;
 		}
 	} else {
