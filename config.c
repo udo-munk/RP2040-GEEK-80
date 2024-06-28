@@ -169,6 +169,7 @@ void config(void)
 				t.day = i;
 			rtc_set_datetime(&t);
 			sleep_us(64);
+			putchar('\n');
 			break;
 
 		case 't':
@@ -180,6 +181,7 @@ void config(void)
 				t.sec = i;
 			rtc_set_datetime(&t);
 			sleep_us(64);
+			putchar('\n');
 			break;
 
 		case 'c':
