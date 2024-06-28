@@ -33,10 +33,14 @@ extern char disks[4][22];
 /* 64KB non banked memory */
 #define MEMSIZE 65536
 unsigned char memory[MEMSIZE];
+
 /* boot ROM code */
 #undef MEMSIZE
 #define MEMSIZE 256
 #include "bootrom.c"
+
+/* buffer for disk/memory transfers */
+static unsigned char dsk_buf[SEC_SZ];
 
 void init_memory(void)
 {
@@ -90,6 +94,7 @@ void my_ls(const char *dir, const char *ext)
 void load_file(char *name)
 {
 	int i = 0;
+	register unsigned int j;
 	unsigned int br;
 	char SFN[25];
 
@@ -105,7 +110,9 @@ void load_file(char *name)
 	}
 
 	/* read file into memory */
-	while ((sd_res = f_read(&sd_file, &memory[i], SEC_SZ, &br)) == FR_OK) {
+	while ((sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br)) == FR_OK) {
+		for (j = 0; j < br; j++)
+			dma_write(i + j, dsk_buf[j]);
 		if (br < SEC_SZ)	/* last record reached */
 			break;
 		i += SEC_SZ;
