@@ -19,38 +19,41 @@ set(CMAKE_CXX_STANDARD 17)
 include(pico_sdk_import.cmake)
 
 project(picosim C CXX ASM)
+
 pico_sdk_init()
 
-include_directories(
-	.
-	../z80pack/z80core
-	../z80pack/iodevices
-	./lcd/Config
-	./lcd/Fonts
-	./lcd/GUI
-	./lcd/LCD
-)
+set(Z80PACK ${CMAKE_SOURCE_DIR}/../z80pack)
 
-add_executable(picosim
+add_executable(${PROJECT_NAME}
 	picosim.c
-	../z80pack/z80core/simcore.c
-	../z80pack/z80core/simglb.c
-	../z80pack/z80core/simdis.c
-	../z80pack/z80core/simice.c
-	../z80pack/z80core/sim8080.c
-	../z80pack/z80core/simz80.c
-	../z80pack/z80core/simz80-cb.c
-	../z80pack/z80core/simz80-dd.c
-	../z80pack/z80core/simz80-ddcb.c
-	../z80pack/z80core/simz80-ed.c
-	../z80pack/z80core/simz80-fd.c
-	../z80pack/z80core/simz80-fdcb.c
-	../z80pack/iodevices/sd-fdc.c
 	config.c
 	dazzler.c
-	memsim.c
 	iosim.c
 	lcd.c
+	memsim.c
+	${Z80PACK}/iodevices/sd-fdc.c
+	${Z80PACK}/z80core/sim8080.c
+	${Z80PACK}/z80core/simcore.c
+	${Z80PACK}/z80core/simdis.c
+	${Z80PACK}/z80core/simglb.c
+	${Z80PACK}/z80core/simice.c
+	${Z80PACK}/z80core/simz80-cb.c
+	${Z80PACK}/z80core/simz80-dd.c
+	${Z80PACK}/z80core/simz80-ddcb.c
+	${Z80PACK}/z80core/simz80-ed.c
+	${Z80PACK}/z80core/simz80-fd.c
+	${Z80PACK}/z80core/simz80-fdcb.c
+	${Z80PACK}/z80core/simz80.c
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+	${CMAKE_SOURCE_DIR}
+	${CMAKE_SOURCE_DIR}/lcd/Config
+	${CMAKE_SOURCE_DIR}/lcd/Fonts
+	${CMAKE_SOURCE_DIR}/lcd/GUI
+	${CMAKE_SOURCE_DIR}/lcd/LCD
+	${Z80PACK}/iodevices
+	${Z80PACK}/z80core
 )
 
 add_subdirectory(no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs)
@@ -58,8 +61,9 @@ add_subdirectory(lcd/Config)
 add_subdirectory(lcd/LCD)
 add_subdirectory(lcd/Fonts)
 add_subdirectory(lcd/GUI)
+add_subdirectory(stdio_msc_usb)
 
-target_compile_definitions(picosim PRIVATE
+target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_STACK_SIZE=4096
 	PICO_CORE1_STACK_SIZE=4096
 	PICO_HEAP_SIZE=8192
@@ -69,44 +73,45 @@ target_compile_definitions(picosim PRIVATE
 	LCD_REFRESH=30
 )
 
-target_compile_definitions(picosim INTERFACE
+target_compile_definitions(${PROJECT_NAME} INTERFACE
 	PICO_DEFAULT_UART=0
 )
 
 # compiler diagnostic options
 if (PICO_C_COMPILER_IS_GNU)
-	target_compile_options(picosim PUBLIC -fdiagnostics-color=always)
+	target_compile_options(${PROJECT_NAME} PUBLIC -fdiagnostics-color=always)
 elseif (PICO_C_COMPILER_IS_CLANG)
-	target_compile_options(picosim PUBLIC -fcolor-diagnostics)
+	target_compile_options(${PROJECT_NAME} PUBLIC -fcolor-diagnostics)
 endif ()
-target_compile_options(picosim PUBLIC -Wall -Wextra)
+target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra)
 if (PICO_C_COMPILER_IS_CLANG)
-	target_compile_options(picosim PUBLIC -Weverything)
+	target_compile_options(${PROJECT_NAME} PUBLIC -Weverything)
 endif ()
 # -Wno-unused-parameter because no-OS-FatFS-SD-SDIO-SPI-RPi-Pico isn't clean
-target_compile_options(picosim PUBLIC -Wno-unused-parameter)
+target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unused-parameter)
 
-target_link_libraries(picosim
+target_link_libraries(${PROJECT_NAME}
 	hardware_adc
 	hardware_spi
 	pico_multicore
 	pico_stdlib
+	stdio_msc_usb
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 	Config
-	LCD
 	Fonts
 	GUI
+	LCD
 )
 
-pico_add_extra_outputs(picosim)
+pico_add_extra_outputs(${PROJECT_NAME})
 
-target_link_options(picosim PRIVATE -Xlinker --print-memory-usage)
+target_link_options(${PROJECT_NAME} PRIVATE -Xlinker --print-memory-usage)
 
-pico_set_program_name(picosim "z80pack picosim")
-pico_set_program_description(picosim "z80pack on Waveshare RP2040-GEEK")
-pico_set_program_version(picosim "1.2")
-pico_set_program_url(picosim "https://github.com/udo-munk/RP2040-GEEK-80")
+pico_set_program_name(${PROJECT_NAME} "z80pack picosim")
+pico_set_program_description(${PROJECT_NAME} "z80pack on Waveshare RP2040-GEEK")
+pico_set_program_version(${PROJECT_NAME} "1.2")
+pico_set_program_url(${PROJECT_NAME} "https://github.com/udo-munk/RP2040-GEEK-80")
 
 # disable UART in/out, enable USB in/out
-pico_enable_stdio_uart(picosim 0)
-pico_enable_stdio_usb(picosim 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 0)
+# pico_enable_stdio_usb(${PROJECT_NAME} 1)

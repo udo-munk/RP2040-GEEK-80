@@ -21,7 +21,7 @@
 /* Raspberry SDK and FatFS includes */
 #include <stdio.h>
 #include <string.h>
-#if LIB_PICO_STDIO_USB
+#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 #include <tusb.h>
 #endif
 #include "pico/stdlib.h"
@@ -114,7 +114,7 @@ sd_card_t *sd_get_by_num(size_t num)
 	}
 }
 
-#if LIB_PICO_STDIO_USB
+#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 {
 	UNUSED(itf);
@@ -148,6 +148,9 @@ int main(void)
 	char s[2];
 
 	stdio_init_all();	/* initialize stdio */
+#if LIB_STDIO_MSC_USB
+	stdio_msc_usb_init();	/* initialize MSC USB stdio */
+#endif
 	time_init();		/* initialize FatFS RTC */
 	lcd_init();		/* initialize LCD */
 
@@ -160,7 +163,7 @@ int main(void)
 	adc_select_input(4);
 
 	/* when using USB UART wait until it is connected */
-#if LIB_PICO_STDIO_USB
+#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 	lcd_set_draw_func(draw_wait_term);
 	while (!tud_cdc_connected())
 		sleep_ms(100);
