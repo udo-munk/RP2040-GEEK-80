@@ -234,13 +234,16 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 {
 	BYTE stat;
 	unsigned int br;
+	register int i;
 
 	/* prepare for sector write */
 	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
 		return stat;
 
 	/* write sector to disk image */
-	sd_res = f_write(&sd_file, &memory[addr], SEC_SZ, &br);
+	for (i = 0; i < SEC_SZ; i++)
+		dsk_buf[i] = dma_read(addr + i);
+	sd_res = f_write(&sd_file, &dsk_buf[0], SEC_SZ, &br);
 	if (sd_res == FR_OK) {
 		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
