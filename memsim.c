@@ -13,6 +13,7 @@
  * 28-MAY-2024 implemented sector I/O to disk images
  * 03-JUN-2024 added directory list for code files and disk images
  * 09-JUN-2024 implemented boot ROM
+ * 28-JUN-2024 added second memory bank
  */
 
 #include <stdint.h>
@@ -30,12 +31,12 @@ extern FIL sd_file;
 extern FRESULT sd_res;
 extern char disks[4][22];
 
-/* 64KB non banked memory */
-#define MEMSIZE 65536
-unsigned char memory[MEMSIZE];
+/* 64KB bank 0 + common segment */
+unsigned char bnk0[65536];
+/* 48KB bank 1 */
+unsigned char bnk1[49152];
 
 /* boot ROM code */
-#undef MEMSIZE
 #define MEMSIZE 256
 #include "bootrom.c"
 
@@ -48,11 +49,13 @@ void init_memory(void)
 
 	/* copy boot ROM into write protected top memory page */
 	for (i = 0; i < 256; i++)
-		memory[0xff00 + i] = code[i];
+		bnk0[0xff00 + i] = code[i];
 
 	/* trash memory like in a real machine after power on */
 	for (i = 0; i < 0xff00; i++)
-		memory[i] = rand() % 256;
+		bnk0[i] = rand() % 256;
+	for (i = 0; i < 49152; i++)
+		bnk1[i] = rand() % 256;
 }
 
 static void complain(void)
