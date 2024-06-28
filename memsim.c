@@ -13,6 +13,7 @@
  * 28-MAY-2024 implemented sector I/O to disk images
  * 03-JUN-2024 added directory list for code files and disk images
  * 09-JUN-2024 implemented boot ROM
+ * 28-JUN-2024 added second memory bank
  */
 
 #include <stdint.h>
@@ -30,13 +31,17 @@ extern FIL sd_file;
 extern FRESULT sd_res;
 extern char disks[4][22];
 
-/* 64KB non banked memory */
-#define MEMSIZE 65536
-unsigned char memory[MEMSIZE];
+/* 64KB bank 0 + common segment */
+unsigned char bnk0[65536];
+/* 48KB bank 1 */
+unsigned char bnk1[49152];
+
 /* boot ROM code */
-#undef MEMSIZE
 #define MEMSIZE 256
 #include "bootrom.c"
+
+/* buffer for disk/memory transfers */
+static unsigned char dsk_buf[SEC_SZ];
 
 void init_memory(void)
 {
@@ -44,11 +49,13 @@ void init_memory(void)
 
 	/* copy boot ROM into write protected top memory page */
 	for (i = 0; i < 256; i++)
-		memory[0xff00 + i] = code[i];
+		bnk0[0xff00 + i] = code[i];
 
 	/* trash memory like in a real machine after power on */
 	for (i = 0; i < 0xff00; i++)
-		memory[i] = rand() % 256;
+		bnk0[i] = rand() % 256;
+	for (i = 0; i < 49152; i++)
+		bnk1[i] = rand() % 256;
 }
 
 static void complain(void)
@@ -90,6 +97,7 @@ void my_ls(const char *dir, const char *ext)
 void load_file(char *name)
 {
 	int i = 0;
+	register unsigned int j;
 	unsigned int br;
 	char SFN[25];
 
@@ -105,7 +113,9 @@ void load_file(char *name)
 	}
 
 	/* read file into memory */
-	while ((sd_res = f_read(&sd_file, &memory[i], SEC_SZ, &br)) == FR_OK) {
+	while ((sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br)) == FR_OK) {
+		for (j = 0; j < br; j++)
+			dma_write(i + j, dsk_buf[j]);
 		if (br < SEC_SZ)	/* last record reached */
 			break;
 		i += SEC_SZ;
@@ -196,19 +206,22 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 {
 	BYTE stat;
 	unsigned int br;
+	register int i;
 
 	/* prepare for sector read */
 	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
 		return stat;
 
 	/* read sector into memory */
-	sd_res = f_read(&sd_file, &memory[addr], SEC_SZ, &br);
+	sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br);
 	if (sd_res == FR_OK) {
 		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
 			return FDC_STAT_READ;
 		} else {
 			f_close(&sd_file);
+			for (i = 0; i < SEC_SZ; i++)
+				dma_write(addr + i, dsk_buf[i]);
 			return FDC_STAT_OK;
 		}
 	} else {
@@ -224,13 +237,16 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 {
 	BYTE stat;
 	unsigned int br;
+	register int i;
 
 	/* prepare for sector write */
 	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
 		return stat;
 
 	/* write sector to disk image */
-	sd_res = f_write(&sd_file, &memory[addr], SEC_SZ, &br);
+	for (i = 0; i < SEC_SZ; i++)
+		dsk_buf[i] = dma_read(addr + i);
+	sd_res = f_write(&sd_file, &dsk_buf[0], SEC_SZ, &br);
 	if (sd_res == FR_OK) {
 		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
@@ -250,5 +266,8 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
  */
 void get_fdccmd(BYTE *cmd, WORD addr)
 {
-	memcpy(cmd, &memory[addr], 4);
+	register int i;
+
+	for (i = 0; i < 4; i++)
+		cmd[i] = dma_read(addr + i);
 }

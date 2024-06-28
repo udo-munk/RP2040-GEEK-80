@@ -58,7 +58,6 @@ static inline uint8_t DEV_Digital_Read(uint16_t Pin)
 /*
  *	SPI write
  */
-
 static inline void DEV_SPI_WriteByte(uint8_t Value)
 {
 	spi_write_blocking(DEV_SPI_PORT, &Value, 1);

@@ -121,7 +121,8 @@ void config(void)
 		}
 		printf("b - LCD brightness: %d\n", brightness);
 		printf("m - rotate LCD\n");
-		printf("t - set date and time\n");
+		printf("a - set date\n");
+		printf("t - set time\n");
 		printf("c - switch CPU, currently %s\n",
 		       (cpu == Z80) ? "Z80" : "8080");
 		printf("s - CPU speed: %d MHz\n", speed);
@@ -156,7 +157,8 @@ void config(void)
 			rotated = !rotated;
 			lcd_set_rotated(rotated);
 			break;
-		case 't':
+
+		case 'a':
 			if ((i = get_int("weekday", 0, 6)) >= 0)
 				t.dotw = i;
 			if ((i = get_int("year", 0, 4095)) >= 0)
@@ -165,6 +167,12 @@ void config(void)
 				t.month = i;
 			if ((i = get_int("day", 1, 31)) >= 0)
 				t.day = i;
+			rtc_set_datetime(&t);
+			sleep_us(64);
+			putchar('\n');
+			break;
+
+		case 't':
 			if ((i = get_int("hour", 0, 23)) >= 0)
 				t.hour = i;
 			if ((i = get_int("minute", 0, 59)) >= 0)
@@ -173,6 +181,7 @@ void config(void)
 				t.sec = i;
 			rtc_set_datetime(&t);
 			sleep_us(64);
+			putchar('\n');
 			break;
 
 		case 'c':
