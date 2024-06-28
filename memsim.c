@@ -250,5 +250,8 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
  */
 void get_fdccmd(BYTE *cmd, WORD addr)
 {
-	memcpy(cmd, &memory[addr], 4);
+	register int i;
+
+	for (i = 0; i < 4; i++)
+		cmd[i] = dma_read(addr + i);
 }
