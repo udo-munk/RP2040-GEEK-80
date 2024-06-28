@@ -102,10 +102,10 @@ static void  __not_in_flash_func(LCD_1IN14_V2_InitReg)(void)
 	LCD_1IN14_V2_SendData_8Bit(0x33); /* Back/Front porch partial (3, 3) */
 
 	LCD_1IN14_V2_SendCommand(0xb7); /* Gate Control */
-	LCD_1IN14_V2_SendData_8Bit(0x35);/* VGH=13.26V, VGL=-10.43V */
+	LCD_1IN14_V2_SendData_8Bit(0x35);/* VGH = 13.26V, VGL = -10.43V */
 
 	LCD_1IN14_V2_SendCommand(0xbb); /* VCOM Setting */
-	LCD_1IN14_V2_SendData_8Bit(0x19); /* VCOM=0.725V */
+	LCD_1IN14_V2_SendData_8Bit(0x19); /* VCOM = 0.725V */
 
 	LCD_1IN14_V2_SendCommand(0xc0); /* LCM Control */
 	LCD_1IN14_V2_SendData_8Bit(0x2c); /* XBGR, XMX, XMH (default) */
@@ -113,50 +113,51 @@ static void  __not_in_flash_func(LCD_1IN14_V2_InitReg)(void)
 	LCD_1IN14_V2_SendCommand(0xc2); /* VDV and VRH Command Enable */
 	LCD_1IN14_V2_SendData_8Bit(0x01); /* VDV & VRH from command write */
 	LCD_1IN14_V2_SendCommand(0xc3); /* VRH Set */
-	LCD_1IN14_V2_SendData_8Bit(0x12); /* 4.45V+(vcom+offset+vdv)=5.175V */
+	LCD_1IN14_V2_SendData_8Bit(0x12); /* VRH = 4.45V */
 	LCD_1IN14_V2_SendCommand(0xc4); /* VDV Set */
-	LCD_1IN14_V2_SendData_8Bit(0x20); /* 0V (default) */
+	LCD_1IN14_V2_SendData_8Bit(0x20); /* VDV = 0V (default) */
 	LCD_1IN14_V2_SendCommand(0xc5); /* VCOM Offset Set */
-	LCD_1IN14_V2_SendData_8Bit(0x20); /* 0V (default) */
+	LCD_1IN14_V2_SendData_8Bit(0x20); /* VCOM Offset = 0V (default) */
 
 	LCD_1IN14_V2_SendCommand(0xc6); /* Frame Rate Control in Normal Mode */
-	LCD_1IN14_V2_SendData_8Bit(0x0f); /* 60Hz */
+	LCD_1IN14_V2_SendData_8Bit(0x0f); /* 60Hz (default) */
 
 	LCD_1IN14_V2_SendCommand(0xd0); /* Power Control 1 */
 	LCD_1IN14_V2_SendData_8Bit(0xa4); /* fixed parameter */
-	LCD_1IN14_V2_SendData_8Bit(0xa1); /* AVDD=6.8V, AVCL=-4.8V, VDS=2.3V */
+	LCD_1IN14_V2_SendData_8Bit(0xa1); /* AVDD = 6.8V, AVCL = -4.8V,
+					     VDDS = 2.3V */
 
 	LCD_1IN14_V2_SendCommand(0xe0); /* Positive Voltage Gamma Control */
-	LCD_1IN14_V2_SendData_8Bit(0xd0); /* VP63=13, VP0=0 */
-	LCD_1IN14_V2_SendData_8Bit(0x04); /* VP1=4 */
-	LCD_1IN14_V2_SendData_8Bit(0x0d); /* VP2=13 */
-	LCD_1IN14_V2_SendData_8Bit(0x11); /* VP4=17 */
-	LCD_1IN14_V2_SendData_8Bit(0x13); /* VP6=19 */
-	LCD_1IN14_V2_SendData_8Bit(0x2b); /* JP0=2, VP13=11 */
-	LCD_1IN14_V2_SendData_8Bit(0x3f); /* VP20=63 */
-	LCD_1IN14_V2_SendData_8Bit(0x54); /* VP36=5, VP27=4 */
-	LCD_1IN14_V2_SendData_8Bit(0x4c); /* VP43=76 */
-	LCD_1IN14_V2_SendData_8Bit(0x18); /* JP1=1, VP50=8 */
-	LCD_1IN14_V2_SendData_8Bit(0x0d); /* VP57=13 */
-	LCD_1IN14_V2_SendData_8Bit(0x0b); /* VP59=11 */
-	LCD_1IN14_V2_SendData_8Bit(0x1f); /* VP61=31 */
-	LCD_1IN14_V2_SendData_8Bit(0x23); /* VP62=35 */
+	LCD_1IN14_V2_SendData_8Bit(0xd0); /* V63P = 13, V0P = 0 */
+	LCD_1IN14_V2_SendData_8Bit(0x04); /* V1P = 4 */
+	LCD_1IN14_V2_SendData_8Bit(0x0d); /* V2P = 13 */
+	LCD_1IN14_V2_SendData_8Bit(0x11); /* V4P = 17 */
+	LCD_1IN14_V2_SendData_8Bit(0x13); /* V6P = 19 */
+	LCD_1IN14_V2_SendData_8Bit(0x2b); /* J0P = 2, V13P = 11 */
+	LCD_1IN14_V2_SendData_8Bit(0x3f); /* V20P = 63 */
+	LCD_1IN14_V2_SendData_8Bit(0x54); /* V36P = 5, V27P = 4 */
+	LCD_1IN14_V2_SendData_8Bit(0x4c); /* V43P = 76 */
+	LCD_1IN14_V2_SendData_8Bit(0x18); /* J1P = 1, V50P = 8 */
+	LCD_1IN14_V2_SendData_8Bit(0x0d); /* V57P = 13 */
+	LCD_1IN14_V2_SendData_8Bit(0x0b); /* V59P = 11 */
+	LCD_1IN14_V2_SendData_8Bit(0x1f); /* V61P = 31 */
+	LCD_1IN14_V2_SendData_8Bit(0x23); /* V62P = 35 */
 
 	LCD_1IN14_V2_SendCommand(0xe1); /* Negative Voltage Gamma Control */
-	LCD_1IN14_V2_SendData_8Bit(0xd0); /* VN63=13, VN0=0 */
-	LCD_1IN14_V2_SendData_8Bit(0x04); /* VN1=4 */
-	LCD_1IN14_V2_SendData_8Bit(0x0c); /* VN2=12 */
-	LCD_1IN14_V2_SendData_8Bit(0x11); /* VN4=17 */
-	LCD_1IN14_V2_SendData_8Bit(0x13); /* VN6=19 */
-	LCD_1IN14_V2_SendData_8Bit(0x2c); /* JN0=2, VN13=12 */
-	LCD_1IN14_V2_SendData_8Bit(0x3f); /* VN20=63 */
-	LCD_1IN14_V2_SendData_8Bit(0x44); /* VN36=4, VN27=4 */
-	LCD_1IN14_V2_SendData_8Bit(0x51); /* VN43=81 */
-	LCD_1IN14_V2_SendData_8Bit(0x2f); /* JN1=2, VN50=15 */
-	LCD_1IN14_V2_SendData_8Bit(0x1f); /* VN57=31 */
-	LCD_1IN14_V2_SendData_8Bit(0x1f); /* VN59=31 */
-	LCD_1IN14_V2_SendData_8Bit(0x20); /* VN61=32 */
-	LCD_1IN14_V2_SendData_8Bit(0x23); /* VN62=35 */
+	LCD_1IN14_V2_SendData_8Bit(0xd0); /* V63N = 13, V0N = 0 */
+	LCD_1IN14_V2_SendData_8Bit(0x04); /* V1N = 4 */
+	LCD_1IN14_V2_SendData_8Bit(0x0c); /* V2N = 12 */
+	LCD_1IN14_V2_SendData_8Bit(0x11); /* V4N = 17 */
+	LCD_1IN14_V2_SendData_8Bit(0x13); /* V6N = 19 */
+	LCD_1IN14_V2_SendData_8Bit(0x2c); /* J0N = 2, V13N = 12 */
+	LCD_1IN14_V2_SendData_8Bit(0x3f); /* V20N = 63 */
+	LCD_1IN14_V2_SendData_8Bit(0x44); /* V36N = 4, V27N = 4 */
+	LCD_1IN14_V2_SendData_8Bit(0x51); /* V43N = 81 */
+	LCD_1IN14_V2_SendData_8Bit(0x2f); /* J1N = 2, V50N = 15 */
+	LCD_1IN14_V2_SendData_8Bit(0x1f); /* V57N = 31 */
+	LCD_1IN14_V2_SendData_8Bit(0x1f); /* V59N = 31 */
+	LCD_1IN14_V2_SendData_8Bit(0x20); /* V61N = 32 */
+	LCD_1IN14_V2_SendData_8Bit(0x23); /* V62N = 35 */
 
 	LCD_1IN14_V2_SendCommand(0x21); /* Display Inversion On */
 
