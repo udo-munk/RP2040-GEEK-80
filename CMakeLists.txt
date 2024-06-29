@@ -96,8 +96,8 @@ target_link_libraries(${PROJECT_NAME}
 	hardware_spi
 	pico_multicore
 	pico_stdlib
-#	stdio_msc_usb
-#	tinyusb_device
+	stdio_msc_usb
+	tinyusb_device
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 	Config
 	Fonts
@@ -116,4 +116,4 @@ pico_set_program_url(${PROJECT_NAME} "https://github.com/udo-munk/RP2040-GEEK-80
 
 # disable UART in/out, enable USB in/out
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
-pico_enable_stdio_usb(${PROJECT_NAME} 1)
+#pico_enable_stdio_usb(${PROJECT_NAME} 1)

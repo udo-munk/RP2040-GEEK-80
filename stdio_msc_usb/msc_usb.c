@@ -73,7 +73,7 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count,
 
 	(void) lun;
 
-	if (sd_card_p == NULL) {
+	if (sd_card_p == NULL || msc_ejected) {
 		*block_count = 0;
 		*block_size = 0;
 	} else {
@@ -116,7 +116,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
 	(void) lun;
 	(void) offset;
 
-	if (sd_card_p == NULL)
+	if (sd_card_p == NULL || msc_ejected)
 		return -1;
 
 	if (lba >= sd_card_p->get_num_sectors(sd_card_p))
@@ -150,7 +150,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
 	(void) lun;
 	(void) offset;
 
-	if (sd_card_p == NULL)
+	if (sd_card_p == NULL || msc_ejected)
 		return -1;
 
 	if (lba >= sd_card_p->get_num_sectors(sd_card_p))
