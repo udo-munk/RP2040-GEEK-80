@@ -39,9 +39,10 @@ extern FATFS fs;
 
 extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
+extern void list_files(const char *, const char *);
 extern void load_file(char *);
+extern void check_disks(void);
 extern void mount_disk(int, char *);
-extern void my_ls(const char *, const char *);
 extern unsigned char fp_value;
 
 /*
@@ -195,12 +196,13 @@ void config(void)
 			msc_ejected = false;
 			while (!msc_ejected)
 				sleep_ms(500);
-			puts("Disk ejected");
+			puts("Disk ejected\n");
 			/* try to mount SD card */
 			sd_res = f_mount(&fs, "", 1);
 			if (sd_res != FR_OK)
 				panic("f_mount error: %s (%d)\n",
 				      FRESULT_str(sd_res), sd_res);
+			check_disks();
 			break;
 
 		case 'c':
@@ -224,7 +226,7 @@ again:
 			putchar('\n');
 			if (!isxdigit((unsigned char) *s) ||
 			    !isxdigit((unsigned char) *(s + 1))) {
-				printf("What?\n");
+				puts("What?");
 				goto again;
 			}
 			fp_value = (*s <= '9' ? *s - '0' : *s - 'A' + 10) << 4;
@@ -233,8 +235,8 @@ again:
 			break;
 
 		case 'f':
-			my_ls(cpath, cext);
-			printf("\n\n");
+			list_files(cpath, cext);
+			putchar('\n');
 			break;
 
 		case 'r':
@@ -244,8 +246,8 @@ again:
 			break;
 
 		case 'd':
-			my_ls(dpath, dext);
-			printf("\n\n");
+			list_files(dpath, dext);
+			putchar('\n');
 			break;
 
 		case '0':

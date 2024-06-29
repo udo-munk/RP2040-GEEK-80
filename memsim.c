@@ -58,15 +58,10 @@ void init_memory(void)
 		bnk1[i] = rand() % 256;
 }
 
-static void complain(void)
-{
-	puts("File not found\n");
-}
-
 /*
  * list files with pattern 'ext' in directory 'dir'
  */
-void my_ls(const char *dir, const char *ext)
+void list_files(const char *dir, const char *ext)
 {
 	DIR dp;
 	FILINFO fno;
@@ -85,8 +80,11 @@ void my_ls(const char *dir, const char *ext)
 				i = 0;
 			}
 			res = f_findnext(&dp, &fno);
-			if (!strlen(fno.fname))
+			if (!strlen(fno.fname)) {
+				if (i > 0)
+					putchar('\n');
 				break;
+			}
 		}
 	}
 }
@@ -108,7 +106,7 @@ void load_file(char *name)
 	/* try to open file */
 	sd_res = f_open(&sd_file, SFN, FA_READ);
 	if (sd_res != FR_OK) {
-		complain();
+		puts("File not found");
 		return;
 	}
 
@@ -126,6 +124,28 @@ void load_file(char *name)
 		printf("loaded file \"%s\" (%d bytes)\n", SFN, i + br);
 
 	f_close(&sd_file);
+}
+
+/*
+ * check that all disks refer to existing files
+ */
+void check_disks(void)
+{
+	int i, n = 0;
+
+	for (i = 0; i < 4; i++) {
+		/* try to open file */
+		sd_res = f_open(&sd_file, disks[i], FA_READ);
+		if (sd_res != FR_OK) {
+			printf("Disk image \"%s\" no longer exists.\n",
+			       disks[i]);
+			disks[i][0] = '\0';
+			n++;
+		} else
+			f_close(&sd_file);
+	}
+	if (n > 0)
+		putchar('\n');
 }
 
 /*
@@ -150,7 +170,7 @@ void mount_disk(int drive, char *name)
 	/* try to open file */
 	sd_res = f_open(&sd_file, SFN, FA_READ);
 	if (sd_res != FR_OK) {
-		complain();
+		puts("File not found\n");
 		return;
 	}
 
