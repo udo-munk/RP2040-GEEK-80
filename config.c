@@ -33,7 +33,9 @@ extern FRESULT sd_res;
 extern char disks[NUMDISK][DISKLEN];
 extern int speed;
 extern BYTE fp_value;
+#if LIB_STDIO_MSC_USB
 extern int msc_ejected;
+#endif
 
 extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
@@ -126,7 +128,9 @@ void config(void)
 		printf("m - rotate LCD\n");
 		printf("a - set date\n");
 		printf("t - set time\n");
+#if LIB_STDIO_MSC_USB
 		printf("u - enable USB mass storage access\n");
+#endif
 		printf("c - switch CPU, currently %s\n",
 		       (cpu == Z80) ? "Z80" : "8080");
 		printf("s - CPU speed: %d MHz\n", speed);
@@ -203,6 +207,7 @@ void config(void)
 			putchar('\n');
 			break;
 
+#if LIB_STDIO_MSC_USB
 		case 'u':
 			exit_disks();
 			puts("Waiting for disk to be ejected");
@@ -213,6 +218,7 @@ void config(void)
 			init_disks();
 			check_disks();
 			break;
+#endif
 
 		case 'c':
 			if (cpu == Z80)
