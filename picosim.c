@@ -130,8 +130,8 @@ static void __not_in_flash_func(draw_wait_term)(int first_flag)
 	if (!first_flag)
 		return;
 	Paint_Clear(BLACK);
-	Paint_DrawString(32, 35, "Waiting for", &Font32, RED, BLACK);
-	Paint_DrawString(32, 67, "  terminal ", &Font32, RED, BLACK);
+	Paint_DrawString(43, 39, "Waiting for", &Font28, RED, BLACK);
+	Paint_DrawString(43, 67, "  terminal ", &Font28, RED, BLACK);
 }
 
 static void __not_in_flash_func(draw_banner)(int first_flag)
@@ -139,8 +139,8 @@ static void __not_in_flash_func(draw_banner)(int first_flag)
 	if (!first_flag)
 		return;
 	Paint_Clear(BLACK);
-	Paint_DrawString(32, 35, "# Z80pack #", &Font32, BLACK, WHITE);
-	Paint_DrawString(32, 67, "RP2040-GEEK", &Font32, BLACK, WHITE);
+	Paint_DrawString(43, 39, "# Z80pack #", &Font28, BLACK, WHITE);
+	Paint_DrawString(43, 67, "RP2040-GEEK", &Font28, BLACK, WHITE);
 }
 
 int main(void)
