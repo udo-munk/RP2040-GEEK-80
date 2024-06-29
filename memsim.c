@@ -134,15 +134,17 @@ void check_disks(void)
 	int i, n = 0;
 
 	for (i = 0; i < 4; i++) {
-		/* try to open file */
-		sd_res = f_open(&sd_file, disks[i], FA_READ);
-		if (sd_res != FR_OK) {
-			printf("Disk image \"%s\" no longer exists.\n",
-			       disks[i]);
-			disks[i][0] = '\0';
-			n++;
-		} else
-			f_close(&sd_file);
+		if (disks[i][0]) {
+			/* try to open file */
+			sd_res = f_open(&sd_file, disks[i], FA_READ);
+			if (sd_res != FR_OK) {
+				printf("Disk image \"%s\" no longer exists.\n",
+				       disks[i]);
+				disks[i][0] = '\0';
+				n++;
+			} else
+				f_close(&sd_file);
+		}
 	}
 	if (n > 0)
 		putchar('\n');
