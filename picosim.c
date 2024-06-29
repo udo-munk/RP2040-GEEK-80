@@ -121,30 +121,23 @@ int main(void)
 	init_io();		/* initialize I/O devices */
 	config();		/* configure the machine */
 
-	/* setup speed of the CPU */
-	f_flag = speed;
-	tmax = speed * 10000; /* theoretically */
+	f_flag = speed;		/* setup speed of the CPU */
+	tmax = speed * 10000;	/* theoretically */
 
-	/* power on jump into the boot ROM */
-	PC = 0xff00;
+	PC = 0xff00;		/* power on jump into the boot ROM */
 
-	/* tell LCD refresh task to display default infos */
-	lcd_default_draw_func();
+	lcd_default_draw_func(); /* tell LCD task to display default infos */
 
-	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
 	extern void ice_cmd_loop(int);
 
 	ice_cmd_loop(0);
 #else
-	run_cpu();
+	run_cpu();		/* run the CPU with whatever is in memory */
 #endif
 
-	/* stop disk drives */
-	exit_disks();
-
-	/* shutdown LCD */
-	lcd_exit();
+	exit_disks();		/* stop disk drives */
+	lcd_exit();		/* shutdown LCD */
 
 #ifndef WANT_ICE
 	putchar('\n');
