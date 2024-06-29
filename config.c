@@ -92,7 +92,8 @@ void config(void)
 	const char *dext = "*.DSK";
 	char s[10];
 	unsigned int br;
-	int go_flag = 0, brightness = DEFAULT_BRIGHTNESS, rotated = 0, i;
+	int go_flag = 0, brightness = DEFAULT_BRIGHTNESS, rotated = 0;
+	int i, n;
 	datetime_t t;
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
@@ -144,18 +145,13 @@ void config(void)
 		get_cmdline(s, 2);
 		putchar('\n');
 
-		switch (tolower((unsigned char) *s)) {
+		switch (tolower((unsigned char) s[0])) {
 		case 'b':
-			printf("Value (0-100): ");
-			get_cmdline(s, 4);
-			putchar('\n');
-			brightness = atoi((const char *) &s);
-			if (brightness < 0 || brightness > 100) {
-				printf("invalid brightness value: %d\n\n",
-				       brightness);
-				brightness = DEFAULT_BRIGHTNESS;
+			if ((i = get_int("brightness", 0, 100)) >= 0) {
+				brightness = i;
+				lcd_brightness((uint8_t) brightness);
 			}
-			lcd_brightness((uint8_t) brightness);
+			putchar('\n');
 			break;
 
 		case 'm':
@@ -164,28 +160,48 @@ void config(void)
 			break;
 
 		case 'a':
-			if ((i = get_int("weekday", 0, 6)) >= 0)
+			n = 0;
+			if ((i = get_int("weekday", 0, 6)) >= 0) {
 				t.dotw = i;
-			if ((i = get_int("year", 0, 4095)) >= 0)
+				n++;
+			}
+			if ((i = get_int("year", 0, 4095)) >= 0) {
 				t.year = i;
-			if ((i = get_int("month", 1, 12)) >= 0)
+				n++;
+			}
+			if ((i = get_int("month", 1, 12)) >= 0) {
 				t.month = i;
-			if ((i = get_int("day", 1, 31)) >= 0)
+				n++;
+			}
+			if ((i = get_int("day", 1, 31)) >= 0) {
 				t.day = i;
-			rtc_set_datetime(&t);
-			sleep_us(64);
+				n++;
+			}
+			if (n > 0) {
+				rtc_set_datetime(&t);
+				sleep_us(64);
+			}
 			putchar('\n');
 			break;
 
 		case 't':
-			if ((i = get_int("hour", 0, 23)) >= 0)
+			n = 0;
+			if ((i = get_int("hour", 0, 23)) >= 0) {
 				t.hour = i;
-			if ((i = get_int("minute", 0, 59)) >= 0)
+				n++;
+			}
+			if ((i = get_int("minute", 0, 59)) >= 0) {
 				t.min = i;
-			if ((i = get_int("second", 0, 59)) >= 0)
+				n++;
+			}
+			if ((i = get_int("second", 0, 59)) >= 0) {
 				t.sec = i;
-			rtc_set_datetime(&t);
-			sleep_us(64);
+				n++;
+			}
+			if (n > 0) {
+				rtc_set_datetime(&t);
+				sleep_us(64);
+			}
 			putchar('\n');
 			break;
 
@@ -216,7 +232,8 @@ void config(void)
 			printf("Value in MHz, 0=unlimited: ");
 			get_cmdline(s, 2);
 			putchar('\n');
-			speed = atoi((const char *) &s);
+			if (s[0])
+				speed = atoi((const char *) &s);
 			break;
 
 		case 'p':
@@ -224,14 +241,19 @@ again:
 			printf("Value in Hex: ");
 			get_cmdline(s, 3);
 			putchar('\n');
-			if (!isxdigit((unsigned char) *s) ||
-			    !isxdigit((unsigned char) *(s + 1))) {
-				puts("What?");
-				goto again;
+			if (s[0]) {
+				if (!isxdigit((unsigned char) s[0]) ||
+				    !isxdigit((unsigned char) s[1])) {
+					puts("What?");
+					goto again;
+				}
+				fp_value = (s[0] <= '9' ? s[0] - '0' :
+					    toupper((unsigned char) s[0]) -
+					    'A' + 10) << 4;
+				fp_value += (s[1] <= '9' ? s[1] - '0' :
+					     toupper((unsigned char) s[1]) -
+					     'A' + 10);
 			}
-			fp_value = (*s <= '9' ? *s - '0' : *s - 'A' + 10) << 4;
-			fp_value += (*(s + 1) <= '9' ? *(s + 1) - '0' :
-				     *(s + 1) - 'A' + 10);
 			break;
 
 		case 'f':
@@ -241,7 +263,8 @@ again:
 
 		case 'r':
 			prompt_fn(s);
-			load_file(s);
+			if (s[0])
+				load_file(s);
 			putchar('\n');
 			break;
 
@@ -251,42 +274,16 @@ again:
 			break;
 
 		case '0':
-			prompt_fn(s);
-			if (strlen(s) == 0) {
-				disks[0][0] = 0x0;
-				putchar('\n');
-			} else {
-				mount_disk(0, s);
-			}
-			break;
-
 		case '1':
-			prompt_fn(s);
-			if (strlen(s) == 0) {
-				disks[1][0] = 0x0;
-				putchar('\n');
-			} else {
-				mount_disk(1, s);
-			}
-			break;
-
 		case '2':
-			prompt_fn(s);
-			if (strlen(s) == 0) {
-				disks[2][0] = 0x0;
-				putchar('\n');
-			} else {
-				mount_disk(2, s);
-			}
-			break;
-
 		case '3':
+			i = s[0] - '0';
 			prompt_fn(s);
-			if (strlen(s) == 0) {
-				disks[3][0] = 0x0;
+			if (s[0])
+				mount_disk(i, s);
+			else {
+				disks[i][0] = '\0';
 				putchar('\n');
-			} else {
-				mount_disk(3, s);
 			}
 			break;
 
