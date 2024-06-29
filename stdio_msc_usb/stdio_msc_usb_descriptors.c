@@ -6,6 +6,7 @@
  *
  * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
  * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2024 Thomas Eberhardt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,35 +27,33 @@
  * THE SOFTWARE.
  */
 
-#if !defined(LIB_TINYUSB_HOST) && !defined(LIB_TINYUSB_DEVICE)
-
 #include "tusb.h"
 #include "pico/usb_reset_interface.h"
 #include "pico/unique_id.h"
 
 #ifndef USBD_VID
-#define USBD_VID (0x2E8A) // Raspberry Pi
+#error Please define a USB vendor id as USBD_VID
 #endif
 
 #ifndef USBD_PID
-#define USBD_PID (0x000a) // Raspberry Pi Pico SDK CDC
+#error Please define a USB product id as USBD_PID
 #endif
 
 #ifndef USBD_MANUFACTURER
-#define USBD_MANUFACTURER "Raspberry Pi"
+#define USBD_MANUFACTURER "Z80pack"
 #endif
 
 #ifndef USBD_PRODUCT
-#define USBD_PRODUCT "Pico"
+#define USBD_PRODUCT "GEEK"
 #endif
 
 #define TUD_RPI_RESET_DESC_LEN  9
-#if !PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
-#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
+#if !STDIO_MSC_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
+#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MSC_DESC_LEN)
 #else
-#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_RPI_RESET_DESC_LEN)
+#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MSC_DESC_LEN + TUD_RPI_RESET_DESC_LEN)
 #endif
-#if !PICO_STDIO_USB_DEVICE_SELF_POWERED
+#if !STDIO_MSC_USB_DEVICE_SELF_POWERED
 #define USBD_CONFIGURATION_DESCRIPTOR_ATTRIBUTE (0)
 #define USBD_MAX_POWER_MA (250)
 #else
@@ -63,11 +62,12 @@
 #endif
 
 #define USBD_ITF_CDC       (0) // needs 2 interfaces
-#if !PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
-#define USBD_ITF_MAX       (2)
-#else
-#define USBD_ITF_RPI_RESET (2)
+#define USBD_ITF_MSC       (2)
+#if !STDIO_MSC_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
 #define USBD_ITF_MAX       (3)
+#else
+#define USBD_ITF_RPI_RESET (3)
+#define USBD_ITF_MAX       (4)
 #endif
 
 #define USBD_CDC_EP_CMD (0x81)
@@ -76,12 +76,17 @@
 #define USBD_CDC_CMD_MAX_SIZE (8)
 #define USBD_CDC_IN_OUT_MAX_SIZE (64)
 
+#define USBD_MSC_EP_OUT (0x03)
+#define USBD_MSC_EP_IN (0x83)
+#define USBD_MSC_IN_OUT_MAX_SIZE (64)
+
 #define USBD_STR_0 (0x00)
 #define USBD_STR_MANUF (0x01)
 #define USBD_STR_PRODUCT (0x02)
 #define USBD_STR_SERIAL (0x03)
 #define USBD_STR_CDC (0x04)
-#define USBD_STR_RPI_RESET (0x05)
+#define USBD_STR_MSC (0x05)
+#define USBD_STR_RPI_RESET (0x06)
 
 // Note: descriptors returned from callbacks must exist long enough for transfer to complete
 
@@ -113,7 +118,10 @@ static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
     TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
         USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
 
-#if PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
+    TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, USBD_STR_MSC, USBD_MSC_EP_OUT,
+        USBD_MSC_EP_IN, USBD_MSC_IN_OUT_MAX_SIZE),
+
+#if STDIO_MSC_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
     TUD_RPI_RESET_DESCRIPTOR(USBD_ITF_RPI_RESET, USBD_STR_RPI_RESET)
 #endif
 };
@@ -125,7 +133,8 @@ static const char *const usbd_desc_str[] = {
     [USBD_STR_PRODUCT] = USBD_PRODUCT,
     [USBD_STR_SERIAL] = usbd_serial_str,
     [USBD_STR_CDC] = "Board CDC",
-#if PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
+    [USBD_STR_MSC] = "Board SD card",
+#if STDIO_MSC_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
     [USBD_STR_RPI_RESET] = "Reset",
 #endif
 };
@@ -172,5 +181,3 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, __unused uint16_t langid
 
     return desc_str;
 }
-
-#endif

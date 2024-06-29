@@ -20,6 +20,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "hardware/rtc.h"
+#include "pico/stdlib.h"
 #include "f_util.h"
 #include "ff.h"
 #include "sim.h"
@@ -33,6 +34,8 @@ extern FRESULT sd_res;
 extern char disks[4][22];
 extern int speed;
 extern BYTE fp_value;
+extern int msc_ejected;
+extern FATFS fs;
 
 extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
@@ -123,6 +126,7 @@ void config(void)
 		printf("m - rotate LCD\n");
 		printf("a - set date\n");
 		printf("t - set time\n");
+		printf("u - enable USB mass storage access\n");
 		printf("c - switch CPU, currently %s\n",
 		       (cpu == Z80) ? "Z80" : "8080");
 		printf("s - CPU speed: %d MHz\n", speed);
@@ -182,6 +186,21 @@ void config(void)
 			rtc_set_datetime(&t);
 			sleep_us(64);
 			putchar('\n');
+			break;
+
+		case 'u':
+			/* unmount SD card */
+			f_unmount("");
+			puts("Waiting for disk to be ejected");
+			msc_ejected = false;
+			while (!msc_ejected)
+				sleep_ms(500);
+			puts("Disk ejected");
+			/* try to mount SD card */
+			sd_res = f_mount(&fs, "", 1);
+			if (sd_res != FR_OK)
+				panic("f_mount error: %s (%d)\n",
+				      FRESULT_str(sd_res), sd_res);
 			break;
 
 		case 'c':

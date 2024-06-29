@@ -149,6 +149,8 @@ int main(void)
 
 	stdio_init_all();	/* initialize stdio */
 #if LIB_STDIO_MSC_USB
+	sd_init_driver();	/* initialize SD card driver */
+	tusb_init();		/* initialize TinyUSB */
 	stdio_msc_usb_init();	/* initialize MSC USB stdio */
 #endif
 	time_init();		/* initialize FatFS RTC */
