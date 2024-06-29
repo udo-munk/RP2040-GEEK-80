@@ -27,7 +27,6 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "hardware/adc.h"
-#include "f_util.h"
 #include "ff.h"
 #include "hw_config.h"
 #include "rtc.h"
@@ -37,82 +36,21 @@
 #include "simglb.h"
 #include "config.h"
 #include "memsim.h"
-#include "sd-fdc.h"
+#include "disks.h"
 #include "lcd.h"
 
 #define BS  0x08 /* backspace */
 #define DEL 0x7f /* delete */
-
-/* global variables for access to MicroSD card */
-
-/*
- * In the RP2024-GEEK the MicroSD card is connected to the MCU GPIO's
- * so that it either can be accessed with SPI or with SDIO. First it
- * was tested with SPI and then with SDIO, which is active because
- * data transfers are faster.
- */
-
-#if 0
-/* Configuration of RP2040 hardware SPI object */
-static spi_t spi = {
-	.hw_inst = spi0,  /* RP2040 SPI component */
-	.sck_gpio = 18,   /* GPIO number (not Pico pin number) */
-	.mosi_gpio = 19,
-	.miso_gpio = 20,
-	.baud_rate = 12 * 1000 * 1000 /* Actual frequency: 10416666 */
-};
-
-/* SPI Interface */
-static sd_spi_if_t spi_if = {
-	.spi = &spi,  /* Pointer to the SPI driving this card */
-	.ss_gpio = 23 /* The SPI slave select GPIO for this SD card */
-};
-
-/* Configuration of the SD Card socket object */
-static sd_card_t sd_card = {
-	.type = SD_IF_SPI,
-	.spi_if_p = &spi_if /* Pointer to the SPI interface driving this card */
-};
-#endif
-
-/* SDIO Interface */
-static sd_sdio_if_t sdio_if = {
-	.CMD_gpio = 19,
-	.D0_gpio = 20,
-	.baud_rate = 15 * 1000 * 1000 /* 15 MHz */
-};
-
-/* Configuration of the SD Card socket object */
-static sd_card_t sd_card = {
-	.type = SD_IF_SDIO,
-	.sdio_if_p = &sdio_if
-};
-
-FATFS fs;       /* FatFs on MicroSD */
-FIL sd_file;	/* at any time we have only one file open */
-FRESULT sd_res;	/* result code from FatFS */
-char disks[4][22]; /* path name for 4 disk images /DISKS80/filename.DSK */
 
 /* CPU speed */
 int speed = CPU_SPEED;
 
 extern void init_cpu(void), init_io(void), run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
+extern void init_disks(void), exit_disks(void);
 
 uint64_t get_clock_us(void);
 int get_cmdline(char *, int);
-
-/* Callbacks used by the SD library */
-size_t sd_get_num() { return 1; }
-
-sd_card_t *sd_get_by_num(size_t num)
-{
-	if (num == 0) {
-		return &sd_card;
-	} else {
-		return NULL;
-	}
-}
 
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
@@ -177,12 +115,8 @@ int main(void)
 	printf("%s release %s\n", USR_COM, USR_REL);
 	printf("%s\n\n", USR_CPR);
 
-	/* try to mount SD card */
-	sd_res = f_mount(&fs, "", 1);
-	if (sd_res != FR_OK)
-		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
-
 	init_cpu();		/* initialize CPU */
+	init_disks();		/* initialize disk drives */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
 	config();		/* configure the machine */
@@ -206,8 +140,8 @@ int main(void)
 	run_cpu();
 #endif
 
-	/* unmount SD card */
-	f_unmount("");
+	/* stop disk drives */
+	exit_disks();
 
 	/* shutdown LCD */
 	lcd_exit();

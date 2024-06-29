@@ -25,25 +25,23 @@
 #include "ff.h"
 #include "sim.h"
 #include "simglb.h"
+#include "disks.h"
 #include "lcd.h"
-
-#define DEFAULT_BRIGHTNESS 90
 
 extern FIL sd_file;
 extern FRESULT sd_res;
-extern char disks[4][22];
+extern char disks[NUMDISK][DISKLEN];
 extern int speed;
 extern BYTE fp_value;
 extern int msc_ejected;
-extern FATFS fs;
 
 extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
+extern void init_disks(void), exit_disks(void);
 extern void list_files(const char *, const char *);
-extern void load_file(char *);
+extern void load_file(const char *);
 extern void check_disks(void);
-extern void mount_disk(int, char *);
-extern unsigned char fp_value;
+extern void mount_disk(int, const char *);
 
 /*
  * prompt for a filename
@@ -92,7 +90,7 @@ void config(void)
 	const char *dext = "*.DSK";
 	char s[10];
 	unsigned int br;
-	int go_flag = 0, brightness = DEFAULT_BRIGHTNESS, rotated = 0;
+	int go_flag = 0, brightness = 90, rotated = 0;
 	int i, n;
 	datetime_t t;
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
@@ -107,10 +105,10 @@ void config(void)
 		f_read(&sd_file, &brightness, sizeof(brightness), &br);
 		f_read(&sd_file, &rotated, sizeof(rotated), &br);
 		f_read(&sd_file, &t, sizeof(datetime_t), &br);
-		f_read(&sd_file, &disks[0], 22, &br);
-		f_read(&sd_file, &disks[1], 22, &br);
-		f_read(&sd_file, &disks[2], 22, &br);
-		f_read(&sd_file, &disks[3], 22, &br);
+		f_read(&sd_file, &disks[0], DISKLEN, &br);
+		f_read(&sd_file, &disks[1], DISKLEN, &br);
+		f_read(&sd_file, &disks[2], DISKLEN, &br);
+		f_read(&sd_file, &disks[3], DISKLEN, &br);
 		f_close(&sd_file);
 	}
 	lcd_brightness(brightness);
@@ -206,18 +204,13 @@ void config(void)
 			break;
 
 		case 'u':
-			/* unmount SD card */
-			f_unmount("");
+			exit_disks();
 			puts("Waiting for disk to be ejected");
 			msc_ejected = false;
 			while (!msc_ejected)
 				sleep_ms(500);
 			puts("Disk ejected\n");
-			/* try to mount SD card */
-			sd_res = f_mount(&fs, "", 1);
-			if (sd_res != FR_OK)
-				panic("f_mount error: %s (%d)\n",
-				      FRESULT_str(sd_res), sd_res);
+			init_disks();
 			check_disks();
 			break;
 
@@ -305,10 +298,10 @@ again:
 		f_write(&sd_file, &brightness, sizeof(brightness), &br);
 		f_write(&sd_file, &rotated, sizeof(rotated), &br);
 		f_write(&sd_file, &t, sizeof(datetime_t), &br);
-		f_write(&sd_file, &disks[0], 22, &br);
-		f_write(&sd_file, &disks[1], 22, &br);
-		f_write(&sd_file, &disks[2], 22, &br);
-		f_write(&sd_file, &disks[3], 22, &br);
+		f_write(&sd_file, &disks[0], DISKLEN, &br);
+		f_write(&sd_file, &disks[1], DISKLEN, &br);
+		f_write(&sd_file, &disks[2], DISKLEN, &br);
+		f_write(&sd_file, &disks[3], DISKLEN, &br);
 		f_close(&sd_file);
 	}
 }

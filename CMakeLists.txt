@@ -28,6 +28,7 @@ add_executable(${PROJECT_NAME}
 	picosim.c
 	config.c
 	dazzler.c
+	disks.c
 	iosim.c
 	lcd.c
 	memsim.c
