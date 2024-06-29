@@ -14,6 +14,7 @@
  * 08-JUN-2024 implemented system reset
  * 09-JUN-2024 implemented boot ROM
  * 24-JUN-2024 added emulation of Cromemco Dazzler
+ * 29-JUN-2024 implemented banked memory
  */
 
 /* Raspberry SDK includes */
@@ -27,6 +28,7 @@
 /* Project includes */
 #include "sim.h"
 #include "simglb.h"
+#include "memsim.h"
 #include "dazzler.h"
 
 /*
@@ -35,6 +37,8 @@
  */
 static void p001_out(BYTE), p255_out(BYTE), hwctl_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
+static void mmu_out(BYTE);
+static BYTE mmu_in(void);
 extern void fdc_out(BYTE), dazzler_ctl_out(BYTE), dazzler_fmt_out(BYTE);
 extern BYTE fdc_in(void), dazzler_in(void);
 
@@ -51,6 +55,7 @@ BYTE (*port_in[256])(void) = {
 	[  1] = p001_in,	/* SIO data */
 	[  4] = fdc_in,		/* FDC command */
 	[ 14] = dazzler_flags_in, /* Cromemco Dazzler flags */
+	[ 64] = mmu_in,		/* MMU */
 	[160] = hwctl_in,	/* virtual hardware control */
 	[255] = p255_in		/* for frontpanel */
 };
@@ -64,6 +69,7 @@ void (*port_out[256])(BYTE) = {
 	[  4] = fdc_out,	/* FDC status */
 	[ 14] = dazzler_ctl_out, /* Cromemco Dazzler control */
 	[ 15] = dazzler_format_out, /* Cromemco Dazzler format */
+	[ 64] = mmu_out,	/* MMU */
 	[160] = hwctl_out,	/* virtual hardware control */
 	[255] = p255_out	/* for frontpanel */
 };
@@ -153,6 +159,14 @@ static BYTE hwctl_in(void)
 }
 
 /*
+ *	read MMU register
+ */
+static BYTE mmu_in(void)
+{
+	return selbnk;
+}
+
+/*
  *	I/O function port 255 read:
  *	used by frontpanel machines
  */
@@ -224,6 +238,14 @@ static void hwctl_out(BYTE data)
 		return;
 	}
 #endif
+}
+
+/*
+ *	write MMU register
+ */
+static void mmu_out(BYTE data)
+{
+	selbnk = data;
 }
 
 /*

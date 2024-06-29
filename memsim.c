@@ -9,6 +9,7 @@
  * 23-APR-2024 derived from z80sim
  * 09-JUN-2024 implemented boot ROM
  * 28-JUN-2024 added second memory bank
+ * 29-JUN-2024 implemented banked memory
  */
 
 #include <stdint.h>
@@ -18,9 +19,11 @@
 #include "memsim.h"
 
 /* 64KB bank 0 + common segment */
-unsigned char bnk0[65536];
+BYTE bnk0[65536];
 /* 48KB bank 1 */
-unsigned char bnk1[49152];
+BYTE bnk1[49152];
+/* selected bank */
+BYTE selbnk;
 
 /* boot ROM code */
 #define MEMSIZE 256
