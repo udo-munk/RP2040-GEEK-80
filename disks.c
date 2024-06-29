@@ -10,6 +10,7 @@
  * 27-MAY-2024 implemented load file
  * 28-MAY-2024 implemented sector I/O to disk images
  * 03-JUN-2024 added directory list for code files and disk images
+ * 29-JUN-2024 split of from memsim.c and picosim.c
  */
 
 #include <stdint.h>
