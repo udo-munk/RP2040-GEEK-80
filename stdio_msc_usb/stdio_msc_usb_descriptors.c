@@ -31,12 +31,19 @@
 #include "pico/usb_reset_interface.h"
 #include "pico/unique_id.h"
 
+/*
+ * USB vendor and product id's.
+ * This is the pid.codes private testing VID/PID, this is not
+ * universally unique and should not be used outside test environments.
+ * See https://pid.codes/1209/1001 .
+ */
+
 #ifndef USBD_VID
-#error Please define a USB vendor id as USBD_VID
+#define USBD_VID (0x1209)
 #endif
 
 #ifndef USBD_PID
-#error Please define a USB product id as USBD_PID
+#define USBD_PID (0x0001)
 #endif
 
 #ifndef USBD_MANUFACTURER
