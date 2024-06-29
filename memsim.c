@@ -34,7 +34,7 @@ void init_memory(void)
 	register int i;
 
 	/* copy boot ROM into write protected top memory page */
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < MEMSIZE; i++)
 		bnk0[0xff00 + i] = code[i];
 
 	/* trash memory like in a real machine after power on */
