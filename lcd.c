@@ -107,7 +107,7 @@ void lcd_default_draw_func(void)
  *	1 DE 1234  HL 1234
  *	2 SP 1234  PC 1234
  *	3 F  SZHPC    IF 1
- *	4 info_line (Font 20)
+ *	4 info_line xx.xxC (Font 20)
  */
 
 #if LCD_COLOR_DEPTH == 12
