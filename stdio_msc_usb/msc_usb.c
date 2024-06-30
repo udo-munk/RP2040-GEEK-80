@@ -28,6 +28,11 @@
 #include "hw_config.h"
 #include "sd_card.h"
 
+typedef enum {
+	SCSI_CMD_VERIFY_10		= 0x2f,
+	SCSI_CMD_SYNCHRONIZE_CACHE_10	= 0x35
+} scsi_cmd_type_2_t;
+
 // whether mass storage interface is active
 bool msc_ejected = true;
 
@@ -73,7 +78,7 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count,
 
 	(void) lun;
 
-	if (sd_card_p == NULL) {
+	if (sd_card_p == NULL || msc_ejected) {
 		*block_count = 0;
 		*block_size = 0;
 	} else {
@@ -116,7 +121,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
 	(void) lun;
 	(void) offset;
 
-	if (sd_card_p == NULL)
+	if (sd_card_p == NULL || msc_ejected)
 		return -1;
 
 	if (lba >= sd_card_p->get_num_sectors(sd_card_p))
@@ -150,7 +155,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
 	(void) lun;
 	(void) offset;
 
-	if (sd_card_p == NULL)
+	if (sd_card_p == NULL || msc_ejected)
 		return -1;
 
 	if (lba >= sd_card_p->get_num_sectors(sd_card_p))
@@ -181,8 +186,21 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16],
 
 	switch (scsi_cmd[0]) {
 	case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
-		// always successful
-		resplen = 0;
+		scsi_prevent_allow_medium_removal_t const *prevent_allow =
+			(scsi_prevent_allow_medium_removal_t const *) scsi_cmd;
+
+		if ((prevent_allow->prohibit_removal & 3) == 0)
+			resplen = 0;	// allow succeeds
+		else
+			resplen = -1;	// any prevents unsupported
+		break;
+
+	case SCSI_CMD_VERIFY_10:
+		resplen = 0;		// report success
+		break;
+
+	case SCSI_CMD_SYNCHRONIZE_CACHE_10:
+		resplen = 0;		// report success
 		break;
 
 	default:
