@@ -21,7 +21,8 @@
 #include <string.h>
 #include <errno.h>
 
-#define DISK "../disks/drivea.dsk"
+/*#define DISK "../disks/drivea.dsk"*/
+#define DISK "../disks/cpm3-1.dsk"
 
 /*
  *	This program writes the CP/M 3 OS from the following files
