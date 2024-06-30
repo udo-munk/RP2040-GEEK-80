@@ -61,14 +61,15 @@ static void prompt_fn(char *s)
 /*
  * get an integer with range check
  */
-static int get_int(char *prompt, int min_val, int max_val)
+static int get_int(const char *prompt, const char *hint,
+		   int min_val, int max_val)
 {
 	int i;
-	char s[7];
+	char s[6];
 
 	for (;;) {
-		printf("Enter %s: ", prompt);
-		get_cmdline(s, 6);
+		printf("Enter %s%s: ", prompt, hint);
+		get_cmdline(s, 5);
 		if (s[0] == '\0')
 			return -1;
 		i = atoi(s);
@@ -133,7 +134,11 @@ void config(void)
 #endif
 		printf("c - switch CPU, currently %s\n",
 		       (cpu == Z80) ? "Z80" : "8080");
-		printf("s - CPU speed: %d MHz\n", speed);
+		printf("s - CPU speed: ");
+		if (speed == 0)
+			puts("unlimited");
+		else
+			printf("%d MHz\n", speed);
 		printf("p - Port 255 value: %02XH\n", fp_value);
 		printf("f - list files\n");
 		printf("r - load file\n");
@@ -149,7 +154,7 @@ void config(void)
 
 		switch (tolower((unsigned char) s[0])) {
 		case 'b':
-			if ((i = get_int("brightness", 0, 100)) >= 0) {
+			if ((i = get_int("brightness", "", 0, 100)) >= 0) {
 				brightness = i;
 				lcd_brightness((uint8_t) brightness);
 			}
@@ -163,19 +168,19 @@ void config(void)
 
 		case 'a':
 			n = 0;
-			if ((i = get_int("weekday", 0, 6)) >= 0) {
+			if ((i = get_int("weekday", " (0=Sun)", 0, 6)) >= 0) {
 				t.dotw = i;
 				n++;
 			}
-			if ((i = get_int("year", 0, 4095)) >= 0) {
+			if ((i = get_int("year", "", 0, 4095)) >= 0) {
 				t.year = i;
 				n++;
 			}
-			if ((i = get_int("month", 1, 12)) >= 0) {
+			if ((i = get_int("month", "", 1, 12)) >= 0) {
 				t.month = i;
 				n++;
 			}
-			if ((i = get_int("day", 1, 31)) >= 0) {
+			if ((i = get_int("day", "", 1, 31)) >= 0) {
 				t.day = i;
 				n++;
 			}
@@ -188,15 +193,15 @@ void config(void)
 
 		case 't':
 			n = 0;
-			if ((i = get_int("hour", 0, 23)) >= 0) {
+			if ((i = get_int("hour", "", 0, 23)) >= 0) {
 				t.hour = i;
 				n++;
 			}
-			if ((i = get_int("minute", 0, 59)) >= 0) {
+			if ((i = get_int("minute", "", 0, 59)) >= 0) {
 				t.min = i;
 				n++;
 			}
-			if ((i = get_int("second", 0, 59)) >= 0) {
+			if ((i = get_int("second", "", 0, 59)) >= 0) {
 				t.sec = i;
 				n++;
 			}
@@ -228,22 +233,20 @@ void config(void)
 			break;
 
 		case 's':
-			printf("Value in MHz, 0=unlimited: ");
-			get_cmdline(s, 2);
+			i = get_int("speed", " in MHz (0=unlimited)", 0, 40);
 			putchar('\n');
-			if (s[0])
-				speed = atoi((const char *) &s);
+			if (i >= 0)
+				speed = i;
 			break;
 
 		case 'p':
 again:
-			printf("Value in Hex: ");
+			printf("Enter value in Hex: ");
 			get_cmdline(s, 3);
-			putchar('\n');
 			if (s[0]) {
 				if (!isxdigit((unsigned char) s[0]) ||
 				    !isxdigit((unsigned char) s[1])) {
-					puts("What?");
+					puts("Invalid value: range 00 - FF");
 					goto again;
 				}
 				fp_value = (s[0] <= '9' ? s[0] - '0' :
@@ -253,6 +256,7 @@ again:
 					     toupper((unsigned char) s[1]) -
 					     'A' + 10);
 			}
+			putchar('\n');
 			break;
 
 		case 'f':

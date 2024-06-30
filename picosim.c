@@ -157,14 +157,16 @@ uint64_t get_clock_us(void)
 }
 
 /*
- * read an ICE or config command line from the terminal
+ * Read an ICE or config command line of maximum length len - 1
+ * from the terminal. For single character requests (len == 2),
+ * returns immediately after input is received.
  */
 int get_cmdline(char *buf, int len)
 {
 	int i = 0;
 	char c;
 
-	while (i < len - 1) {
+	for (;;) {
 		c = getchar();
 		if ((c == BS) || (c == DEL)) {
 			if (i >= 1) {
@@ -174,13 +176,17 @@ int get_cmdline(char *buf, int len)
 				i--;
 			}
 		} else if (c != '\r') {
-			buf[i++] = c;
-			putchar(c);
+			if (i < len - 1) {
+				buf[i++] = c;
+				putchar(c);
+				if (len == 2)
+					break;
+			}
 		} else {
 			break;
 		}
 	}
-	buf[i++] = '\0';
+	buf[i] = '\0';
 	putchar('\n');
 	return 0;
 }
