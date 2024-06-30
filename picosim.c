@@ -63,7 +63,7 @@ void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 }
 #endif
 
-static void __not_in_flash_func(draw_wait_term)(int first_flag)
+static void draw_wait_term(int first_flag)
 {
 	if (!first_flag)
 		return;
@@ -72,7 +72,7 @@ static void __not_in_flash_func(draw_wait_term)(int first_flag)
 	Paint_DrawString(43, 67, "  terminal ", &Font28, RED, BLACK);
 }
 
-static void __not_in_flash_func(draw_banner)(int first_flag)
+static void draw_banner(int first_flag)
 {
 	if (!first_flag)
 		return;

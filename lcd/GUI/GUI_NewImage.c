@@ -12,9 +12,8 @@ parameter:
     Height  :   The height of the picture
     Color   :   Whether the picture is inverted
 ******************************************************************************/
-void __not_in_flash_func(Paint_NewImage)(uint8_t *image, uint16_t Width,
-					 uint16_t Height, uint16_t Rotate,
-					 uint16_t Color)
+void Paint_NewImage(uint8_t *image, uint16_t Width, uint16_t Height,
+		    uint16_t Rotate, uint16_t Color)
 {
 	Paint.Image = NULL;
 	Paint.Image = image;

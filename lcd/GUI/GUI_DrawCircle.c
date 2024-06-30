@@ -13,11 +13,9 @@ parameter:
     Line_width: Line width
     Draw_Fill : Whether to fill the inside of the Circle
 ******************************************************************************/
-void __not_in_flash_func(Paint_DrawCircle)(uint16_t X_Center,
-					   uint16_t Y_Center,
-					   uint16_t Radius, uint16_t Color,
-					   DOT_PIXEL Line_width,
-					   DRAW_FILL Draw_Fill)
+void Paint_DrawCircle(uint16_t X_Center, uint16_t Y_Center, uint16_t Radius,
+		      uint16_t Color, DOT_PIXEL Line_width,
+		      DRAW_FILL Draw_Fill)
 {
 	int16_t XCurrent, YCurrent, Esp, sCountY;
 

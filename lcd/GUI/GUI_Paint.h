@@ -222,7 +222,6 @@ static inline void Paint_FastVLine(uint16_t x, uint16_t y, uint16_t h,
 		Paint_FastPixel(x, y++, col);
 }
 
-
 /* Init and clear */
 void Paint_NewImage(uint8_t *image, uint16_t Width, uint16_t Height,
 		    uint16_t Rotate, uint16_t Color);

@@ -13,10 +13,9 @@ parameter:
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
 ******************************************************************************/
-void __not_in_flash_func(Paint_DrawTime)(uint16_t Xstart, uint16_t Ystart,
-					 PAINT_TIME *pTime, const sFONT *Font,
-					 uint16_t Color_Foreground,
-					 uint16_t Color_Background)
+void Paint_DrawTime(uint16_t Xstart, uint16_t Ystart, PAINT_TIME *pTime,
+		    const sFONT *Font, uint16_t Color_Foreground,
+		    uint16_t Color_Background)
 {
 	uint8_t value[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 

@@ -11,9 +11,8 @@ parameter:
     Dot_Pixel	: point size
     Dot_Style	: point Style
 ******************************************************************************/
-void __not_in_flash_func(Paint_DrawPoint)(uint16_t Xpoint, uint16_t Ypoint,
-					  uint16_t Color, DOT_PIXEL Dot_Pixel,
-					  DOT_STYLE Dot_Style)
+void Paint_DrawPoint(uint16_t Xpoint, uint16_t Ypoint, uint16_t Color,
+		     DOT_PIXEL Dot_Pixel, DOT_STYLE Dot_Style)
 {
 	int16_t XDir_Num, YDir_Num;
 

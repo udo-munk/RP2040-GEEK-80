@@ -7,7 +7,7 @@ function:	Select Image mirror
 parameter:
     mirror   :Not mirror,Horizontal mirror,Vertical mirror,Origin mirror
 ******************************************************************************/
-void __not_in_flash_func(Paint_SetMirroring)(uint8_t mirror)
+void Paint_SetMirroring(uint8_t mirror)
 {
 	if (mirror == MIRROR_NONE || mirror == MIRROR_HORIZONTAL ||
 	    mirror == MIRROR_VERTICAL || mirror == MIRROR_ORIGIN) {

@@ -17,11 +17,9 @@ parameter:
 
 #define ARRAY_LEN 255
 
-void __not_in_flash_func(Paint_DrawNum)(uint16_t Xpoint, uint16_t Ypoint,
-					double Nummber, const sFONT *Font,
-					uint16_t Digit,
-					uint16_t Color_Foreground,
-					uint16_t Color_Background)
+void Paint_DrawNum(uint16_t Xpoint, uint16_t Ypoint, double Nummber,
+		   const sFONT *Font, uint16_t Digit,
+		   uint16_t Color_Foreground, uint16_t Color_Background)
 {
 	char Str[ARRAY_LEN];
 

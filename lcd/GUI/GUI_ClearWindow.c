@@ -11,9 +11,8 @@ parameter:
     Yend   : y end point
     Color  : Painted colors
 ******************************************************************************/
-void __not_in_flash_func(Paint_ClearWindow)(uint16_t Xstart, uint16_t Ystart,
-					    uint16_t Xend, uint16_t Yend,
-					    uint16_t Color)
+void Paint_ClearWindow(uint16_t Xstart, uint16_t Ystart, uint16_t Xend,
+		       uint16_t Yend, uint16_t Color)
 {
 	uint16_t X, Y;
 
