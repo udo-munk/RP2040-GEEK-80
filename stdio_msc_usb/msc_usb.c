@@ -29,8 +29,8 @@
 #include "sd_card.h"
 
 typedef enum {
-	SCSI_CMD_VERIFY			= 0x2f,
-	SCSI_CMD_SYNCHRONIZE_CACHE	= 0x35
+	SCSI_CMD_VERIFY_10		= 0x2f,
+	SCSI_CMD_SYNCHRONIZE_CACHE_10	= 0x35
 } scsi_cmd_type_2_t;
 
 // whether mass storage interface is active
@@ -195,11 +195,11 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16],
 			resplen = -1;	// any prevents unsupported
 		break;
 
-	case SCSI_CMD_VERIFY:
+	case SCSI_CMD_VERIFY_10:
 		resplen = 0;		// report success
 		break;
 
-	case SCSI_CMD_SYNCHRONIZE_CACHE:
+	case SCSI_CMD_SYNCHRONIZE_CACHE_10:
 		resplen = 0;		// report success
 		break;
 
