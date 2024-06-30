@@ -1,11 +1,5 @@
 # z80pack on RP2040-GEEK
 
-__NOTICE__: The USB vendor and product ID's used (1209/0001) are the
-ones reserved by [pid.codes](https://pid.codes) for private
-testing. These are not universally unique, and should not be used
-outside test environments. Please change them in CMakeLists.txt, if
-you intend any other usage.
-
 While looking arround for RP2040 based systems that can easily be
 used by non technical users, I found this:
 
