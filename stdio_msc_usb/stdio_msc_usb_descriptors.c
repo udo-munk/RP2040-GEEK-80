@@ -32,11 +32,11 @@
 #include "pico/unique_id.h"
 
 #ifndef USBD_VID
-#error Please define a USB vendor id as USBD_VID
+#define USBD_VID (0x2E8A) // Raspberry Pi
 #endif
 
 #ifndef USBD_PID
-#error Please define a USB product id as USBD_PID
+#define USBD_PID (0x000a) // Raspberry Pi Pico SDK CDC
 #endif
 
 #ifndef USBD_MANUFACTURER
