@@ -7,7 +7,7 @@ function: Select image depth
 parameter:
     depth : 1, 2, 4, 8, 12, 16
 ******************************************************************************/
-void __not_in_flash_func(Paint_SetDepth)(uint8_t depth)
+void Paint_SetDepth(uint8_t depth)
 {
 	if (depth == 1) {
 		Paint.Depth = depth;

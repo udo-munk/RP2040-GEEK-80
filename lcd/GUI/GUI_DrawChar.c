@@ -12,11 +12,9 @@ parameter:
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
 ******************************************************************************/
-void __not_in_flash_func(Paint_DrawChar)(uint16_t Xpoint, uint16_t Ypoint,
-					 const char Acsii_Char,
-					 const sFONT *Font,
-					 uint16_t Color_Foreground,
-					 uint16_t Color_Background)
+void Paint_DrawChar(uint16_t Xpoint, uint16_t Ypoint, const char Acsii_Char,
+		    const sFONT *Font, uint16_t Color_Foreground,
+		    uint16_t Color_Background)
 {
 	uint16_t Page, Column;
 	uint32_t Char_Offset;

@@ -31,7 +31,7 @@
 
 uint DEV_pwm_slice_num;
 
-void  __not_in_flash_func(DEV_Module_Init)(void)
+void DEV_Module_Init(void)
 {
 	/* SPI Config */
 	spi_init(DEV_SPI_PORT, 40 * 1000 * 1000);
@@ -60,7 +60,7 @@ void  __not_in_flash_func(DEV_Module_Init)(void)
 	pwm_set_enabled(DEV_pwm_slice_num, true);
 }
 
-void  __not_in_flash_func(DEV_Module_Exit)(void)
+void DEV_Module_Exit(void)
 {
 	pwm_set_enabled(DEV_pwm_slice_num, false);
 	gpio_deinit(WAVESHARE_RP2040_LCD_BL_PIN);

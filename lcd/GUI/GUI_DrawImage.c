@@ -2,9 +2,8 @@
 #include "GUI_Paint.h"
 #include "Debug.h"
 
-void __not_in_flash_func(Paint_DrawImage)(const uint8_t *image,
-					  uint16_t xStart, uint16_t yStart,
-					  uint16_t W_Image, uint16_t H_Image)
+void Paint_DrawImage(const uint8_t *image, uint16_t xStart, uint16_t yStart,
+		     uint16_t W_Image, uint16_t H_Image)
 {
 	int i, j;
 

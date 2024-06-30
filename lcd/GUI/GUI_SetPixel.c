@@ -9,8 +9,7 @@ parameter:
     Ypoint : At point Y
     Color  : Painted colors
 ******************************************************************************/
-void __not_in_flash_func(Paint_SetPixel)(uint16_t Xpoint, uint16_t Ypoint,
-					 uint16_t Color)
+void Paint_SetPixel(uint16_t Xpoint, uint16_t Ypoint, uint16_t Color)
 {
 	uint16_t X, Y;
 	uint32_t Addr;

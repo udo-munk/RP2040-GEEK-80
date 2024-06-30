@@ -10,7 +10,7 @@ info:
     Use a computer to convert the image into a corresponding array,
     and then embed the array directly into Imagedata.cpp as a .c file.
 ******************************************************************************/
-void __not_in_flash_func(Paint_DrawBitMap)(const uint8_t *image_buffer)
+void Paint_DrawBitMap(const uint8_t *image_buffer)
 {
 	uint16_t x, y;
 	uint32_t Addr = 0;

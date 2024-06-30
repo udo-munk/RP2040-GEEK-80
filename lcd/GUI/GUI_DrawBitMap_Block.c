@@ -2,8 +2,7 @@
 #include "GUI_Paint.h"
 #include "Debug.h"
 
-void __not_in_flash_func(Paint_DrawBitMap_Block)(const uint8_t *image_buffer,
-						 uint8_t Region)
+void Paint_DrawBitMap_Block(const uint8_t *image_buffer, uint8_t Region)
 {
 	uint16_t x, y;
 	uint32_t Addr = 0;

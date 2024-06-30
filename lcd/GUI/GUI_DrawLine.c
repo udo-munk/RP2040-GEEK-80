@@ -13,10 +13,9 @@ parameter:
     Line_width : Line width
     Line_Style : Solid and dotted lines
 ******************************************************************************/
-void __not_in_flash_func(Paint_DrawLine)(uint16_t Xstart, uint16_t Ystart,
-					 uint16_t Xend, uint16_t Yend,
-					 uint16_t Color, DOT_PIXEL Line_width,
-					 LINE_STYLE Line_Style)
+void Paint_DrawLine(uint16_t Xstart, uint16_t Ystart, uint16_t Xend,
+		    uint16_t Yend, uint16_t Color, DOT_PIXEL Line_width,
+		    LINE_STYLE Line_Style)
 {
 	uint16_t Xpoint, Ypoint;
 	int dx, dy, XAddway, YAddway, Esp;

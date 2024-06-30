@@ -12,11 +12,9 @@ parameter:
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
 ******************************************************************************/
-void __not_in_flash_func(Paint_DrawString)(uint16_t Xstart, uint16_t Ystart,
-					   const char *pString,
-					   const sFONT *Font,
-					   uint16_t Color_Foreground,
-					   uint16_t Color_Background)
+void Paint_DrawString(uint16_t Xstart, uint16_t Ystart, const char *pString,
+		      const sFONT *Font, uint16_t Color_Foreground,
+		      uint16_t Color_Background)
 {
 	uint16_t Xpoint = Xstart;
 	uint16_t Ypoint = Ystart;
