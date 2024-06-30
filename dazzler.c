@@ -131,115 +131,75 @@ static BYTE format;
 #define XOFF	56
 #define YOFF	3
 
-/* pixel drawing inline functions */
 static inline void pixel(uint16_t x, uint16_t y, uint16_t color)
 {
 	Paint_FastPixel(XOFF + x, YOFF + y, color);
 }
 
-static inline void pixel_2(uint16_t x, uint16_t y, uint16_t color)
-{
-	pixel(x * 2, y * 2, color);
-	pixel(x * 2 + 1, y * 2, color);
-	pixel(x * 2, y * 2 + 1, color);
-	pixel(x * 2 + 1, y * 2 + 1, color);
-}
-
-static inline void pixel_4(uint16_t x, uint16_t y, uint16_t color)
-{
-	pixel_2(x * 2, y * 2, color);
-	pixel_2(x * 2 + 1, y * 2, color);
-	pixel_2(x * 2, y * 2 + 1, color);
-	pixel_2(x * 2 + 1, y * 2 + 1, color);
-}
-
 /* draw pixels for one frame in hires */
 static void __not_in_flash_func(draw_hires)(void)
 {
-	int x, y, i;
+	int x, y, i, j, c;
 	WORD addr = dma_addr;
-	unsigned int color[2];
+	unsigned int cmap[2];
 
 	/* set color or grayscale from lower nibble in graphics format */
-	i = format & 0x0f;
-	color[0] = BLACK;
-	color[1] = (format & 16) ? colors[i] : grays[i];
+	c = format & 0x0f;
+	cmap[0] = BLACK;
+	cmap[1] = (format & 16) ? colors[c] : grays[c];
 
 	if (format & 32) {	/* 2048 bytes memory */
-		for (y = 0; y < 64; y += 2) {
-			for (x = 0; x < 64;) {
-				i = dma_read(addr);
-				pixel(x, y, color[i & 1]);
-				pixel(x + 1, y, color[(i >> 1) & 1]);
-				pixel(x, y + 1, color[(i >> 2) & 1]);
-				pixel(x + 1, y + 1, color[(i >> 3) & 1]);
-				pixel(x + 2, y, color[(i >> 4) & 1]);
-				pixel(x + 3, y, color[(i >> 5) & 1]);
-				pixel(x + 2, y + 1, color[(i >> 6) & 1]);
-				pixel(x + 3, y + 1, color[(i >> 7) & 1]);
-				x += 4;
-				addr++;
-			}
-		}
-		for (y = 0; y < 64; y += 2) {
-			for (x = 64; x < 128;) {
-				i = dma_read(addr);
-				pixel(x, y, color[i & 1]);
-				pixel(x + 1, y, color[(i >> 1) & 1]);
-				pixel(x, y + 1, color[(i >> 2) & 1]);
-				pixel(x + 1, y + 1, color[(i >> 3) & 1]);
-				pixel(x + 2, y, color[(i >> 4) & 1]);
-				pixel(x + 3, y, color[(i >> 5) & 1]);
-				pixel(x + 2, y + 1, color[(i >> 6) & 1]);
-				pixel(x + 3, y + 1, color[(i >> 7) & 1]);
-				x += 4;
-				addr++;
-			}
-		}
-		for (y = 64; y < 128; y += 2) {
-			for (x = 0; x < 64;) {
-				i = dma_read(addr);
-				pixel(x, y, color[i & 1]);
-				pixel(x + 1, y, color[(i >> 1) & 1]);
-				pixel(x, y + 1, color[(i >> 2) & 1]);
-				pixel(x + 1, y + 1, color[(i >> 3) & 1]);
-				pixel(x + 2, y, color[(i >> 4) & 1]);
-				pixel(x + 3, y, color[(i >> 5) & 1]);
-				pixel(x + 2, y + 1, color[(i >> 6) & 1]);
-				pixel(x + 3, y + 1, color[(i >> 7) & 1]);
-				x += 4;
-				addr++;
-			}
-		}
-		for (y = 64; y < 128; y += 2) {
-			for (x = 64; x < 128;) {
-				i = dma_read(addr);
-				pixel(x, y, color[i & 1]);
-				pixel(x + 1, y, color[(i >> 1) & 1]);
-				pixel(x, y + 1, color[(i >> 2) & 1]);
-				pixel(x + 1, y + 1, color[(i >> 3) & 1]);
-				pixel(x + 2, y, color[(i >> 4) & 1]);
-				pixel(x + 3, y, color[(i >> 5) & 1]);
-				pixel(x + 2, y + 1, color[(i >> 6) & 1]);
-				pixel(x + 3, y + 1, color[(i >> 7) & 1]);
-				x += 4;
-				addr++;
+		for (j = 0; j < 128; j += 64) {
+			for (i = 0; i < 128; i += 64) {
+				for (y = j; y < j + 64; y += 2) {
+					for (x = i; x < i + 64;) {
+						c = dma_read(addr++);
+						pixel(x, y, cmap[c & 1]);
+						pixel(x + 1, y,
+						      cmap[(c >> 1) & 1]);
+						pixel(x, y + 1,
+						      cmap[(c >> 2) & 1]);
+						pixel(x + 1, y + 1,
+						      cmap[(c >> 3) & 1]);
+						x += 2;
+						pixel(x, y,
+						      cmap[(c >> 4) & 1]);
+						pixel(x + 1, y,
+						      cmap[(c >> 5) & 1]);
+						pixel(x, y + 1,
+						      cmap[(c >> 6) & 1]);
+						pixel(x + 1, y + 1,
+						      cmap[(c >> 7) & 1]);
+						x += 2;
+					}
+				}
 			}
 		}
 	} else {		/* 512 bytes memory */
-		for (y = 0; y < 64; y += 2) {
-			for (x = 0; x < 64;) {
-				i = dma_read(addr);
-				pixel_2(x, y, color[i & 1]);
-				pixel_2(x + 1, y, color[(i >> 1) & 1]);
-				pixel_2(x, y + 1, color[(i >> 2) & 1]);
-				pixel_2(x + 1, y + 1, color[(i >> 3) & 1]);
-				pixel_2(x + 2, y, color[(i >> 4) & 1]);
-				pixel_2(x + 3, y, color[(i >> 5) & 1]);
-				pixel_2(x + 2, y + 1, color[(i >> 6) & 1]);
-				pixel_2(x + 3, y + 1, color[(i >> 7) & 1]);
-				x += 4;
-				addr++;
+		for (j = 0; j < 128; j += 4) {
+			for (i = 0; i < 128; i += 8) {
+				c = dma_read(addr++);
+				for (y = j; y < j + 4; y += 2) {
+					for (x = i; x < i + 8;) {
+						pixel(x, y, cmap[c & 1]);
+						pixel(x + 1, y,
+						      cmap[(c >> 1) & 1]);
+						pixel(x, y + 1,
+						      cmap[(c >> 2) & 1]);
+						pixel(x + 1, y + 1,
+						      cmap[(c >> 3) & 1]);
+						x += 2;
+						pixel(x, y,
+						      cmap[(c >> 4) & 1]);
+						pixel(x + 1, y,
+						      cmap[(c >> 5) & 1]);
+						pixel(x, y + 1,
+						      cmap[(c >> 6) & 1]);
+						pixel(x + 1, y + 1,
+						      cmap[(c >> 7) & 1]);
+						x += 2;
+					}
+				}
 			}
 		}
 	}
@@ -248,7 +208,7 @@ static void __not_in_flash_func(draw_hires)(void)
 /* draw pixels for one frame in lowres */
 static void __not_in_flash_func(draw_lowres)(void)
 {
-	int x, y, i;
+	int x, y, i, j, c;
 	WORD addr = dma_addr;
 	uint16_t color;
 	const uint16_t *cmap;
@@ -256,72 +216,55 @@ static void __not_in_flash_func(draw_lowres)(void)
 	cmap = (format & 16) ? colors : grays;
 	/* get size of DMA memory and draw the pixels */
 	if (format & 32) {	/* 2048 bytes memory */
-		for (y = 0; y < 32; y++) {
-			for (x = 0; x < 32;) {
-				i = dma_read(addr);
-				color = cmap[i & 0x0f];
-				pixel_2(x, y, color);
-				x++;
-				color = cmap[(i >> 4) & 0x0f];
-				pixel_2(x, y, color);
-				x++;
-				addr++;
-			}
-		}
-		for (y = 0; y < 32; y++) {
-			for (x = 32; x < 64;) {
-				i = dma_read(addr);
-				color = cmap[i & 0x0f];
-				pixel_2(x, y, color);
-				x++;
-				color = cmap[(i >> 4) & 0x0f];
-				pixel_2(x, y, color);
-				x++;
-				addr++;
-			}
-		}
-		for (y = 32; y < 64; y++) {
-			for (x = 0; x < 32;) {
-				i = dma_read(addr);
-				color = cmap[i & 0x0f];
-				pixel_2(x, y, color);
-				x++;
-				color = cmap[(i >> 4) & 0x0f];
-				pixel_2(x, y, color);
-				x++;
-				addr++;
-			}
-		}
-		for (y = 32; y < 64; y++) {
-			for (x = 32; x < 64;) {
-				i = dma_read(addr);
-				color = cmap[i & 0x0f];
-				pixel_2(x, y, color);
-				x++;
-				color = cmap[(i >> 4) & 0x0f];
-				pixel_2(x, y, color);
-				x++;
-				addr++;
+		for (j = 0; j < 128; j += 64) {
+			for (i = 0; i < 128; i += 64) {
+				for (y = j; y < j + 64; y += 2) {
+					for (x = i; x < i + 64;) {
+						c = dma_read(addr++);
+						color = cmap[c & 0x0f];
+						pixel(x, y, color);
+						pixel(x + 1, y, color);
+						pixel(x, y + 1, color);
+						pixel(x + 1, y + 1, color);
+						x += 2;
+						color = cmap[(c >> 4) & 0x0f];
+						pixel(x, y, color);
+						pixel(x + 1, y, color);
+						pixel(x, y + 1, color);
+						pixel(x + 1, y + 1, color);
+						x += 2;
+					}
+				}
 			}
 		}
 	} else {		/* 512 bytes memory */
-		for (y = 0; y < 32; y++) {
-			for (x = 0; x < 32;) {
-				i = dma_read(addr);
-				color = cmap[i & 0x0f];
-				pixel_4(x, y, color);
-				x++;
-				color = cmap[(i >> 4) & 0x0f];
-				pixel_4(x, y, color);
-				x++;
-				addr++;
+		for (j = 0; j < 128; j += 4) {
+			for (i = 0; i < 128; i += 8) {
+				c = dma_read(addr++);
+				for (y = j; y < j + 4; y += 2) {
+					for (x = i; x < i + 8;) {
+						color = cmap[c & 0x0f];
+						pixel(x, y, color);
+						pixel(x + 1, y, color);
+						pixel(x, y + 1, color);
+						pixel(x + 1, y + 1, color);
+						x += 2;
+						color = cmap[(c >> 4) & 0x0f];
+						pixel(x, y, color);
+						pixel(x + 1, y, color);
+						pixel(x, y + 1, color);
+						pixel(x + 1, y + 1, color);
+						x += 2;
+					}
+				}
 			}
 		}
 	}
 }
 
-static inline void draw_bitmap(const uint8_t *bitmap, int width, int height,
-			       int x, int y)
+static void __no_inline_not_in_flash_func(draw_bitmap)(const uint8_t *bitmap,
+						       int width, int height,
+						       int x, int y)
 {
 	int i, j;
 	uint8_t m;

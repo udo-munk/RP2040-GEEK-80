@@ -129,9 +129,9 @@ void lcd_default_draw_func(void)
 /*
  * Draw character "c" at text coordinates "x, y" with color "col"
  */
-static inline void cpu_char(uint16_t x, uint16_t y, const char c,
-			    uint16_t col, const sFONT *font,
-			    uint16_t offx, uint16_t offy, uint16_t spc)
+static void __no_inline_not_in_flash_func(cpu_char)
+	(uint16_t x, uint16_t y, const char c, uint16_t col, const sFONT *font,
+	 uint16_t offx, uint16_t offy, uint16_t spc)
 {
 	Paint_FastChar(x * font->Width + offx,
 		       y * (font->Height + spc) + offy,
@@ -154,14 +154,13 @@ static inline void cpu_char28(uint16_t x, uint16_t y, const char c,
  * Draw horizontal grid line in the middle of vertical spacing below
  * text row "y" with color "col" and vertical adjustment "adj"
  */
-static inline void cpu_gridh(uint16_t y, uint16_t adj, uint16_t col,
-			     const sFONT *font, uint16_t offy, uint16_t spc)
+static void __no_inline_not_in_flash_func(cpu_gridh)
+	(uint16_t y, uint16_t adj, uint16_t col, const sFONT *font,
+	 uint16_t offy, uint16_t spc)
 {
-	Paint_FastHLine(0,
-			(y + 1) * (font->Height + spc)
-				- (spc + 1) / 2 + offy - adj,
-			Paint.Width,
-			col);
+	Paint_FastHLine(0, (y + 1) * (font->Height + spc) -
+			(spc + 1) / 2 + offy - adj,
+			Paint.Width, col);
 }
 
 static inline void cpu_gridh20(uint16_t y, uint16_t adj, uint16_t col)
@@ -179,15 +178,13 @@ static inline void cpu_gridh28(uint16_t y, uint16_t adj, uint16_t col)
  * color "col" from the top of the screen to the middle of vertical
  * spacing below text row "y" with vertical adjustment "adj"
  */
-static inline void cpu_gridv(uint16_t x, uint16_t y, uint16_t adj,
-			     uint16_t col, const sFONT *font,
-			     uint16_t offx, uint16_t offy, uint16_t spc)
+static void __no_inline_not_in_flash_func(cpu_gridv)
+	(uint16_t x, uint16_t y, uint16_t adj, uint16_t col, const sFONT *font,
+	 uint16_t offx, uint16_t offy, uint16_t spc)
 {
 	Paint_FastVLine(x * font->Width + font->Width / 2 + offx,
-			0,
-			(y + 1) * (font->Height + spc)
-				- (spc + 1) / 2 + offy - adj,
-			col);
+			0, (y + 1) * (font->Height + spc) -
+			(spc + 1) / 2 + offy - adj, col);
 }
 
 static inline void cpu_gridv20(uint16_t x, uint16_t y, uint16_t adj,
@@ -206,15 +203,13 @@ static inline void cpu_gridv28(uint16_t x, uint16_t y, uint16_t adj,
  * to the middle of vertical spacing below text row "y1" with vertical
  * adjustment "adj"
  */
-static inline void cpu_gridvs(uint16_t x, uint16_t y0, uint16_t y1,
-			      uint16_t adj, uint16_t col, const sFONT *font,
-			      uint16_t offx, uint16_t offy, uint16_t spc)
+static void __no_inline_not_in_flash_func(cpu_gridvs)
+	(uint16_t x, uint16_t y0, uint16_t y1, uint16_t adj, uint16_t col,
+	 const sFONT *font, uint16_t offx, uint16_t offy, uint16_t spc)
 {
 	Paint_FastVLine(x * font->Width + font->Width / 2 + offx,
-			y0 * (font->Height + spc)
-				- (spc + 1) / 2 + offy,
-			(y1 - y0 + 1) * (font->Height + spc) - adj,
-			col);
+			y0 * (font->Height + spc) - (spc + 1) / 2 + offy,
+			(y1 - y0 + 1) * (font->Height + spc) - adj, col);
 }
 
 static inline void cpu_gridvs20(uint16_t x, uint16_t y0, uint16_t y1,
@@ -236,7 +231,7 @@ static inline char hex2(uint16_t x) { return hex[(x >> 8) & 0xf]; }
 static inline char hex1(uint16_t x) { return hex[(x >> 4) & 0xf]; }
 static inline char hex0(uint16_t x) { return hex[x & 0xf]; }
 
-static float __not_in_flash_func(read_onboard_temp)(void)
+static inline float read_onboard_temp(void)
 {
 	/* 12-bit conversion, assume max value == ADC_VREF == 3.3 V */
 	const float conversionFactor = 3.3f / (1 << 12);
@@ -536,6 +531,7 @@ static void __not_in_flash_func(lcd_task)(void)
 		}
 
 		d = absolute_time_diff_us(t, get_absolute_time());
+		// printf("SLEEP %lld\n", LCD_REFRESH_US - d);
 		if (d < LCD_REFRESH_US)
 			sleep_us(LCD_REFRESH_US - d);
 		else
