@@ -144,23 +144,22 @@ extern PAINT_TIME sPaint_time;
 #if LCD_COLOR_DEPTH == 12
 static inline void Paint_FastPixel(uint16_t x, uint16_t y, uint16_t color)
 {
-	int32_t Addr = (x / 2) * 3 + y * Paint.WidthByte;
-	if ((x % 2) == 0) {
-		Paint.Image[Addr] = (color >> 4) & 0xff;
-		Paint.Image[Addr + 1] = ((color & 0x0f) << 4) |
-			(Paint.Image[Addr + 1] & 0x0f);
+	uint8_t *p = &Paint.Image[(x >> 1) * 3 + y * Paint.WidthByte];
+	if ((x & 1) == 0) {
+		*p++ = (color >> 4) & 0xff;
+		*p = ((color & 0x0f) << 4) | (*p & 0x0f);
 	} else {
-		Paint.Image[Addr + 1] = ((color >> 8) & 0x0f) |
-			(Paint.Image[Addr + 1] & 0xf0);
-		Paint.Image[Addr + 2] = color & 0xff;
+		p++;
+		*p = (*p & 0xf0) | ((color >> 8) & 0x0f);
+		*++p = color & 0xff;
 	}
 }
 #else
 static inline void Paint_FastPixel(uint16_t x, uint16_t y, uint16_t color)
 {
-	int32_t Addr = x * 2 + y * Paint.WidthByte;
-	Paint.Image[Addr] = (color >> 8) & 0xff;
-	Paint.Image[Addr + 1] = color & 0xff;
+	uint8_t *p = &Paint.Image[(x << 1) + y * Paint.WidthByte];
+	*p++ = (color >> 8) & 0xff;
+	*p = color & 0xff;
 }
 #endif
 
@@ -173,13 +172,16 @@ static inline void Paint_FastChar(uint16_t x, uint16_t y, const char c,
 				  const sFONT *font, uint16_t fgc,
 				  uint16_t bgc)
 {
-	const uint8_t *p = &font->table[(c & 0x7f) * font->CharByte];
-	uint16_t i, j;
+	const uint32_t off = (c & 0x7f) * font->Width;
+	const uint8_t *p0 = &font->table[off >> 3], *p;
+	const uint8_t m0 = 0x80 >> (off & 7);
 	uint8_t m;
+	uint16_t i, j;
 
-	for (j = 0; j < font->Height; j++) {
-		m = 0x80;
-		for (i = 0; i < font->Width; i++) {
+	for (j = font->Height; j > 0; j--) {
+		m = m0;
+		p = p0;
+		for (i = font->Width; i > 0; i--) {
 			if (*p & m)
 				Paint_FastPixel(x, y, fgc);
 			else
@@ -190,10 +192,9 @@ static inline void Paint_FastChar(uint16_t x, uint16_t y, const char c,
 			}
 			x++;
 		}
-		if (font->FractByte)
-			p++;
 		x -= font->Width;
 		y++;
+		p0 += font->StripeWidth;
 	}
 }
 

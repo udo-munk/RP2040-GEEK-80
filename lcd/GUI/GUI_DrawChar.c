@@ -20,8 +20,8 @@ void __not_in_flash_func(Paint_DrawChar)(uint16_t Xpoint, uint16_t Ypoint,
 {
 	uint16_t Page, Column;
 	uint32_t Char_Offset;
-	uint8_t Mask;
-	const unsigned char *ptr;
+	uint8_t Char_Mask, Mask;
+	const unsigned char *Char_Ptr, *ptr;
 
 	if (Xpoint >= Paint.Width || Ypoint >= Paint.Height) {
 		Debug("Paint_DrawChar Input exceeds the normal "
@@ -29,11 +29,13 @@ void __not_in_flash_func(Paint_DrawChar)(uint16_t Xpoint, uint16_t Ypoint,
 		return;
 	}
 
-	Char_Offset = (Acsii_Char & 0x7f) * Font->CharByte;
-	ptr = &Font->table[Char_Offset];
+	Char_Offset = (Acsii_Char & 0x7f) * Font->Width;
+	Char_Ptr = &Font->table[Char_Offset / 8];
+	Char_Mask = 0x80 >> (Char_Offset % 8);
 
 	for (Page = 0; Page < Font->Height; Page++) {
-		Mask = 0x80;
+		Mask = Char_Mask;
+		ptr = Char_Ptr;
 		for (Column = 0; Column < Font->Width; Column++) {
 
 			/* To determine whether the font background color and
@@ -62,7 +64,6 @@ void __not_in_flash_func(Paint_DrawChar)(uint16_t Xpoint, uint16_t Ypoint,
 				ptr++;
 			}
 		} /* Write a line */
-		if (Font->FractByte)
-			ptr++;
+		Char_Ptr += Font->StripeWidth;
 	} /* Write all */
 }
