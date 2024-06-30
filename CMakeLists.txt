@@ -72,6 +72,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	LCD_COLOR_DEPTH=12
 	# LCD refresh rate in Hz (30 works well with 12-bit frame buffer)
 	LCD_REFRESH=30
+	# This is the pid.codes private testing USB VID/PID. This is not
+	# universally unique and should not be used outside test environments.
+	# See https://pid.codes/1209/1001 .
+	USBD_VID=0x1209
+	USBD_PID=0x0001
 )
 
 target_compile_definitions(${PROJECT_NAME} INTERFACE
