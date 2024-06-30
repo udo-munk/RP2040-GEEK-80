@@ -28,6 +28,11 @@
 #include "hw_config.h"
 #include "sd_card.h"
 
+typedef enum {
+	SCSI_CMD_VERIFY			= 0x2f,
+	SCSI_CMD_SYNCHRONIZE_CACHE	= 0x35
+} scsi_cmd_type_2_t;
+
 // whether mass storage interface is active
 bool msc_ejected = true;
 
@@ -184,13 +189,18 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16],
 		scsi_prevent_allow_medium_removal_t const *prevent_allow =
 			(scsi_prevent_allow_medium_removal_t const *) scsi_cmd;
 
-		if ((prevent_allow->prohibit_removal & 3) == 0) {
-			// allow
-			resplen = 0;
-		} else {
-			// any prevents unsupported
-			resplen = -1;
-		}
+		if ((prevent_allow->prohibit_removal & 3) == 0)
+			resplen = 0;	// allow succeeds
+		else
+			resplen = -1;	// any prevents unsupported
+		break;
+
+	case SCSI_CMD_VERIFY:
+		resplen = 0;		// report success
+		break;
+
+	case SCSI_CMD_SYNCHRONIZE_CACHE:
+		resplen = 0;		// report success
 		break;
 
 	default:
