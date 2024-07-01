@@ -22,7 +22,7 @@
 #include "hw_config.h"
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
 #include "disks.h"
 #include "sd-fdc.h"
 

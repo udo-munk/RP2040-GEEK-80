@@ -10,6 +10,9 @@
  * 29-JUN-2024 split of from memsim.c and picosim.c
  */
 
+#ifndef DISKS_INC
+#define DISKS_INC
+
 #define NUMDISK	4	/* number of disk drives */
 #define DISKLEN	22	/* path length for disk drives /DISKS80/filename.DSK */
 
@@ -18,11 +21,13 @@ extern FRESULT sd_res;
 extern char disks[NUMDISK][DISKLEN];
 
 extern void init_disks(void), exit_disks(void);
-extern void list_files(const char *, const char *);
-extern void load_file(const char *);
+extern void list_files(const char *dir, const char *ext);
+extern void load_file(const char *name);
 extern void check_disks(void);
-extern void mount_disk(int, const char *name);
+extern void mount_disk(int drive, const char *name);
 
-extern BYTE read_sec(int, int, int, WORD);
-extern BYTE write_sec(int, int, int, WORD);
-extern void get_fdccmd(BYTE *, WORD);
+extern BYTE read_sec(int drive, int track, int sector, WORD addr);
+extern BYTE write_sec(int drive, int track, int sector, WORD addr);
+extern void get_fdccmd(BYTE *cmd, WORD addr);
+
+#endif /* !DISK_INC */

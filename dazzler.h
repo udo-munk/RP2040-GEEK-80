@@ -5,10 +5,10 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
-#ifndef DAZZLER_H
-#define DAZZLER_H
+#ifndef DAZZLER_INC
+#define DAZZLER_INC
 
-extern void dazzler_ctl_out(BYTE), dazzler_format_out(BYTE);
+extern void dazzler_ctl_out(BYTE data), dazzler_format_out(BYTE data);
 extern BYTE dazzler_flags_in(void);
 
-#endif
+#endif /* !DAZZLER_INC */

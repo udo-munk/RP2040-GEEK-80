@@ -9,8 +9,8 @@
 #include "pico/platform.h"
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
 #include "dazzler.h"
 #include "lcd.h"
 

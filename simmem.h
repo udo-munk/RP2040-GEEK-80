@@ -10,13 +10,11 @@
  * 29-JUN-2024 implemented banked memory
  */
 
-#ifndef MEMSIM_INC
-#define MEMSIM_INC
-
-#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+#ifndef SIMMEM_INC
+#define SIMMEM_INC
 
 extern void init_memory(void);
-extern BYTE bnk0[], bnk1[];
+extern BYTE bnk0[65536], bnk1[49152];
 extern BYTE selbnk;
 
 /* Last page in memory is ROM and write protected. Some software */
@@ -86,4 +84,4 @@ static inline BYTE getmem(WORD addr)
 		return bnk1[addr];
 }
 
-#endif
+#endif /* !SIMMEM_INC */

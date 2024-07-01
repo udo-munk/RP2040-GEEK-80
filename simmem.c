@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
 
 /* 64KB bank 0 + common segment */
 BYTE bnk0[65536];
