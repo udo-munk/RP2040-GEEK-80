@@ -6,7 +6,7 @@
 ; History:
 ; 30-JUN-2024 first public release
 ;
-;	CSEG
+	CSEG
 ;
 ;	I/O ports
 ;
@@ -138,7 +138,7 @@ XMOVE:
 ;
 ;	console character output from register C
 ;
-CONOUT	IN	CONSTA		; get status
+CONOUT:	IN	CONSTA		; get status
 	RLC			; test bit 7
 	JC	CONOUT		; wait until transmitter ready
 	MOV	A,C		; get character into accumulator
@@ -147,7 +147,7 @@ CONOUT	IN	CONSTA		; get status
 ;
 ;	move to track 0 position on current disk
 ;
-HOME	MVI	C,0		; select track 0
+HOME:	MVI	C,0		; select track 0
 	JMP	SETTRK
 ;
 ;	select disk given by register C
