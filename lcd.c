@@ -19,7 +19,7 @@ static uint8_t img[LCD_1IN14_V2_HEIGHT * ((LCD_1IN14_V2_WIDTH + 1) / 2) * 3];
 static uint16_t img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
 #endif
 
-static void (*volatile lcd_draw_func)(int);
+static void (*volatile lcd_draw_func)(int first_flag);
 static volatile int lcd_task_busy;
 static volatile int lcd_rotated;
 
@@ -75,7 +75,7 @@ void lcd_set_rotated(int rotated)
 	lcd_rotated = rotated;
 }
 
-void lcd_set_draw_func(void (*draw_func)(int))
+void lcd_set_draw_func(void (*draw_func)(int first_flag))
 {
 	lcd_draw_func = draw_func;
 }

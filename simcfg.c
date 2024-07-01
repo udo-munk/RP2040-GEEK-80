@@ -25,25 +25,15 @@
 #include "ff.h"
 #include "sim.h"
 #include "simglb.h"
+#include "simcore.h"
+#include "simfun.h"
+#include "simio.h"
 #include "disks.h"
 #include "lcd.h"
-
-extern FIL sd_file;
-extern FRESULT sd_res;
-extern char disks[NUMDISK][DISKLEN];
-extern int speed;
-extern BYTE fp_value;
+#include "picosim.h"
 #if LIB_STDIO_MSC_USB
-extern int msc_ejected;
+#include "msc_usb.h"
 #endif
-
-extern int get_cmdline(char *, int);
-extern void switch_cpu(int);
-extern void init_disks(void), exit_disks(void);
-extern void list_files(const char *, const char *);
-extern void load_file(const char *);
-extern void check_disks(void);
-extern void mount_disk(int, const char *);
 
 /*
  * prompt for a filename

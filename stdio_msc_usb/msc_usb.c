@@ -27,6 +27,7 @@
 #include "tusb.h"
 #include "hw_config.h"
 #include "sd_card.h"
+#include "msc_usb.h"
 
 typedef enum {
 	SCSI_CMD_VERIFY_10		= 0x2f,

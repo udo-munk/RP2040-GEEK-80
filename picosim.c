@@ -34,8 +34,14 @@
 /* Project includes */
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simcore.h"
+#include "simfun.h"
+#include "simio.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
 #include "disks.h"
 #include "lcd.h"
 
@@ -44,13 +50,6 @@
 
 /* CPU speed */
 int speed = CPU_SPEED;
-
-extern void init_cpu(void), init_io(void), run_cpu(void);
-extern void report_cpu_error(void), report_cpu_stats(void);
-extern void init_disks(void), exit_disks(void);
-
-uint64_t get_clock_us(void);
-int get_cmdline(char *, int);
 
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
@@ -129,8 +128,6 @@ int main(void)
 	lcd_default_draw_func(); /* tell LCD task to display default infos */
 
 #ifdef WANT_ICE
-	extern void ice_cmd_loop(int);
-
 	ice_cmd_loop(0);
 #else
 	run_cpu();		/* run the CPU with whatever is in memory */
