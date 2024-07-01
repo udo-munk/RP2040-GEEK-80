@@ -142,6 +142,7 @@ static void __not_in_flash_func(draw_hires)(void)
 	int x, y, i, j, c;
 	WORD addr = dma_addr;
 	unsigned int cmap[2];
+	unsigned int c0, c1, c2, c3, c4, c5, c6, c7;
 
 	/* set color or grayscale from lower nibble in graphics format */
 	c = format & 0x0f;
@@ -154,22 +155,23 @@ static void __not_in_flash_func(draw_hires)(void)
 				for (y = j; y < j + 64; y += 2) {
 					for (x = i; x < i + 64;) {
 						c = dma_read(addr++);
-						pixel(x, y, cmap[c & 1]);
-						pixel(x + 1, y,
-						      cmap[(c >> 1) & 1]);
-						pixel(x, y + 1,
-						      cmap[(c >> 2) & 1]);
-						pixel(x + 1, y + 1,
-						      cmap[(c >> 3) & 1]);
+						c0 = cmap[c & 1];
+						c1 = cmap[(c >> 1) & 1];
+						c2 = cmap[(c >> 2) & 1];
+						c3 = cmap[(c >> 3) & 1];
+						c4 = cmap[(c >> 4) & 1];
+						c5 = cmap[(c >> 5) & 1];
+						c6 = cmap[(c >> 6) & 1];
+						c7 = cmap[(c >> 7) & 1];
+						pixel(x, y, c0);
+						pixel(x + 1, y, c1);
+						pixel(x, y + 1, c2);
+						pixel(x + 1, y + 1, c3);
 						x += 2;
-						pixel(x, y,
-						      cmap[(c >> 4) & 1]);
-						pixel(x + 1, y,
-						      cmap[(c >> 5) & 1]);
-						pixel(x, y + 1,
-						      cmap[(c >> 6) & 1]);
-						pixel(x + 1, y + 1,
-						      cmap[(c >> 7) & 1]);
+						pixel(x, y, c4);
+						pixel(x + 1, y, c5);
+						pixel(x, y + 1, c6);
+						pixel(x + 1, y + 1, c7);
 						x += 2;
 					}
 				}
@@ -179,24 +181,25 @@ static void __not_in_flash_func(draw_hires)(void)
 		for (j = 0; j < 128; j += 4) {
 			for (i = 0; i < 128; i += 8) {
 				c = dma_read(addr++);
+				c0 = cmap[c & 1];
+				c1 = cmap[(c >> 1) & 1];
+				c2 = cmap[(c >> 2) & 1];
+				c3 = cmap[(c >> 3) & 1];
+				c4 = cmap[(c >> 4) & 1];
+				c5 = cmap[(c >> 5) & 1];
+				c6 = cmap[(c >> 6) & 1];
+				c7 = cmap[(c >> 7) & 1];
 				for (y = j; y < j + 4; y += 2) {
 					for (x = i; x < i + 8;) {
-						pixel(x, y, cmap[c & 1]);
-						pixel(x + 1, y,
-						      cmap[(c >> 1) & 1]);
-						pixel(x, y + 1,
-						      cmap[(c >> 2) & 1]);
-						pixel(x + 1, y + 1,
-						      cmap[(c >> 3) & 1]);
+						pixel(x, y, c0);
+						pixel(x + 1, y, c1);
+						pixel(x, y + 1, c2);
+						pixel(x + 1, y + 1, c3);
 						x += 2;
-						pixel(x, y,
-						      cmap[(c >> 4) & 1]);
-						pixel(x + 1, y,
-						      cmap[(c >> 5) & 1]);
-						pixel(x, y + 1,
-						      cmap[(c >> 6) & 1]);
-						pixel(x + 1, y + 1,
-						      cmap[(c >> 7) & 1]);
+						pixel(x, y, c4);
+						pixel(x + 1, y, c5);
+						pixel(x, y + 1, c6);
+						pixel(x + 1, y + 1, c7);
 						x += 2;
 					}
 				}
@@ -210,8 +213,8 @@ static void __not_in_flash_func(draw_lowres)(void)
 {
 	int x, y, i, j, c;
 	WORD addr = dma_addr;
-	uint16_t color;
 	const uint16_t *cmap;
+	unsigned int c0, c1;
 
 	cmap = (format & 16) ? colors : grays;
 	/* get size of DMA memory and draw the pixels */
@@ -221,17 +224,17 @@ static void __not_in_flash_func(draw_lowres)(void)
 				for (y = j; y < j + 64; y += 2) {
 					for (x = i; x < i + 64;) {
 						c = dma_read(addr++);
-						color = cmap[c & 0x0f];
-						pixel(x, y, color);
-						pixel(x + 1, y, color);
-						pixel(x, y + 1, color);
-						pixel(x + 1, y + 1, color);
+						c0 = cmap[c & 0x0f];
+						c1 = cmap[(c >> 4) & 0x0f];
+						pixel(x, y, c0);
+						pixel(x + 1, y, c0);
+						pixel(x, y + 1, c0);
+						pixel(x + 1, y + 1, c0);
 						x += 2;
-						color = cmap[(c >> 4) & 0x0f];
-						pixel(x, y, color);
-						pixel(x + 1, y, color);
-						pixel(x, y + 1, color);
-						pixel(x + 1, y + 1, color);
+						pixel(x, y, c1);
+						pixel(x + 1, y, c1);
+						pixel(x, y + 1, c1);
+						pixel(x + 1, y + 1, c1);
 						x += 2;
 					}
 				}
@@ -241,19 +244,19 @@ static void __not_in_flash_func(draw_lowres)(void)
 		for (j = 0; j < 128; j += 4) {
 			for (i = 0; i < 128; i += 8) {
 				c = dma_read(addr++);
+				c0 = cmap[c & 0x0f];
+				c1 = cmap[(c >> 4) & 0x0f];
 				for (y = j; y < j + 4; y += 2) {
 					for (x = i; x < i + 8;) {
-						color = cmap[c & 0x0f];
-						pixel(x, y, color);
-						pixel(x + 1, y, color);
-						pixel(x, y + 1, color);
-						pixel(x + 1, y + 1, color);
+						pixel(x, y, c0);
+						pixel(x + 1, y, c0);
+						pixel(x, y + 1, c0);
+						pixel(x + 1, y + 1, c0);
 						x += 2;
-						color = cmap[(c >> 4) & 0x0f];
-						pixel(x, y, color);
-						pixel(x + 1, y, color);
-						pixel(x, y + 1, color);
-						pixel(x + 1, y + 1, color);
+						pixel(x, y, c1);
+						pixel(x + 1, y, c1);
+						pixel(x, y + 1, c1);
+						pixel(x + 1, y + 1, c1);
 						x += 2;
 					}
 				}
