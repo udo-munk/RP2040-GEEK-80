@@ -13,6 +13,8 @@
 #ifndef MEMSIM_INC
 #define MEMSIM_INC
 
+#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+
 extern void init_memory(void);
 extern BYTE bnk0[], bnk1[];
 extern BYTE selbnk;
