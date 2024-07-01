@@ -126,10 +126,14 @@ void lcd_default_draw_func(void)
 #define OFFY28	0	/* y pixel offset of text coordinate grid for Font28 */
 #define SPC28	1	/* vertical spacing for Font28 */
 
+#ifndef __noclone
+#define __noclone	__attribute__((__noclone__))
+#endif
+
 /*
  * Draw character "c" at text coordinates "x, y" with color "col"
  */
-static void __no_inline_not_in_flash_func(cpu_char)
+static void __noclone __no_inline_not_in_flash_func(cpu_char)
 	(uint16_t x, uint16_t y, const char c, uint16_t col, const sFONT *font,
 	 uint16_t offx, uint16_t offy, uint16_t spc)
 {
@@ -154,7 +158,7 @@ static inline void cpu_char28(uint16_t x, uint16_t y, const char c,
  * Draw horizontal grid line in the middle of vertical spacing below
  * text row "y" with color "col" and vertical adjustment "adj"
  */
-static void __no_inline_not_in_flash_func(cpu_gridh)
+static void __noclone __no_inline_not_in_flash_func(cpu_gridh)
 	(uint16_t y, uint16_t adj, uint16_t col, const sFONT *font,
 	 uint16_t offy, uint16_t spc)
 {
@@ -178,7 +182,7 @@ static inline void cpu_gridh28(uint16_t y, uint16_t adj, uint16_t col)
  * color "col" from the top of the screen to the middle of vertical
  * spacing below text row "y" with vertical adjustment "adj"
  */
-static void __no_inline_not_in_flash_func(cpu_gridv)
+static void __noclone __no_inline_not_in_flash_func(cpu_gridv)
 	(uint16_t x, uint16_t y, uint16_t adj, uint16_t col, const sFONT *font,
 	 uint16_t offx, uint16_t offy, uint16_t spc)
 {
@@ -203,7 +207,7 @@ static inline void cpu_gridv28(uint16_t x, uint16_t y, uint16_t adj,
  * to the middle of vertical spacing below text row "y1" with vertical
  * adjustment "adj"
  */
-static void __no_inline_not_in_flash_func(cpu_gridvs)
+static void __noclone __no_inline_not_in_flash_func(cpu_gridvs)
 	(uint16_t x, uint16_t y0, uint16_t y1, uint16_t adj, uint16_t col,
 	 const sFONT *font, uint16_t offx, uint16_t offy, uint16_t spc)
 {
