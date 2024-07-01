@@ -36,6 +36,6 @@ extern void sleep_ms(uint32_t);
 #define PRIu64 "llu"
 #endif
 
-#include "simcore.h"
+#include "simdefs.h"
 
 #endif
