@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include "pico/multicore.h"
+#include "pico/time.h"
 #include "hardware/adc.h"
 #include "hardware/divider.h"
 

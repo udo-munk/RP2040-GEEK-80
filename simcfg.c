@@ -21,6 +21,7 @@
 #include <ctype.h>
 #include "hardware/rtc.h"
 #include "pico/stdlib.h"
+#include "pico/time.h"
 
 #include "f_util.h"
 #include "ff.h"
@@ -30,7 +31,7 @@
 #include "simglb.h"
 #include "simcore.h"
 #include "simutil.h"
-#include "simfun.h"
+#include "simport.h"
 #include "simio.h"
 #include "simcfg.h"
 

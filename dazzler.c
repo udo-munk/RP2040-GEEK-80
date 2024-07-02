@@ -7,12 +7,14 @@
 
 #include <stdint.h>
 #include "pico/platform.h"
+#include "pico/time.h"
 
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
 #include "simcfg.h"
 #include "simmem.h"
+#include "simport.h"
 
 #include "dazzler.h"
 #include "lcd.h"
