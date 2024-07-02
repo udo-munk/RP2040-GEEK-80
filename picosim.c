@@ -39,7 +39,7 @@
 #include "simcfg.h"
 #include "simmem.h"
 #include "simcore.h"
-#include "simfun.h"
+#include "simport.h"
 #include "simio.h"
 #ifdef WANT_ICE
 #include "simice.h"
@@ -149,11 +149,6 @@ int main(void)
 
 	stdio_flush();
 	return 0;
-}
-
-uint64_t get_clock_us(void)
-{
-	return to_us_since_boot(get_absolute_time());
 }
 
 /*
