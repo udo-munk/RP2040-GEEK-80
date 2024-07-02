@@ -12,10 +12,10 @@
  * 29-JUN-2024 implemented banked memory
  */
 
-#include <stdint.h>
 #include <stdlib.h>
+
 #include "sim.h"
-#include "simglb.h"
+#include "simdefs.h"
 #include "simmem.h"
 
 /* 64KB bank 0 + common segment */

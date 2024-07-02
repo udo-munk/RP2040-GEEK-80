@@ -27,9 +27,12 @@
 
 /* Project includes */
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
 #include "simcore.h"
+#include "simio.h"
+
 #include "dazzler.h"
 #include "sd-fdc.h"
 

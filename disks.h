@@ -13,6 +13,9 @@
 #ifndef DISKS_INC
 #define DISKS_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 #define NUMDISK	4	/* number of disk drives */
 #define DISKLEN	22	/* path length for disk drives /DISKS80/filename.DSK */
 

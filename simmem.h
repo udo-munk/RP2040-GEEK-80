@@ -13,9 +13,13 @@
 #ifndef SIMMEM_INC
 #define SIMMEM_INC
 
-extern void init_memory(void);
+#include "sim.h"
+#include "simdefs.h"
+
 extern BYTE bnk0[65536], bnk1[49152];
 extern BYTE selbnk;
+
+extern void init_memory(void);
 
 /* Last page in memory is ROM and write protected. Some software */
 /* expects a ROM in upper memory, if not it will wrap arround to */

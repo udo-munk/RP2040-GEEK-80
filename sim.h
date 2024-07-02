@@ -25,6 +25,8 @@
 #define SBSIZE	4	/* number of software breakpoints */
 #endif
 
+#include <stdint.h>
+
 extern void sleep_us(uint64_t);
 #define SLEEP_US(t)	sleep_us(t)
 extern void sleep_ms(uint32_t);
@@ -37,7 +39,5 @@ extern void sleep_ms(uint32_t);
 #ifndef PRIu64
 #define PRIu64 "llu"
 #endif
-
-#include "simdefs.h"
 
 #endif

@@ -8,6 +8,9 @@
 #ifndef DAZZLER_INC
 #define DAZZLER_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern void dazzler_ctl_out(BYTE data), dazzler_format_out(BYTE data);
 extern BYTE dazzler_flags_in(void);
 

@@ -21,13 +21,19 @@
 #include <ctype.h>
 #include "hardware/rtc.h"
 #include "pico/stdlib.h"
+
 #include "f_util.h"
 #include "ff.h"
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simcore.h"
+#include "simutil.h"
 #include "simfun.h"
 #include "simio.h"
+#include "simcfg.h"
+
 #include "disks.h"
 #include "lcd.h"
 #include "picosim.h"
