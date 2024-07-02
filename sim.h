@@ -18,7 +18,7 @@
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 #define BAREMETAL	/* set up the simulator core for bare metal use */
 
-#define WANT_ICE	/* attach ICE to headless machine */
+/*#define WANT_ICE*/	/* attach ICE to headless machine */
 #ifdef WANT_ICE
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
