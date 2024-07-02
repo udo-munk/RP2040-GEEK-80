@@ -8,9 +8,12 @@
 #include "pico/multicore.h"
 #include "hardware/adc.h"
 #include "hardware/divider.h"
-#include "lcd.h"
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+
+#include "lcd.h"
 
 /* memory image for drawing */
 #if LCD_COLOR_DEPTH == 12

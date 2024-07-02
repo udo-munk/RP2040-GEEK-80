@@ -27,12 +27,14 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "hardware/adc.h"
+
 #include "ff.h"
 #include "hw_config.h"
 #include "rtc.h"
 
 /* Project includes */
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simcfg.h"
 #include "simmem.h"
@@ -42,6 +44,7 @@
 #ifdef WANT_ICE
 #include "simice.h"
 #endif
+
 #include "disks.h"
 #include "lcd.h"
 

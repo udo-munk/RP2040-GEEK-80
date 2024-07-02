@@ -18,12 +18,14 @@
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 #define BAREMETAL	/* set up the simulator core for bare metal use */
 
-/*#define WANT_ICE*/	/* attach ICE to headless machine */
+#define WANT_ICE	/* attach ICE to headless machine */
 #ifdef WANT_ICE
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
 #endif
+
+#include <stdint.h>
 
 extern void sleep_us(uint64_t);
 #define SLEEP_US(t)	sleep_us(t)
@@ -37,7 +39,5 @@ extern void sleep_ms(uint32_t);
 #ifndef PRIu64
 #define PRIu64 "llu"
 #endif
-
-#include "simdefs.h"
 
 #endif

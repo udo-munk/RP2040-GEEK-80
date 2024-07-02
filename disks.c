@@ -17,14 +17,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "sim.h"
+#include "simdefs.h"
+#include "simglb.h"
+#include "simmem.h"
+
 #include "f_util.h"
 #include "ff.h"
 #include "hw_config.h"
-#include "sim.h"
-#include "simglb.h"
-#include "simmem.h"
-#include "disks.h"
+
 #include "sd-fdc.h"
+#include "disks.h"
 
 FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
