@@ -4,7 +4,7 @@
 ;	Copyright (C) 2024 by Udo Munk
 ;
 ; History:
-;   -JUL-2024 first public release
+; 03-JUL-2024 first public release
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
