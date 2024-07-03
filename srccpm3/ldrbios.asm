@@ -192,7 +192,7 @@ SETDMA:	MOV	A,C		; low order address
 ;
 ;	perform read operation
 ;
-READ:	LDA	20H		; read from drive 0
+READ:	MVI	A,20H		; read from drive 0
 	OUT	FDC		; ask FDC to execute the command
 	IN	FDC		; get status from FDC
 	RET
