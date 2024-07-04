@@ -196,14 +196,7 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16],
 
 	switch (scsi_cmd[0]) {
 	case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
-		{
-			scsi_prevent_allow_medium_removal_t const *
-				prevent_allow =
-				(scsi_prevent_allow_medium_removal_t const *)
-				scsi_cmd;
-
-			resplen = 0;		// report success
-		}
+		resplen = 0;			// report success
 		break;
 
 	case SCSI_CMD_VERIFY_10:
