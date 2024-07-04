@@ -453,7 +453,7 @@ SETTRK:	MOV	A,C		; get track to A
 ;	set sector given by register C
 ;
 SETSEC:	MOV	A,C		; get sector to A
-	STA	DDSEC		; and set in FIF disk descriptor
+	STA	DDSEC		; and set in FDC command bytes
 	RET
 ;
 	DSEG
@@ -481,9 +481,9 @@ SECT1:	XCHG			; HL = .TRANS
 ;	set DMA address given by register BC
 ;
 SETDMA:	MOV	A,C		; low order address
-	STA	DDLDMA		; set in FIF disk descriptor
+	STA	DDLDMA		; set in FDC command bytes
 	MOV	A,B		; high order address
-	STA	DDHDMA		; set in FIF disk descriptor
+	STA	DDHDMA		; set in FDC command bytes
 	RET
 ;
 ;	perform read operation
