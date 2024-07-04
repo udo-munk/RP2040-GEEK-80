@@ -27,7 +27,7 @@
 #include "tusb.h"
 #include "hw_config.h"
 #include "sd_card.h"
-#include "msc_usb.h"
+#include "stdio_msc_usb.h"
 
 typedef enum {
 	SCSI_CMD_VERIFY_10		= 0x2f,
@@ -35,7 +35,17 @@ typedef enum {
 } scsi_cmd_type_2_t;
 
 // whether mass storage interface is active
-bool msc_ejected = true;
+bool stdio_msc_usb_msc_ejected = true;
+
+void stdio_msc_usb_do_msc(void)
+{
+	if (stdio_msc_usb_disable_stdio()) {
+		stdio_msc_usb_msc_ejected = false;
+		while (!stdio_msc_usb_msc_ejected)
+			tud_task();
+		stdio_msc_usb_enable_stdio();
+	}
+}
 
 // Invoked when received SCSI_CMD_INQUIRY
 // Application fill vendor id, product id and revision with string up
@@ -60,7 +70,7 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun)
 {
 	(void) lun;
 
-	if (msc_ejected) {
+	if (stdio_msc_usb_msc_ejected) {
 		// Additional Sense 3A-00 is NOT_FOUND
 		tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3a, 0x00);
 		return false;
@@ -79,7 +89,7 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count,
 
 	(void) lun;
 
-	if (sd_card_p == NULL || msc_ejected) {
+	if (sd_card_p == NULL || stdio_msc_usb_msc_ejected) {
 		*block_count = 0;
 		*block_size = 0;
 	} else {
@@ -102,7 +112,7 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start,
 			// load disk storage
 		} else {
 			// unload disk storage
-			msc_ejected = true;
+			stdio_msc_usb_msc_ejected = true;
 		}
 	}
 
@@ -122,7 +132,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
 	(void) lun;
 	(void) offset;
 
-	if (sd_card_p == NULL || msc_ejected)
+	if (sd_card_p == NULL || stdio_msc_usb_msc_ejected)
 		return -1;
 
 	if (lba >= sd_card_p->get_num_sectors(sd_card_p))
@@ -156,7 +166,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
 	(void) lun;
 	(void) offset;
 
-	if (sd_card_p == NULL || msc_ejected)
+	if (sd_card_p == NULL || stdio_msc_usb_msc_ejected)
 		return -1;
 
 	if (lba >= sd_card_p->get_num_sectors(sd_card_p))

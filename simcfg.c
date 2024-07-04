@@ -39,7 +39,7 @@
 #include "lcd.h"
 #include "picosim.h"
 #if LIB_STDIO_MSC_USB
-#include "msc_usb.h"
+#include "stdio_msc_usb.h"
 #endif
 
 /*
@@ -213,9 +213,7 @@ void config(void)
 		case 'u':
 			exit_disks();
 			puts("Waiting for disk to be ejected");
-			msc_ejected = false;
-			while (!msc_ejected)
-				sleep_ms(500);
+			stdio_msc_usb_do_msc();
 			puts("Disk ejected\n");
 			init_disks();
 			check_disks();
