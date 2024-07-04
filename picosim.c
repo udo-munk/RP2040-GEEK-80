@@ -54,7 +54,7 @@
 /* CPU speed */
 int speed = CPU_SPEED;
 
-#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 {
 	UNUSED(itf);
@@ -65,6 +65,7 @@ void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 }
 #endif
 
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 static void draw_wait_term(int first_flag)
 {
 	if (!first_flag)
@@ -73,6 +74,7 @@ static void draw_wait_term(int first_flag)
 	Paint_DrawString(43, 39, "Waiting for", &Font28, RED, BLACK);
 	Paint_DrawString(43, 67, "  terminal ", &Font28, RED, BLACK);
 }
+#endif
 
 static void draw_banner(int first_flag)
 {
@@ -105,7 +107,7 @@ int main(void)
 	adc_select_input(4);
 
 	/* when using USB UART wait until it is connected */
-#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 	lcd_set_draw_func(draw_wait_term);
 	while (!tud_cdc_connected())
 		sleep_ms(100);

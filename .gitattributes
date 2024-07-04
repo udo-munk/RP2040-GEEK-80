@@ -1,0 +1,5 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+# Don't show diffs for binary files and don't do end-of-line conversion
+*.bin -diff -text
+*.dsk -diff -text
