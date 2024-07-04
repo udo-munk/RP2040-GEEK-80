@@ -76,10 +76,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	LCD_REFRESH=30
 )
 
-target_compile_definitions(${PROJECT_NAME} INTERFACE
-	PICO_DEFAULT_UART=0
-)
-
 # compiler diagnostic options
 if (PICO_C_COMPILER_IS_GNU)
 	target_compile_options(${PROJECT_NAME} PUBLIC -fdiagnostics-color=always)
