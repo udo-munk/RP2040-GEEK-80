@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include "pico/multicore.h"
+#include "pico/sync.h"
 #include "pico/time.h"
 #include "hardware/adc.h"
 #include "hardware/divider.h"
@@ -13,8 +14,10 @@
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
+#include "simmem.h"
 
 #include "lcd.h"
+#include "button.h"
 
 /* memory image for drawing */
 #if LCD_COLOR_DEPTH == 12
@@ -23,13 +26,16 @@ static uint8_t img[LCD_1IN14_V2_HEIGHT * ((LCD_1IN14_V2_WIDTH + 1) / 2) * 3];
 static uint16_t img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
 #endif
 
-static void (*volatile lcd_draw_func)(int first_flag);
+static mutex_t lcd_mutex;
+static volatile lcd_func_t lcd_draw_func;
+static volatile lcd_func_t lcd_status_func;
+static volatile int lcd_shows_status;
 static volatile int lcd_task_busy;
 static volatile int lcd_rotated;
 
 static char info_line[16];	/* last line in CPU display */
 
-static void lcd_draw_cpu_reg(int);
+static void lcd_draw_cpu_reg(int first_flag);
 static void lcd_task(void);
 
 void lcd_init(void)
@@ -51,6 +57,13 @@ void lcd_init(void)
 	/* initialize here to not waste time in draw function */
 	snprintf(info_line, sizeof(info_line), "Z80pack %s", USR_REL);
 
+	mutex_init(&lcd_mutex);
+
+	lcd_status_func = lcd_draw_cpu_reg;
+
+	/* make core 0 a lockout victim for the bootsel button check */
+	multicore_lockout_victim_init();
+
 	/* launch LCD draw & refresh task */
 	multicore_launch_core1(lcd_task);
 }
@@ -58,7 +71,7 @@ void lcd_init(void)
 void lcd_exit(void)
 {
 	/* tell LCD refresh task to stop drawing */
-	lcd_set_draw_func(NULL);
+	lcd_custom_disp(NULL);
 	/* wait until it stopped */
 	while (lcd_task_busy)
 		sleep_ms(20);
@@ -79,14 +92,20 @@ void lcd_set_rotated(int rotated)
 	lcd_rotated = rotated;
 }
 
-void lcd_set_draw_func(void (*draw_func)(int first_flag))
+void lcd_custom_disp(lcd_func_t draw_func)
 {
+	mutex_enter_blocking(&lcd_mutex);
 	lcd_draw_func = draw_func;
+	lcd_shows_status = 0;
+	mutex_exit(&lcd_mutex);
 }
 
-void lcd_default_draw_func(void)
+void lcd_status_disp(void)
 {
-	lcd_set_draw_func(lcd_draw_cpu_reg);
+	mutex_enter_blocking(&lcd_mutex);
+	lcd_draw_func = lcd_status_func;
+	lcd_shows_status = 1;
+	mutex_exit(&lcd_mutex);
 }
 
 /*
@@ -122,12 +141,12 @@ void lcd_default_draw_func(void)
 #define DKYELLOW	0x8400	/* color used for grid lines */
 #endif
 
-#define OFFX20	5	/* x pixel offset of text coordinate grid for Font20 */
-#define OFFY20	0	/* y pixel offset of text coordinate grid for Font20 */
+#define XOFF20	5	/* x pixel offset of text coordinate grid for Font20 */
+#define YOFF20	0	/* y pixel offset of text coordinate grid for Font20 */
 #define SPC20	3	/* vertical spacing for Font20 */
 
-#define OFFX28	8	/* x pixel offset of text coordinate grid for Font28 */
-#define OFFY28	0	/* y pixel offset of text coordinate grid for Font28 */
+#define XOFF28	8	/* x pixel offset of text coordinate grid for Font28 */
+#define YOFF28	0	/* y pixel offset of text coordinate grid for Font28 */
 #define SPC28	1	/* vertical spacing for Font28 */
 
 #ifndef __noclone
@@ -149,13 +168,13 @@ static void __noclone __no_inline_not_in_flash_func(cpu_char)
 static inline void cpu_char20(uint16_t x, uint16_t y, const char c,
 			      uint16_t col)
 {
-	cpu_char(x, y, c, col, &Font20, OFFX20, OFFY20, SPC20);
+	cpu_char(x, y, c, col, &Font20, XOFF20, YOFF20, SPC20);
 }
 
 static inline void cpu_char28(uint16_t x, uint16_t y, const char c,
 			      uint16_t col)
 {
-	cpu_char(x, y, c, col, &Font28, OFFX28, OFFY28, SPC28);
+	cpu_char(x, y, c, col, &Font28, XOFF28, YOFF28, SPC28);
 }
 
 /*
@@ -173,12 +192,12 @@ static void __noclone __no_inline_not_in_flash_func(cpu_gridh)
 
 static inline void cpu_gridh20(uint16_t y, uint16_t adj, uint16_t col)
 {
-	cpu_gridh(y, adj, col, &Font20, OFFY20, SPC20);
+	cpu_gridh(y, adj, col, &Font20, YOFF20, SPC20);
 }
 
 static inline void cpu_gridh28(uint16_t y, uint16_t adj, uint16_t col)
 {
-	cpu_gridh(y, adj, col, &Font28, OFFY28, SPC28);
+	cpu_gridh(y, adj, col, &Font28, YOFF28, SPC28);
 }
 
 /*
@@ -197,12 +216,12 @@ static void __noclone __no_inline_not_in_flash_func(cpu_gridv)
 
 static inline void cpu_gridv20(uint16_t x, uint16_t y, uint16_t adj,
 			       uint16_t col) {
-	cpu_gridv(x, y, adj, col, &Font20, OFFX20, OFFY20, SPC20);
+	cpu_gridv(x, y, adj, col, &Font20, XOFF20, YOFF20, SPC20);
 }
 
 static inline void cpu_gridv28(uint16_t x, uint16_t y, uint16_t adj,
 			       uint16_t col) {
-	cpu_gridv(x, y, adj, col, &Font28, OFFX28, OFFY28, SPC28);
+	cpu_gridv(x, y, adj, col, &Font28, XOFF28, YOFF28, SPC28);
 }
 
 /*
@@ -223,13 +242,13 @@ static void __noclone __no_inline_not_in_flash_func(cpu_gridvs)
 static inline void cpu_gridvs20(uint16_t x, uint16_t y0, uint16_t y1,
 				uint16_t adj, uint16_t col)
 {
-	cpu_gridvs(x, y0, y1, adj, col, &Font20, OFFX20, OFFY20, SPC20);
+	cpu_gridvs(x, y0, y1, adj, col, &Font20, XOFF20, YOFF20, SPC20);
 }
 
 static inline void cpu_gridvs28(uint16_t x, uint16_t y0, uint16_t y1,
 				uint16_t adj, uint16_t col)
 {
-	cpu_gridvs(x, y0, y1, adj, col, &Font28, OFFX28, OFFY28, SPC28);
+	cpu_gridvs(x, y0, y1, adj, col, &Font28, XOFF28, YOFF28, SPC28);
 }
 
 static const char *__not_in_flash("hex_table") hex = "0123456789ABCDEF";
@@ -256,7 +275,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 	char *p;
 	int temp;
 	divmod_result_t res;
-	static int cpu_type, count;
+	static int cpu_type, counter;
 
 	if (first_flag || (cpu_type != cpu)) {
 		/* if first call or new CPU type, draw static background */
@@ -478,9 +497,9 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 			cpu_gridh28(3, 2, DKYELLOW);
 		}
 		/* update temperature every second */
-		if (++count == LCD_REFRESH) {
+		if (++counter == LCD_REFRESH) {
 			/*                  xx xx   */
-			count = 0;
+			counter = 0;
 			temp = (int) (read_onboard_temp() * 100.0f + 0.5f);
 			res = hw_divider_divmod_u32(temp, 10);
 			cpu_char20(21, 5, '0' + to_remainder_u32(res), BRRED);
@@ -494,7 +513,59 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 	}
 }
 
-static inline void lcd_refresh(void)
+#define MEM_XOFF 3
+#define MEM_YOFF 0
+#define MEM_BRDR 3
+
+static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
+{
+	int x, y;
+	BYTE *p;
+
+	if (first_flag) {
+		Paint_Clear(DKBLUE);
+		Paint_FastHLine(MEM_XOFF, MEM_YOFF,
+				224 + 4 * MEM_BRDR - 1, DKYELLOW);
+		Paint_FastHLine(MEM_XOFF, MEM_YOFF + 128 + 2 * MEM_BRDR - 1,
+				224 + 4 * MEM_BRDR - 1, DKYELLOW);
+		Paint_FastVLine(MEM_XOFF, MEM_YOFF,
+				128 + 2 * MEM_BRDR, DKYELLOW);
+		Paint_FastVLine(MEM_XOFF + 128 + 2 * MEM_BRDR, 0,
+				128 + 2 * MEM_BRDR, DKYELLOW);
+		Paint_FastVLine(MEM_XOFF + 224 + 4 * MEM_BRDR - 2, 0,
+				128 + 2 * MEM_BRDR, DKYELLOW);
+		return;
+	} else {
+		p = bnk0;
+		for (x = MEM_XOFF + MEM_BRDR;
+		     x < MEM_XOFF + MEM_BRDR + 128; x++) {
+			for (y = MEM_YOFF + MEM_BRDR;
+			     y < MEM_YOFF + MEM_BRDR + 128; y++) {
+				Paint_FastPixel(x, y,
+						((uint16_t) *p << 4) ^
+						(uint16_t) *(p + 1) ^
+						((uint16_t) *(p + 2) << 4) ^
+						(uint16_t) *(p + 3));
+				p += 4;
+			}
+		}
+		p = bnk1;
+		for (x = MEM_XOFF + 3 * MEM_BRDR - 1 + 128;
+		     x < MEM_XOFF + 3 * MEM_BRDR - 1 + 224; x++) {
+			for (y = MEM_YOFF + MEM_BRDR;
+			     y < MEM_YOFF + MEM_BRDR + 128; y++) {
+				Paint_FastPixel(x, y,
+						((uint16_t) *p << 4) ^
+						(uint16_t) *(p + 1) ^
+						((uint16_t) *(p + 2) << 4) ^
+						(uint16_t) *(p + 3));
+				p += 4;
+			}
+		}
+	}
+}
+
+static void __not_in_flash_func(lcd_refresh)(void)
 {
 	LCD_1IN14_V2_SetRotated(lcd_rotated);
 #if LCD_COLOR_DEPTH == 12
@@ -504,18 +575,44 @@ static inline void lcd_refresh(void)
 #endif
 }
 
+static void __not_in_flash_func(lcd_check_button)(void)
+{
+	static int button, counter;
+
+	/* check bootsel button every 1/5 sec */
+	if (++counter == LCD_REFRESH / 5) {
+		counter = 0;
+		if (get_bootsel_button()) {
+			if (!button) {
+				button = 1;
+				if (lcd_status_func == lcd_draw_cpu_reg)
+					lcd_status_func = lcd_draw_memory;
+				else
+					lcd_status_func = lcd_draw_cpu_reg;
+				mutex_enter_blocking(&lcd_mutex);
+				lcd_draw_func = lcd_status_func;
+				mutex_exit(&lcd_mutex);
+			}
+		} else if (button)
+			button = 0;
+	}
+}
+
 #define LCD_REFRESH_US (1000000 / LCD_REFRESH)
 
 static void __not_in_flash_func(lcd_task)(void)
 {
 	absolute_time_t t;
 	int64_t d;
-	static void (*curr_func)(int);
+	static lcd_func_t curr_func;
 
 	while (1) {
 		/* loops every LCD_REFRESH_US */
 
 		t = get_absolute_time();
+
+		if (lcd_shows_status)
+			lcd_check_button();
 
 		if (curr_func != lcd_draw_func) {
 			curr_func = lcd_draw_func;
