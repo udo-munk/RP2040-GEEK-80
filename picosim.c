@@ -108,13 +108,13 @@ int main(void)
 
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
-	lcd_set_draw_func(draw_wait_term);
+	lcd_custom_disp(draw_wait_term);
 	while (!tud_cdc_connected())
 		sleep_ms(100);
 #endif
 
 	/* print banner */
-	lcd_set_draw_func(draw_banner);
+	lcd_custom_disp(draw_banner);
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s\n", USR_COM, USR_REL);
 	printf("%s\n\n", USR_CPR);
@@ -130,7 +130,7 @@ int main(void)
 
 	PC = 0xff00;		/* power on jump into the boot ROM */
 
-	lcd_default_draw_func(); /* tell LCD task to display default infos */
+	lcd_status_disp();	/* tell LCD task to display status */
 
 #ifdef WANT_ICE
 	ice_cmd_loop(0);

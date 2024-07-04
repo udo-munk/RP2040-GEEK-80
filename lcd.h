@@ -10,10 +10,12 @@
 #include "LCD_1in14_V2.h"
 #include "GUI_Paint.h"
 
+typedef void (*lcd_func_t)(int first_flag);
+
 extern void lcd_init(void), lcd_exit(void);
 extern void lcd_set_rotated(int rotated);
-extern void lcd_set_draw_func(void (*draw_func)(int first_flag));
-extern void lcd_default_draw_func(void);
+extern void lcd_custom_disp(lcd_func_t draw_func);
+extern void lcd_status_disp(void);
 extern void lcd_brightness(int brightness);
 
 #endif /* !LCD_INC */

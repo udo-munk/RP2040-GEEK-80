@@ -324,12 +324,12 @@ void dazzler_ctl_out(BYTE data)
 	if (data & 128) {
 		if (state == 0) {
 			state = 1;
-			lcd_set_draw_func(dazzler_draw);
+			lcd_custom_disp(dazzler_draw);
 		}
 	} else {
 		if (state == 1) {
 			state = 0;
-			lcd_default_draw_func();
+			lcd_status_disp();
 		}
 	}
 }
