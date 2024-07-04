@@ -35,13 +35,13 @@ typedef enum {
 } scsi_cmd_type_2_t;
 
 // whether mass storage interface is active
-bool stdio_msc_usb_msc_ejected = true;
+static bool msc_ejected = true;
 
 void stdio_msc_usb_do_msc(void)
 {
 	if (stdio_msc_usb_disable_stdio()) {
-		stdio_msc_usb_msc_ejected = false;
-		while (!stdio_msc_usb_msc_ejected)
+		msc_ejected = false;
+		while (!msc_ejected)
 			tud_task();
 		stdio_msc_usb_enable_stdio();
 	}
@@ -70,7 +70,7 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun)
 {
 	(void) lun;
 
-	if (stdio_msc_usb_msc_ejected) {
+	if (msc_ejected) {
 		// Additional Sense 3A-00 is NOT_FOUND
 		tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3a, 0x00);
 		return false;
@@ -89,7 +89,7 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count,
 
 	(void) lun;
 
-	if (sd_card_p == NULL || stdio_msc_usb_msc_ejected) {
+	if (sd_card_p == NULL || msc_ejected) {
 		*block_count = 0;
 		*block_size = 0;
 	} else {
@@ -112,7 +112,7 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start,
 			// load disk storage
 		} else {
 			// unload disk storage
-			stdio_msc_usb_msc_ejected = true;
+			msc_ejected = true;
 		}
 	}
 
@@ -132,7 +132,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
 	(void) lun;
 	(void) offset;
 
-	if (sd_card_p == NULL || stdio_msc_usb_msc_ejected)
+	if (sd_card_p == NULL || msc_ejected)
 		return -1;
 
 	if (lba >= sd_card_p->get_num_sectors(sd_card_p))
@@ -166,7 +166,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
 	(void) lun;
 	(void) offset;
 
-	if (sd_card_p == NULL || stdio_msc_usb_msc_ejected)
+	if (sd_card_p == NULL || msc_ejected)
 		return -1;
 
 	if (lba >= sd_card_p->get_num_sectors(sd_card_p))
