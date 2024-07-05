@@ -520,7 +520,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 {
 	int x, y;
-	BYTE *p;
+	uint32_t *p;
 
 	if (first_flag) {
 		Paint_Clear(DKBLUE);
@@ -536,30 +536,23 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 				128 + 2 * MEM_BRDR, DKYELLOW);
 		return;
 	} else {
-		p = bnk0;
+		p = (uint32_t *) bnk0;
 		for (x = MEM_XOFF + MEM_BRDR;
 		     x < MEM_XOFF + MEM_BRDR + 128; x++) {
 			for (y = MEM_YOFF + MEM_BRDR;
 			     y < MEM_YOFF + MEM_BRDR + 128; y++) {
+				/* constant = 2^32 / ((1 + sqrt(5)) / 2) */
 				Paint_FastPixel(x, y,
-						((uint16_t) *p << 4) ^
-						(uint16_t) *(p + 1) ^
-						((uint16_t) *(p + 2) << 4) ^
-						(uint16_t) *(p + 3));
-				p += 4;
+						(*p++ * 2654435769U) >> 20);
 			}
 		}
-		p = bnk1;
+		p = (uint32_t *) bnk1;
 		for (x = MEM_XOFF + 3 * MEM_BRDR - 1 + 128;
 		     x < MEM_XOFF + 3 * MEM_BRDR - 1 + 224; x++) {
 			for (y = MEM_YOFF + MEM_BRDR;
 			     y < MEM_YOFF + MEM_BRDR + 128; y++) {
 				Paint_FastPixel(x, y,
-						((uint16_t) *p << 4) ^
-						(uint16_t) *(p + 1) ^
-						((uint16_t) *(p + 2) << 4) ^
-						(uint16_t) *(p + 3));
-				p += 4;
+						(*p++ * 2654435769U) >> 20);
 			}
 		}
 	}
