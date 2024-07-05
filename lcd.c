@@ -525,15 +525,15 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 	if (first_flag) {
 		Paint_Clear(DKBLUE);
 		Paint_FastHLine(MEM_XOFF, MEM_YOFF,
-				224 + 4 * MEM_BRDR - 1, DKYELLOW);
+				224 + 4 * MEM_BRDR - 1, GREEN);
 		Paint_FastHLine(MEM_XOFF, MEM_YOFF + 128 + 2 * MEM_BRDR - 1,
-				224 + 4 * MEM_BRDR - 1, DKYELLOW);
+				224 + 4 * MEM_BRDR - 1, GREEN);
 		Paint_FastVLine(MEM_XOFF, MEM_YOFF,
-				128 + 2 * MEM_BRDR, DKYELLOW);
-		Paint_FastVLine(MEM_XOFF + 128 + 2 * MEM_BRDR, 0,
-				128 + 2 * MEM_BRDR, DKYELLOW);
+				128 + 2 * MEM_BRDR, GREEN);
+		Paint_FastVLine(MEM_XOFF + 128 + 2 * MEM_BRDR - 1, 0,
+				128 + 2 * MEM_BRDR, GREEN);
 		Paint_FastVLine(MEM_XOFF + 224 + 4 * MEM_BRDR - 2, 0,
-				128 + 2 * MEM_BRDR, DKYELLOW);
+				128 + 2 * MEM_BRDR, GREEN);
 		return;
 	} else {
 		p = (uint32_t *) bnk0;
