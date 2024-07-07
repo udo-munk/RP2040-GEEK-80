@@ -5,6 +5,7 @@
 ;
 ; History:
 ; 03-JUL-2024 first public release
+; 07-JUL-2024 added RTC
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
@@ -219,7 +220,7 @@ STACK:
 	DSEG
 ;
 SIGNON:	DB	13,10
-	DB	'Banked BIOS V1.0',13,10
+	DB	'Banked BIOS V1.1',13,10
 	DB	'Copyright (C) 2024 Udo Munk',13,10,13,10
 	DB	0
 ;
