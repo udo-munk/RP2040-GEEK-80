@@ -34,6 +34,7 @@
 #include "simio.h"
 
 #include "dazzler.h"
+#include "rtc80.h"
 #include "sd-fdc.h"
 
 /*
@@ -59,6 +60,8 @@ BYTE (*const port_in[256])(void) = {
 	[  4] = fdc_in,		/* FDC status */
 	[ 14] = dazzler_flags_in, /* Cromemco Dazzler flags */
 	[ 64] = mmu_in,		/* MMU */
+	[ 65] = clkc_in,	/* RTC read clock command */
+	[ 66] = clkd_in,	/* RTC read clock data */
 	[160] = hwctl_in,	/* virtual hardware control */
 	[255] = p255_in		/* for frontpanel */
 };
@@ -73,6 +76,8 @@ void (*const port_out[256])(BYTE data) = {
 	[ 14] = dazzler_ctl_out, /* Cromemco Dazzler control */
 	[ 15] = dazzler_format_out, /* Cromemco Dazzler format */
 	[ 64] = mmu_out,	/* MMU */
+	[ 65] = clkc_out,	/* RTC write clock command */
+	[ 66] = clkd_out,	/* RTC write clock data */
 	[160] = hwctl_out,	/* virtual hardware control */
 	[255] = p255_out	/* for frontpanel */
 };
