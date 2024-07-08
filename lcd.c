@@ -31,7 +31,6 @@ static volatile lcd_func_t lcd_draw_func;
 static volatile lcd_func_t lcd_status_func;
 static volatile int lcd_shows_status;
 static volatile int lcd_task_busy;
-static volatile int lcd_rotated;
 
 static char info_line[16];	/* last line in CPU display */
 
@@ -84,12 +83,16 @@ void lcd_exit(void)
 
 void lcd_brightness(int brightness)
 {
+	mutex_enter_blocking(&lcd_mutex);
 	LCD_1IN14_V2_SetBacklight((uint8_t) brightness);
+	mutex_exit(&lcd_mutex);
 }
 
 void lcd_set_rotated(int rotated)
 {
-	lcd_rotated = rotated;
+	mutex_enter_blocking(&lcd_mutex);
+	LCD_1IN14_V2_SetRotated(rotated);
+	mutex_exit(&lcd_mutex);
 }
 
 void lcd_custom_disp(lcd_func_t draw_func)
@@ -560,12 +563,13 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 
 static void __not_in_flash_func(lcd_refresh)(void)
 {
-	LCD_1IN14_V2_SetRotated(lcd_rotated);
+	mutex_enter_blocking(&lcd_mutex);
 #if LCD_COLOR_DEPTH == 12
 	LCD_1IN14_V2_Display12(&img[0]);
 #else
 	LCD_1IN14_V2_Display(&img[0]);
 #endif
+	mutex_exit(&lcd_mutex);
 }
 
 static void __not_in_flash_func(lcd_check_button)(void)

@@ -65,25 +65,58 @@ void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 }
 #endif
 
-#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
-static void draw_wait_term(int first_flag)
+typedef struct banner {
+	const char *text;
+	uint16_t color;
+} banner_t;
+
+static const banner_t banner[] = {
+	{ "Z80pack " RELEASE, GREEN },
+	{ "RP2040-GEEK " USR_REL, RED },
+	{ "by Udo Munk &", WHITE },
+	{ "Thomas Eberhardt", WHITE }
+};
+
+static void draw_banner(const banner_t *bp, int lines, uint16_t frame_col)
+{
+	int i, y0;
+
+	Paint_Clear(BLACK);
+	Paint_FastHLine(0, 0, Paint.Width, frame_col);
+	Paint_FastVLine(0, 0, Paint.Height, frame_col);
+	Paint_FastVLine(Paint.Width - 1, 0, Paint.Height, frame_col);
+	Paint_FastHLine(0, Paint.Height - 1, Paint.Width, frame_col);
+	y0 = (Paint.Height - lines * (Font28.Height + 2)) / 2;
+	for (i = 0; i < lines; i++) {
+		Paint_DrawString((Paint.Width -
+				  strlen(bp->text) * Font28.Width) / 2,
+				 y0 + i * (Font28.Height + 2),
+				 bp->text, &Font28,
+				 bp->color, BLACK);
+		bp++;
+	}
+}
+
+static void lcd_draw_banner(int first_flag)
 {
 	if (!first_flag)
 		return;
-	Paint_Clear(BLACK);
-	Paint_DrawString(43, 39, "Waiting for", &Font28, RED, BLACK);
-	Paint_DrawString(43, 67, "  terminal ", &Font28, RED, BLACK);
+	draw_banner(banner, sizeof(banner) / sizeof(banner_t), BLUE);
+}
+
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
+static const banner_t wait_term[] = {
+	{ "Waiting for", RED },
+	{ "terminal", RED }
+};
+
+static void lcd_draw_wait_term(int first_flag)
+{
+	if (!first_flag)
+		return;
+	draw_banner(wait_term, sizeof(wait_term) / sizeof(banner_t), WHITE);
 }
 #endif
-
-static void draw_banner(int first_flag)
-{
-	if (!first_flag)
-		return;
-	Paint_Clear(BLACK);
-	Paint_DrawString(43, 39, "# Z80pack #", &Font28, BLACK, WHITE);
-	Paint_DrawString(43, 67, "RP2040-GEEK", &Font28, BLACK, WHITE);
-}
 
 int main(void)
 {
@@ -108,13 +141,13 @@ int main(void)
 
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
-	lcd_custom_disp(draw_wait_term);
+	lcd_custom_disp(lcd_draw_wait_term);
 	while (!tud_cdc_connected())
 		sleep_ms(100);
 #endif
 
 	/* print banner */
-	lcd_custom_disp(draw_banner);
+	lcd_custom_disp(lcd_draw_banner);
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s\n", USR_COM, USR_REL);
 	printf("%s\n\n", USR_CPR);

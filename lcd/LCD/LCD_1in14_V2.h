@@ -41,6 +41,7 @@ typedef struct {
 	uint16_t WIDTH;
 	uint16_t HEIGHT;
 	uint8_t SCAN_DIR;
+	uint8_t ROTATED;
 } LCD_1IN14_V2_ATTRIBUTES;
 
 extern LCD_1IN14_V2_ATTRIBUTES LCD_1IN14_V2;

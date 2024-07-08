@@ -25,7 +25,7 @@
 #define SBSIZE	4	/* number of software breakpoints */
 #endif
 
-#define USR_COM "Raspberry RP2040 Z80/8080 emulator"
+#define USR_COM "Waveshare RP2040-GEEK Z80/8080 emulator"
 #define USR_REL "1.2"
 #define USR_CPR "Copyright (C) 2024 by Udo Munk & Thomas Eberhardt"
 
