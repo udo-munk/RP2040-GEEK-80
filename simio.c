@@ -125,24 +125,23 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-#if LIB_PICO_STDIO_UART && !(LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO))
+	int input_avail = 0;
+
+#if LIB_PICO_STDIO_UART
 	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
 
-	if (!uart_is_readable(my_uart))
+	if (uart_is_readable(my_uart))
+		input_avail = 1;
 #endif
-#if (LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)) && !LIB_PICO_STDIO_UART
-	if (!tud_cdc_available())
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
+	if (tud_cdc_available())
+		input_avail = 1;
 #endif
-#if (LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)) && LIB_PICO_STDIO_UART
-	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
 
-	if (!uart_is_readable(my_uart) && !tud_cdc_available())
-#endif
-		return sio_last;
-	else {
+	if (input_avail)
 		sio_last = getchar();
-		return sio_last;
-	}
+
+	return sio_last;
 }
 
 /*

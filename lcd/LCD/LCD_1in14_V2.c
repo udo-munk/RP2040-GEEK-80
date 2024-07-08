@@ -205,8 +205,11 @@ void __not_in_flash_func(LCD_1IN14_V2_SetRotated)(uint8_t Rotated)
 		MemoryAccessReg = 0x70; /* MX=1, MV=1, ML=1 */
 	else
 		MemoryAccessReg = 0x00;
-	if (Rotated)
+	if (Rotated) {
 		MemoryAccessReg ^= 0xc0; /* MX=!MX, MY=!MY */
+		LCD_1IN14_V2.ROTATED = 1;
+	} else
+		LCD_1IN14_V2.ROTATED = 0;
 
 	/* Set the read / write scan direction of the frame memory */
 	LCD_1IN14_V2_SendCommand(0x36); /* Memory Data Access Control */
@@ -257,9 +260,9 @@ void __not_in_flash_func(LCD_1IN14_V2_SetWindows)(uint16_t Xstart,
 
 	if (LCD_1IN14_V2.SCAN_DIR == LCD_HORIZONTAL) {
 		x = 40;
-		y = 53;
+		y = LCD_1IN14_V2.ROTATED ? 52 : 53;
 	} else {
-		x = 52;
+		x = LCD_1IN14_V2.ROTATED ? 53 : 52;
 		y = 40;
 	}
 	/* set the X coordinates */
