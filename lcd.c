@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "pico/multicore.h"
 #include "pico/sync.h"
 #include "pico/time.h"
@@ -561,6 +562,186 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 	}
 }
 
+#ifdef SIMPLEPANEL
+
+static BYTE fp_led_wait;
+
+static const struct led {
+	const uint16_t x;
+	const uint16_t y;
+	const char c1;
+	const char c2;
+	const enum { byte, word } type;
+	union {
+		const struct {
+			const BYTE inv;
+			const BYTE mask;
+			const BYTE *data;
+		} b;
+		const struct {
+			const WORD mask;
+			const WORD *data;
+		} w;
+	};
+} leds[] = {
+	{ .x= 8 + 0 * 14, .y = 20, .c1 = 'P', .c2 = '7', .type = byte,
+	  .b.inv = 0xff, .b.mask = 0x80, .b.data = &fp_led_output },
+	{ .x= 8 + 1 * 14, .y = 20, .c1 = 'P', .c2 = '6', .type = byte,
+	  .b.inv = 0xff, .b.mask = 0x40, .b.data = &fp_led_output },
+	{ .x= 8 + 2 * 14, .y = 20, .c1 = 'P', .c2 = '5', .type = byte,
+	  .b.inv = 0xff, .b.mask = 0x20, .b.data = &fp_led_output },
+	{ .x= 8 + 3 * 14, .y = 20, .c1 = 'P', .c2 = '4', .type = byte,
+	  .b.inv = 0xff, .b.mask = 0x10, .b.data = &fp_led_output },
+	{ .x= 8 + 4 * 14, .y = 20, .c1 = 'P', .c2 = '3', .type = byte,
+	  .b.inv = 0xff, .b.mask = 0x08, .b.data = &fp_led_output },
+	{ .x= 8 + 5 * 14, .y = 20, .c1 = 'P', .c2 = '2', .type = byte,
+	  .b.inv = 0xff, .b.mask = 0x04, .b.data = &fp_led_output },
+	{ .x= 8 + 6 * 14, .y = 20, .c1 = 'P', .c2 = '1', .type = byte,
+	  .b.inv = 0xff, .b.mask = 0x02, .b.data = &fp_led_output },
+	{ .x= 8 + 7 * 14, .y = 20, .c1 = 'P', .c2 = '0', .type = byte,
+	  .b.inv = 0xff, .b.mask = 0x01, .b.data = &fp_led_output },
+	{ .x= 14 + 12 * 14, .y = 20, .c1 = 'I', .c2 = 'E', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &IFF },
+	{ .x= 14 + 13 * 14, .y = 20, .c1 = 'R', .c2 = 'U', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &cpu_state },
+	{ .x= 14 + 14 * 14, .y = 20, .c1 = 'W', .c2 = 'A', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &fp_led_wait },
+	{ .x= 14 + 15 * 14, .y = 20, .c1 = 'H', .c2 = 'O', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &bus_request },
+	{ .x= 8 + 0 * 14, .y = 56, .c1 = 'M', .c2 = 'R', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x80, .b.data = &cpu_bus },
+	{ .x= 8 + 1 * 14, .y = 56, .c1 = 'I', .c2 = 'P', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x40, .b.data = &cpu_bus },
+	{ .x= 8 + 2 * 14, .y = 56, .c1 = 'M', .c2 = '1', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x20, .b.data = &cpu_bus },
+	{ .x= 8 + 3 * 14, .y = 56, .c1 = 'O', .c2 = 'P', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x10, .b.data = &cpu_bus },
+	{ .x= 8 + 4 * 14, .y = 56, .c1 = 'H', .c2 = 'A', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x08, .b.data = &cpu_bus },
+	{ .x= 8 + 5 * 14, .y = 56, .c1 = 'S', .c2 = 'T', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x04, .b.data = &cpu_bus },
+	{ .x= 8 + 6 * 14, .y = 56, .c1 = 'W', .c2 = 'O', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x02, .b.data = &cpu_bus },
+	{ .x= 8 + 7 * 14, .y = 56, .c1 = 'I', .c2 = 'A', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &cpu_bus },
+	{ .x= 14 + 8 * 14, .y = 56, .c1 = 'D', .c2 = '7', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x80, .b.data = &fp_led_data },
+	{ .x= 14 + 9 * 14, .y = 56, .c1 = 'D', .c2 = '6', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x40, .b.data = &fp_led_data },
+	{ .x= 14 + 10 * 14, .y = 56, .c1 = 'D', .c2 = '5', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x20, .b.data = &fp_led_data },
+	{ .x= 14 + 11 * 14, .y = 56, .c1 = 'D', .c2 = '4', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x10, .b.data = &fp_led_data },
+	{ .x= 14 + 12 * 14, .y = 56, .c1 = 'D', .c2 = '3', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x08, .b.data = &fp_led_data },
+	{ .x= 14 + 13 * 14, .y = 56, .c1 = 'D', .c2 = '2', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x04, .b.data = &fp_led_data },
+	{ .x= 14 + 14 * 14, .y = 56, .c1 = 'D', .c2 = '1', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x02, .b.data = &fp_led_data },
+	{ .x= 14 + 15 * 14, .y = 56, .c1 = 'D', .c2 = '0', .type = byte,
+	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &fp_led_data },
+	{ .x= 8 + 0 * 14, .y = 92, .c1 = '1', .c2 = '5', .type = word,
+	  .w.mask = 0x8000, .w.data = &fp_led_address },
+	{ .x= 8 + 1 * 14, .y = 92, .c1 = '1', .c2 = '4', .type = word,
+	  .w.mask = 0x4000, .w.data = &fp_led_address },
+	{ .x= 8 + 2 * 14, .y = 92, .c1 = '1', .c2 = '3', .type = word,
+	  .w.mask = 0x2000, .w.data = &fp_led_address },
+	{ .x= 8 + 3 * 14, .y = 92, .c1 = '1', .c2 = '2', .type = word,
+	  .w.mask = 0x1000, .w.data = &fp_led_address },
+	{ .x= 8 + 4 * 14, .y = 92, .c1 = '1', .c2 = '1', .type = word,
+	  .w.mask = 0x0800, .w.data = &fp_led_address },
+	{ .x= 8 + 5 * 14, .y = 92, .c1 = '1', .c2 = '0', .type = word,
+	  .w.mask = 0x0400, .w.data = &fp_led_address },
+	{ .x= 8 + 6 * 14, .y = 92, .c1 = 'A', .c2 = '9', .type = word,
+	  .w.mask = 0x0200, .w.data = &fp_led_address },
+	{ .x= 8 + 7 * 14, .y = 92, .c1 = 'A', .c2 = '8', .type = word,
+	  .w.mask = 0x0100, .w.data = &fp_led_address },
+	{ .x= 14 + 8 * 14, .y = 92, .c1 = 'A', .c2 = '7', .type = word,
+	  .w.mask = 0x0080, .w.data = &fp_led_address },
+	{ .x= 14 + 9 * 14, .y = 92, .c1 = 'A', .c2 = '6', .type = word,
+	  .w.mask = 0x0040, .w.data = &fp_led_address },
+	{ .x= 14 + 10 * 14, .y = 92, .c1 = 'A', .c2 = '5', .type = word,
+	  .w.mask = 0x0020, .w.data = &fp_led_address },
+	{ .x= 14 + 11 * 14, .y = 92, .c1 = 'A', .c2 = '4', .type = word,
+	  .w.mask = 0x0010, .w.data = &fp_led_address },
+	{ .x= 14 + 12 * 14, .y = 92, .c1 = 'A', .c2 = '3', .type = word,
+	  .w.mask = 0x0008, .w.data = &fp_led_address },
+	{ .x= 14 + 13 * 14, .y = 92, .c1 = 'A', .c2 = '2', .type = word,
+	  .w.mask = 0x0004, .w.data = &fp_led_address },
+	{ .x= 14 + 14 * 14, .y = 92, .c1 = 'A', .c2 = '1', .type = word,
+	  .w.mask = 0x0002, .w.data = &fp_led_address },
+	{ .x= 14 + 15 * 14, .y = 92, .c1 = 'A', .c2 = '0', .type = word,
+	  .w.mask = 0x0001, .w.data = &fp_led_address }
+};
+const int num_leds = sizeof(leds) / sizeof(struct led);
+
+static inline void __not_in_flash_func(lcd_draw_socket)(uint16_t x, uint16_t y)
+{
+	Paint_FastHLine(x + 2, y, 6, GRAY);
+	Paint_FastPixel(x + 1, y + 1, GRAY);
+	Paint_FastPixel(x + 8, y + 1, GRAY);
+	Paint_FastVLine(x, y + 2, 6, GRAY);
+	Paint_FastVLine(x + 9, y + 2, 6, GRAY);
+	Paint_FastPixel(x + 1, y + 8, GRAY);
+	Paint_FastPixel(x + 8, y + 8, GRAY);
+	Paint_FastHLine(x + 2, y + 9, 6, GRAY);
+}
+
+static inline void __not_in_flash_func(lcd_draw_led)(uint16_t x, uint16_t y,
+						     int on_off)
+{
+	uint16_t col = on_off ? RED : BLACK;
+
+	Paint_FastHLine(x + 2, y + 1, 6, col);
+	Paint_FastHLine(x + 1, y + 2, 8, col);
+	Paint_FastHLine(x + 1, y + 3, 8, col);
+	Paint_FastHLine(x + 1, y + 4, 8, col);
+	Paint_FastHLine(x + 1, y + 5, 8, col);
+	Paint_FastHLine(x + 1, y + 6, 8, col);
+	Paint_FastHLine(x + 1, y + 7, 8, col);
+	Paint_FastHLine(x + 2, y + 8, 6, col);
+}
+
+static void __not_in_flash_func(lcd_draw_panel)(int first_flag)
+{
+	const struct led *p;
+	const char *model = "Z80pack RP2040-GEEK " USR_REL, *s;
+	int i, bit;
+
+	p = leds;
+	if (first_flag) {
+		Paint_Clear(DKBLUE);
+		for (i = 0; i < num_leds; i++) {
+			Paint_FastChar(p->x - 1, p->y - 14, p->c1,
+				       &Font12, WHITE, DKBLUE);
+			Paint_FastChar(p->x + 5, p->y - 14, p->c2,
+				       &Font12, WHITE, DKBLUE);
+			if (p->c1 == 'W' && p->c2 == 'O')
+				Paint_FastHLine(p->x - 1, p->y - 16, 12,
+						WHITE);
+			lcd_draw_socket(p->x, p->y);
+			p++;
+		}
+	} else {
+		for (i = 0; i < num_leds; i++) {
+			if (p->type == byte)
+				bit = (*(p->b.data) ^ p->b.inv) & p->b.mask;
+			else
+				bit = *(p->w.data) & p->w.mask;
+			lcd_draw_led(p->x, p->y, bit);
+			p++;
+		}
+		i = (Paint.Width - strlen(model) * Font20.Width) / 2;
+		for (s = model; *s; s++) {
+			Paint_FastChar(i, Paint.Height - Font20.Height - 1, *s,
+				       &Font20, BROWN, DKBLUE);
+			i += Font20.Width;
+		}
+	}
+}
+
+#endif /* SIMPLEPANEL */
+
 static void __not_in_flash_func(lcd_refresh)(void)
 {
 	mutex_enter_blocking(&lcd_mutex);
@@ -583,6 +764,10 @@ static void __not_in_flash_func(lcd_check_button)(void)
 			if (!button) {
 				button = 1;
 				if (lcd_status_func == lcd_draw_cpu_reg)
+#ifdef SIMPLEPANEL
+					lcd_status_func = lcd_draw_panel;
+				else if (lcd_status_func == lcd_draw_panel)
+#endif
 					lcd_status_func = lcd_draw_memory;
 				else
 					lcd_status_func = lcd_draw_cpu_reg;

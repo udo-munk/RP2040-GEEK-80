@@ -16,6 +16,10 @@
 #include "sim.h"
 #include "simdefs.h"
 
+#ifdef SIMPLEPANEL
+#include "simglb.h"
+#endif
+
 extern BYTE bnk0[65536], bnk1[49152];
 extern BYTE selbnk;
 
@@ -30,6 +34,15 @@ extern void init_memory(void);
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
+#ifdef BUS_8080
+	cpu_bus &= ~(CPU_WO | CPU_MEMR);
+#endif
+
+#ifdef SIMPLEPANEL
+	fp_led_address = addr;
+	fp_led_data = data;
+#endif
+
 	if ((selbnk == 0) || (addr >= 0xc000)) {
 		if (addr < 0xff00)
 			bnk0[addr] = data;
@@ -40,10 +53,23 @@ static inline void memwrt(WORD addr, BYTE data)
 
 static inline BYTE memrdr(WORD addr)
 {
+	register BYTE data;
+
 	if ((selbnk == 0) || (addr >= 0xc000))
-		return bnk0[addr];
+		data = bnk0[addr];
 	else
-		return bnk1[addr];
+		data = bnk1[addr];
+
+#ifdef BUS_8080
+	cpu_bus |= CPU_WO | CPU_MEMR;
+#endif
+
+#ifdef SIMPLEPANEL
+	fp_led_address = addr;
+	fp_led_data = data;
+#endif
+
+	return data;
 }
 
 /*
