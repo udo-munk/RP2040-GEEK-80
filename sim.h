@@ -17,6 +17,7 @@
 #define UNDOC_INST	/* compile undocumented instructions */
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 #define BAREMETAL	/* set up the simulator core for bare metal use */
+#define SIMPLEPANEL	/* this machine has a simple frontpanel */
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */
 #ifdef WANT_ICE
@@ -26,7 +27,7 @@
 #endif
 
 #define USR_COM "Waveshare RP2040-GEEK Z80/8080 emulator"
-#define USR_REL "1.2"
+#define USR_REL "1.3"
 #define USR_CPR "Copyright (C) 2024 by Udo Munk & Thomas Eberhardt"
 
 #ifndef PRIu64
