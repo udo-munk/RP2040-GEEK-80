@@ -41,9 +41,9 @@
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static void p001_out(BYTE data), p255_out(BYTE data), hwctl_out(BYTE data);
+static void p001_out(BYTE data), p254_out(BYTE data), hwctl_out(BYTE data);
 static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
-static void mmu_out(BYTE data);
+static void mmu_out(BYTE data), fp_out(BYTE data);
 static BYTE mmu_in(void);
 
 static BYTE sio_last;	/* last character received */
@@ -63,7 +63,7 @@ BYTE (*const port_in[256])(void) = {
 	[ 65] = clkc_in,	/* RTC read clock command */
 	[ 66] = clkd_in,	/* RTC read clock data */
 	[160] = hwctl_in,	/* virtual hardware control */
-	[255] = p255_in		/* for frontpanel */
+	[255] = p255_in		/* read from front panel switches */
 };
 
 /*
@@ -79,7 +79,8 @@ void (*const port_out[256])(BYTE data) = {
 	[ 65] = clkc_out,	/* RTC write clock command */
 	[ 66] = clkd_out,	/* RTC write clock data */
 	[160] = hwctl_out,	/* virtual hardware control */
-	[255] = p255_out	/* for frontpanel */
+	[254] = p254_out,	/* write to front panel switches */
+	[255] = fp_out		/* write to front panel lights */
 };
 
 /*
@@ -163,7 +164,7 @@ static BYTE mmu_in(void)
 
 /*
  *	I/O function port 255 read:
- *	used by frontpanel machines
+ *	return virtual front panel switches state
  */
 static BYTE p255_in(void)
 {
@@ -241,9 +242,21 @@ static void mmu_out(BYTE data)
 }
 
 /*
- *	This allows to set the frontpanel port with ICE p command
+ *	This allows to set the virtual front panel switches with ICE p command
  */
-static void p255_out(BYTE data)
+static void p254_out(BYTE data)
 {
 	fp_value = data;
+}
+
+/*
+ *	Write output to front panel lights
+ */
+static void fp_out(BYTE data)
+{
+#ifdef SIMPLEPANEL
+	fp_led_output = data;
+#else
+	UNUSED(data);
+#endif
 }
