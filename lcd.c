@@ -567,20 +567,20 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 static BYTE fp_led_wait;
 
 static const struct led {
-	const uint16_t x;
-	const uint16_t y;
-	const char c1;
-	const char c2;
-	const enum { byte, word } type;
+	uint16_t x;
+	uint16_t y;
+	char c1;
+	char c2;
+	enum { byte, word } type;
 	union {
-		const struct {
-			const BYTE inv;
-			const BYTE mask;
-			const BYTE *data;
+		struct {
+			BYTE inv;
+			BYTE mask;
+			BYTE *data;
 		} b;
-		const struct {
-			const WORD mask;
-			const WORD *data;
+		struct {
+			WORD mask;
+			WORD *data;
 		} w;
 	};
 } leds[] = {
@@ -717,7 +717,7 @@ static void __not_in_flash_func(lcd_draw_panel)(int first_flag)
 			Paint_FastChar(p->x + 5, p->y - 14, p->c2,
 				       &Font12, WHITE, DKBLUE);
 			if (p->c1 == 'W' && p->c2 == 'O')
-				Paint_FastHLine(p->x - 1, p->y - 16, 12,
+				Paint_FastHLine(p->x - 1, p->y - 16, 11,
 						WHITE);
 			lcd_draw_socket(p->x, p->y);
 			p++;
