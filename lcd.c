@@ -722,6 +722,12 @@ static void __not_in_flash_func(lcd_draw_panel)(int first_flag)
 			lcd_draw_socket(p->x, p->y);
 			p++;
 		}
+		i = (Paint.Width - strlen(model) * Font20.Width) / 2;
+		for (s = model; *s; s++) {
+			Paint_FastChar(i, Paint.Height - Font20.Height - 1, *s,
+				       &Font20, BROWN, DKBLUE);
+			i += Font20.Width;
+		}
 	} else {
 		for (i = 0; i < num_leds; i++) {
 			if (p->type == byte)
@@ -730,12 +736,6 @@ static void __not_in_flash_func(lcd_draw_panel)(int first_flag)
 				bit = *(p->w.data) & p->w.mask;
 			lcd_draw_led(p->x, p->y, bit);
 			p++;
-		}
-		i = (Paint.Width - strlen(model) * Font20.Width) / 2;
-		for (s = model; *s; s++) {
-			Paint_FastChar(i, Paint.Height - Font20.Height - 1, *s,
-				       &Font20, BROWN, DKBLUE);
-			i += Font20.Width;
 		}
 	}
 }
