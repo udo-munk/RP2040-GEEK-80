@@ -172,7 +172,6 @@ int main(void)
 #endif
 
 	exit_disks();		/* stop disk drives */
-	lcd_exit();		/* shutdown LCD */
 
 #ifndef WANT_ICE
 	putchar('\n');
@@ -181,6 +180,8 @@ int main(void)
 #endif
 	puts("\nPress any key to restart CPU");
 	get_cmdline(s, 2);
+
+	lcd_exit();		/* shutdown LCD */
 
 	stdio_flush();
 	return 0;
