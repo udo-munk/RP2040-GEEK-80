@@ -49,6 +49,7 @@ FDC	EQU	04H		; FDC
 MMUSEL	EQU	40H		; MMU bank select
 CLKCMD	EQU	41H		; RTC command
 CLKDAT	EQU	42H		; RTC data
+LEDS	EQU	0FFH		; frontpanel LED's
 ;
 ;	external references in SCB
 ;
@@ -508,6 +509,8 @@ READ:	LDA	BANK		; switch to saved bank
 	OUT	MMUSEL
 	IN	FDC		; get FDC status
 	RZ			; return if OK
+	CMA			; complement for LED's
+	OUT	LEDS		; display the error code
 	MVI	A,1		; nonrecoverable error
 	RET			; return with error
 ;
@@ -522,6 +525,8 @@ WRITE:	LDA	BANK		; switch to saved bank
 	OUT	MMUSEL
 	IN	FDC		; get FDC status
 	RZ			; return if OK
+	CMA			; complement for LED's
+	OUT	LEDS		; display the error code
 	MVI	A,1		; nonrecoverable error
 	RET			; return with error
 ;
