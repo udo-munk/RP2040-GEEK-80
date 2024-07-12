@@ -23,7 +23,6 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 
-#include "f_util.h"
 #include "ff.h"
 
 #include "sim.h"
@@ -92,7 +91,8 @@ void config(void)
 	unsigned int br;
 	int go_flag = 0, brightness = 90, rotated = 0;
 	int i, n, menu;
-	datetime_t t;
+	datetime_t t = { .year = 2024, .month = 6, .day = 13, .dotw = 4,
+			.hour = 20, .min = 27, .sec = 53 };
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
 
