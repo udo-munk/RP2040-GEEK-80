@@ -28,7 +28,6 @@
 #include "pico/time.h"
 #include "hardware/adc.h"
 
-#include "ff.h"
 #include "hw_config.h"
 #include "rtc.h"
 
@@ -162,6 +161,11 @@ int main(void)
 	tmax = speed * 10000;	/* theoretically */
 
 	PC = 0xff00;		/* power on jump into the boot ROM */
+#ifdef SIMPLEPANEL
+	cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
+	fp_led_address = PC;
+	fp_led_data = getmem(PC);
+#endif
 
 	lcd_status_disp();	/* tell LCD task to display status */
 
