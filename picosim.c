@@ -169,10 +169,11 @@ int main(void)
 
 	lcd_status_disp();	/* tell LCD task to display status */
 
+	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
 	ice_cmd_loop(0);
 #else
-	run_cpu();		/* run the CPU with whatever is in memory */
+	run_cpu();
 #endif
 
 	exit_disks();		/* stop disk drives */
