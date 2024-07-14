@@ -6,6 +6,7 @@
 ; History:
 ; 03-JUL-2024 first public release
 ; 07-JUL-2024 added RTC
+; 14-JUL-2024 fixed bug, FCB one byte short
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
@@ -205,6 +206,7 @@ CHRTBL:	DB	'TTY1  '
 ;
 CCPFCB:	DB	1,'CCP     COM',0,0,0,0
 	DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+CCPCR:	DB	0
 CCPREC:	DB	0,0,0
 ;
 ;	BIOS error messages
@@ -221,7 +223,7 @@ STACK:
 	DSEG
 ;
 SIGNON:	DB	13,10
-	DB	'Banked BIOS V1.1',13,10
+	DB	'Banked BIOS V1.2',13,10
 	DB	'Copyright (C) 2024 Udo Munk',13,10,13,10
 	DB	0
 ;
@@ -278,6 +280,7 @@ WBOOT:	LXI	SP,STACK
 ;
 	XRA	A		; initialize FCB for CCP
 	STA	CCPFCB+15
+	STA	CCPCR
 	STA	CCPREC
 	STA	CCPREC+1
 	LXI	D,CCPFCB	; open file CCP.COM
