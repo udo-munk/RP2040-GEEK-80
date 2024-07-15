@@ -744,16 +744,14 @@ static void __not_in_flash_func(lcd_draw_panel)(int first_flag)
 	if (first_flag) {
 		Paint_Clear(DKBLUE);
 		for (i = 0; i < num_leds; i++) {
-			Paint_FastChar(p->x - PLEDXO,
-				       p->y - PLBLS - PFNTH,
+			Paint_FastChar(p->x - PLEDXO, p->y - PLEDYO,
 				       p->c1, &Font12, WHITE, DKBLUE);
-			Paint_FastChar(p->x - PLEDXO + PFNTW,
-				       p->y - PLBLS - PFNTH,
+			Paint_FastChar(p->x - PLEDXO + PFNTW, p->y - PLEDYO,
 				       p->c2, &Font12, WHITE, DKBLUE);
 			if (p->c1 == 'W' && p->c2 == 'O')
 				Paint_FastHLine(p->x - PLEDXO,
-						p->y - PLBLS - PFNTH - 2,
-						2 * PFNTW - 1, WHITE);
+						p->y - PLEDYO - 2,
+						2 * PFNTW - PFNTS, WHITE);
 			lcd_draw_socket(p->x, p->y);
 			p++;
 		}
