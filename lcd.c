@@ -571,14 +571,15 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 #define PFNTW	6				/* Font12 width */
 #define PFNTS	1				/* Font12 letter spacing */
 
+#define PLBLW	(2 * PFNTW - PFNTS)		/* Label width */
 #define PLBLS	2				/* Label vertical spacing */
-#define PLEDS	2 				/* LED spacing */
+#define PLEDS	3 				/* LED spacing */
 #define PLEDBS	6				/* LED bank of 8 spacing */
 
 #define PLEDD	10				/* LED diameter */
-#define PLEDXO	((2 * PFNTW - PLEDD) / 2)	/* LED x off from label left */
+#define PLEDXO	((PLBLW - PLEDD + 1) / 2)	/* LED x off from label left */
 #define PLEDYO	(PFNTH + PLBLS)			/* LED y off from label top */
-#define PLEDHO	(2 * PFNTW + PLEDS)		/* horiz. offset to next LED */
+#define PLEDHO	(PLBLW + PLEDS)			/* horiz. offset to next LED */
 #define PLEDVO	(3 * PFNTH)			/* vert. offset to next row */
 
 #define PLEDX(x) (PXOFF + PLEDXO + PLEDBS * ((x) / 8) + PLEDHO * (x))
@@ -751,7 +752,7 @@ static void __not_in_flash_func(lcd_draw_panel)(int first_flag)
 			if (p->c1 == 'W' && p->c2 == 'O')
 				Paint_FastHLine(p->x - PLEDXO,
 						p->y - PLEDYO - 2,
-						2 * PFNTW - PFNTS, WHITE);
+						PLBLW, WHITE);
 			lcd_draw_socket(p->x, p->y);
 			p++;
 		}
