@@ -270,7 +270,6 @@ WBOOT:	LXI	SP,STACK
 	CALL	SELMEM
 ;
 	MVI	A,0C3H		; JMP instruction
-
 	STA	WARM
 	LXI	H,WBOOTE	; warm boot entry point
 	SHLD	WARM+1
