@@ -564,7 +564,7 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 
 #ifdef SIMPLEPANEL
 
-#define PXOFF	7				/* panel x offset */
+#define PXOFF	6				/* panel x offset */
 #define PYOFF	6				/* panel y offset */
 
 #define PFNTH	12				/* Font12 height */
