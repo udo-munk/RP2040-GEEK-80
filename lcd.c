@@ -529,14 +529,14 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 	if (first_flag) {
 		Paint_Clear(DKBLUE);
 		Paint_FastHLine(MEM_XOFF, MEM_YOFF,
-				224 + 4 * MEM_BRDR - 1, GREEN);
+				128 + 96 + 4 * MEM_BRDR - 1, GREEN);
 		Paint_FastHLine(MEM_XOFF, MEM_YOFF + 128 + 2 * MEM_BRDR - 1,
-				224 + 4 * MEM_BRDR - 1, GREEN);
+				128 + 96 + 4 * MEM_BRDR - 1, GREEN);
 		Paint_FastVLine(MEM_XOFF, MEM_YOFF,
 				128 + 2 * MEM_BRDR, GREEN);
 		Paint_FastVLine(MEM_XOFF + 128 + 2 * MEM_BRDR - 1, 0,
 				128 + 2 * MEM_BRDR, GREEN);
-		Paint_FastVLine(MEM_XOFF + 224 + 4 * MEM_BRDR - 2, 0,
+		Paint_FastVLine(MEM_XOFF + 128 + 96 + 4 * MEM_BRDR - 2, 0,
 				128 + 2 * MEM_BRDR, GREEN);
 		return;
 	} else {
@@ -552,7 +552,7 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 		}
 		p = (uint32_t *) bnk1;
 		for (x = MEM_XOFF + 3 * MEM_BRDR - 1 + 128;
-		     x < MEM_XOFF + 3 * MEM_BRDR - 1 + 224; x++) {
+		     x < MEM_XOFF + 3 * MEM_BRDR - 1 + 128 + 96; x++) {
 			for (y = MEM_YOFF + MEM_BRDR;
 			     y < MEM_YOFF + MEM_BRDR + 128; y++) {
 				Paint_FastPixel(x, y,
@@ -564,7 +564,27 @@ static void __not_in_flash_func(lcd_draw_memory)(int first_flag)
 
 #ifdef SIMPLEPANEL
 
-static BYTE fp_led_wait;
+#define PXOFF	7				/* panel x offset */
+#define PYOFF	6				/* panel y offset */
+
+#define PFNTH	12				/* Font12 height */
+#define PFNTW	6				/* Font12 width */
+#define PFNTS	1				/* Font12 letter spacing */
+
+#define PLBLS	2				/* Label vertical spacing */
+#define PLEDS	2 				/* LED spacing */
+#define PLEDBS	6				/* LED bank of 8 spacing */
+
+#define PLEDD	10				/* LED diameter */
+#define PLEDXO	((2 * PFNTW - PLEDD) / 2)	/* LED x off from label left */
+#define PLEDYO	(PFNTH + PLBLS)			/* LED y off from label top */
+#define PLEDHO	(2 * PFNTW + PLEDS)		/* horiz. offset to next LED */
+#define PLEDVO	(3 * PFNTH)			/* vert. offset to next row */
+
+#define PLEDX(x) (PXOFF + PLEDXO + PLEDBS * ((x) / 8) + PLEDHO * (x))
+#define PLEDY(y) (PYOFF + PLEDYO + PLEDVO * (y))
+
+static BYTE fp_led_wait;			/* dummy */
 
 static const struct led {
 	uint16_t x;
@@ -576,105 +596,108 @@ static const struct led {
 		struct {
 			BYTE inv;
 			BYTE mask;
-			BYTE *data;
+			const BYTE *data;
 		} b;
 		struct {
 			WORD mask;
-			WORD *data;
+			const WORD *data;
 		} w;
 	};
 } leds[] = {
-	{ .x= 8 + 0 * 14, .y = 20, .c1 = 'P', .c2 = '7', .type = byte,
+	{ .x = PLEDX( 0), .y = PLEDY(0), .c1 = 'P', .c2 = '7', .type = byte,
 	  .b.inv = 0xff, .b.mask = 0x80, .b.data = &fp_led_output },
-	{ .x= 8 + 1 * 14, .y = 20, .c1 = 'P', .c2 = '6', .type = byte,
+	{ .x = PLEDX( 1), .y = PLEDY(0), .c1 = 'P', .c2 = '6', .type = byte,
 	  .b.inv = 0xff, .b.mask = 0x40, .b.data = &fp_led_output },
-	{ .x= 8 + 2 * 14, .y = 20, .c1 = 'P', .c2 = '5', .type = byte,
+	{ .x = PLEDX( 2), .y = PLEDY(0), .c1 = 'P', .c2 = '5', .type = byte,
 	  .b.inv = 0xff, .b.mask = 0x20, .b.data = &fp_led_output },
-	{ .x= 8 + 3 * 14, .y = 20, .c1 = 'P', .c2 = '4', .type = byte,
+	{ .x = PLEDX( 3), .y = PLEDY(0), .c1 = 'P', .c2 = '4', .type = byte,
 	  .b.inv = 0xff, .b.mask = 0x10, .b.data = &fp_led_output },
-	{ .x= 8 + 4 * 14, .y = 20, .c1 = 'P', .c2 = '3', .type = byte,
+	{ .x = PLEDX( 4), .y = PLEDY(0), .c1 = 'P', .c2 = '3', .type = byte,
 	  .b.inv = 0xff, .b.mask = 0x08, .b.data = &fp_led_output },
-	{ .x= 8 + 5 * 14, .y = 20, .c1 = 'P', .c2 = '2', .type = byte,
+	{ .x = PLEDX( 5), .y = PLEDY(0), .c1 = 'P', .c2 = '2', .type = byte,
 	  .b.inv = 0xff, .b.mask = 0x04, .b.data = &fp_led_output },
-	{ .x= 8 + 6 * 14, .y = 20, .c1 = 'P', .c2 = '1', .type = byte,
+	{ .x = PLEDX( 6), .y = PLEDY(0), .c1 = 'P', .c2 = '1', .type = byte,
 	  .b.inv = 0xff, .b.mask = 0x02, .b.data = &fp_led_output },
-	{ .x= 8 + 7 * 14, .y = 20, .c1 = 'P', .c2 = '0', .type = byte,
+	{ .x = PLEDX( 7), .y = PLEDY(0), .c1 = 'P', .c2 = '0', .type = byte,
 	  .b.inv = 0xff, .b.mask = 0x01, .b.data = &fp_led_output },
-	{ .x= 14 + 12 * 14, .y = 20, .c1 = 'I', .c2 = 'E', .type = byte,
+	{ .x = PLEDX(12), .y = PLEDY(0), .c1 = 'I', .c2 = 'E', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &IFF },
-	{ .x= 14 + 13 * 14, .y = 20, .c1 = 'R', .c2 = 'U', .type = byte,
+	{ .x = PLEDX(13), .y = PLEDY(0), .c1 = 'R', .c2 = 'U', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &cpu_state },
-	{ .x= 14 + 14 * 14, .y = 20, .c1 = 'W', .c2 = 'A', .type = byte,
+	{ .x = PLEDX(14), .y = PLEDY(0), .c1 = 'W', .c2 = 'A', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &fp_led_wait },
-	{ .x= 14 + 15 * 14, .y = 20, .c1 = 'H', .c2 = 'O', .type = byte,
+	{ .x = PLEDX(15), .y = PLEDY(0), .c1 = 'H', .c2 = 'O', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &bus_request },
-	{ .x= 8 + 0 * 14, .y = 56, .c1 = 'M', .c2 = 'R', .type = byte,
+	{ .x = PLEDX( 0), .y = PLEDY(1), .c1 = 'M', .c2 = 'R', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x80, .b.data = &cpu_bus },
-	{ .x= 8 + 1 * 14, .y = 56, .c1 = 'I', .c2 = 'P', .type = byte,
+	{ .x = PLEDX( 1), .y = PLEDY(1), .c1 = 'I', .c2 = 'P', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x40, .b.data = &cpu_bus },
-	{ .x= 8 + 2 * 14, .y = 56, .c1 = 'M', .c2 = '1', .type = byte,
+	{ .x = PLEDX( 2), .y = PLEDY(1), .c1 = 'M', .c2 = '1', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x20, .b.data = &cpu_bus },
-	{ .x= 8 + 3 * 14, .y = 56, .c1 = 'O', .c2 = 'P', .type = byte,
+	{ .x = PLEDX( 3), .y = PLEDY(1), .c1 = 'O', .c2 = 'P', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x10, .b.data = &cpu_bus },
-	{ .x= 8 + 4 * 14, .y = 56, .c1 = 'H', .c2 = 'A', .type = byte,
+	{ .x = PLEDX( 4), .y = PLEDY(1), .c1 = 'H', .c2 = 'A', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x08, .b.data = &cpu_bus },
-	{ .x= 8 + 5 * 14, .y = 56, .c1 = 'S', .c2 = 'T', .type = byte,
+	{ .x = PLEDX( 5), .y = PLEDY(1), .c1 = 'S', .c2 = 'T', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x04, .b.data = &cpu_bus },
-	{ .x= 8 + 6 * 14, .y = 56, .c1 = 'W', .c2 = 'O', .type = byte,
+	{ .x = PLEDX( 6), .y = PLEDY(1), .c1 = 'W', .c2 = 'O', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x02, .b.data = &cpu_bus },
-	{ .x= 8 + 7 * 14, .y = 56, .c1 = 'I', .c2 = 'A', .type = byte,
+	{ .x = PLEDX( 7), .y = PLEDY(1), .c1 = 'I', .c2 = 'A', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &cpu_bus },
-	{ .x= 14 + 8 * 14, .y = 56, .c1 = 'D', .c2 = '7', .type = byte,
+	{ .x = PLEDX( 8), .y = PLEDY(1), .c1 = 'D', .c2 = '7', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x80, .b.data = &fp_led_data },
-	{ .x= 14 + 9 * 14, .y = 56, .c1 = 'D', .c2 = '6', .type = byte,
+	{ .x = PLEDX( 9), .y = PLEDY(1), .c1 = 'D', .c2 = '6', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x40, .b.data = &fp_led_data },
-	{ .x= 14 + 10 * 14, .y = 56, .c1 = 'D', .c2 = '5', .type = byte,
+	{ .x = PLEDX(10), .y = PLEDY(1), .c1 = 'D', .c2 = '5', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x20, .b.data = &fp_led_data },
-	{ .x= 14 + 11 * 14, .y = 56, .c1 = 'D', .c2 = '4', .type = byte,
+	{ .x = PLEDX(11), .y = PLEDY(1), .c1 = 'D', .c2 = '4', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x10, .b.data = &fp_led_data },
-	{ .x= 14 + 12 * 14, .y = 56, .c1 = 'D', .c2 = '3', .type = byte,
+	{ .x = PLEDX(12), .y = PLEDY(1), .c1 = 'D', .c2 = '3', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x08, .b.data = &fp_led_data },
-	{ .x= 14 + 13 * 14, .y = 56, .c1 = 'D', .c2 = '2', .type = byte,
+	{ .x = PLEDX(13), .y = PLEDY(1), .c1 = 'D', .c2 = '2', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x04, .b.data = &fp_led_data },
-	{ .x= 14 + 14 * 14, .y = 56, .c1 = 'D', .c2 = '1', .type = byte,
+	{ .x = PLEDX(14), .y = PLEDY(1), .c1 = 'D', .c2 = '1', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x02, .b.data = &fp_led_data },
-	{ .x= 14 + 15 * 14, .y = 56, .c1 = 'D', .c2 = '0', .type = byte,
+	{ .x = PLEDX(15), .y = PLEDY(1), .c1 = 'D', .c2 = '0', .type = byte,
 	  .b.inv = 0x00, .b.mask = 0x01, .b.data = &fp_led_data },
-	{ .x= 8 + 0 * 14, .y = 92, .c1 = '1', .c2 = '5', .type = word,
+	{ .x = PLEDX( 0), .y = PLEDY(2), .c1 = '1', .c2 = '5', .type = word,
 	  .w.mask = 0x8000, .w.data = &fp_led_address },
-	{ .x= 8 + 1 * 14, .y = 92, .c1 = '1', .c2 = '4', .type = word,
+	{ .x = PLEDX( 1), .y = PLEDY(2), .c1 = '1', .c2 = '4', .type = word,
 	  .w.mask = 0x4000, .w.data = &fp_led_address },
-	{ .x= 8 + 2 * 14, .y = 92, .c1 = '1', .c2 = '3', .type = word,
+	{ .x = PLEDX( 2), .y = PLEDY(2), .c1 = '1', .c2 = '3', .type = word,
 	  .w.mask = 0x2000, .w.data = &fp_led_address },
-	{ .x= 8 + 3 * 14, .y = 92, .c1 = '1', .c2 = '2', .type = word,
+	{ .x = PLEDX( 3), .y = PLEDY(2), .c1 = '1', .c2 = '2', .type = word,
 	  .w.mask = 0x1000, .w.data = &fp_led_address },
-	{ .x= 8 + 4 * 14, .y = 92, .c1 = '1', .c2 = '1', .type = word,
+	{ .x = PLEDX( 4), .y = PLEDY(2), .c1 = '1', .c2 = '1', .type = word,
 	  .w.mask = 0x0800, .w.data = &fp_led_address },
-	{ .x= 8 + 5 * 14, .y = 92, .c1 = '1', .c2 = '0', .type = word,
+	{ .x = PLEDX( 5), .y = PLEDY(2), .c1 = '1', .c2 = '0', .type = word,
 	  .w.mask = 0x0400, .w.data = &fp_led_address },
-	{ .x= 8 + 6 * 14, .y = 92, .c1 = 'A', .c2 = '9', .type = word,
+	{ .x = PLEDX( 6), .y = PLEDY(2), .c1 = 'A', .c2 = '9', .type = word,
 	  .w.mask = 0x0200, .w.data = &fp_led_address },
-	{ .x= 8 + 7 * 14, .y = 92, .c1 = 'A', .c2 = '8', .type = word,
+	{ .x = PLEDX( 7), .y = PLEDY(2), .c1 = 'A', .c2 = '8', .type = word,
 	  .w.mask = 0x0100, .w.data = &fp_led_address },
-	{ .x= 14 + 8 * 14, .y = 92, .c1 = 'A', .c2 = '7', .type = word,
+	{ .x = PLEDX( 8), .y = PLEDY(2), .c1 = 'A', .c2 = '7', .type = word,
 	  .w.mask = 0x0080, .w.data = &fp_led_address },
-	{ .x= 14 + 9 * 14, .y = 92, .c1 = 'A', .c2 = '6', .type = word,
+	{ .x = PLEDX( 9), .y = PLEDY(2), .c1 = 'A', .c2 = '6', .type = word,
 	  .w.mask = 0x0040, .w.data = &fp_led_address },
-	{ .x= 14 + 10 * 14, .y = 92, .c1 = 'A', .c2 = '5', .type = word,
+	{ .x = PLEDX(10), .y = PLEDY(2), .c1 = 'A', .c2 = '5', .type = word,
 	  .w.mask = 0x0020, .w.data = &fp_led_address },
-	{ .x= 14 + 11 * 14, .y = 92, .c1 = 'A', .c2 = '4', .type = word,
+	{ .x = PLEDX(11), .y = PLEDY(2), .c1 = 'A', .c2 = '4', .type = word,
 	  .w.mask = 0x0010, .w.data = &fp_led_address },
-	{ .x= 14 + 12 * 14, .y = 92, .c1 = 'A', .c2 = '3', .type = word,
+	{ .x = PLEDX(12), .y = PLEDY(2), .c1 = 'A', .c2 = '3', .type = word,
 	  .w.mask = 0x0008, .w.data = &fp_led_address },
-	{ .x= 14 + 13 * 14, .y = 92, .c1 = 'A', .c2 = '2', .type = word,
+	{ .x = PLEDX(13), .y = PLEDY(2), .c1 = 'A', .c2 = '2', .type = word,
 	  .w.mask = 0x0004, .w.data = &fp_led_address },
-	{ .x= 14 + 14 * 14, .y = 92, .c1 = 'A', .c2 = '1', .type = word,
+	{ .x = PLEDX(14), .y = PLEDY(2), .c1 = 'A', .c2 = '1', .type = word,
 	  .w.mask = 0x0002, .w.data = &fp_led_address },
-	{ .x= 14 + 15 * 14, .y = 92, .c1 = 'A', .c2 = '0', .type = word,
+	{ .x = PLEDX(15), .y = PLEDY(2), .c1 = 'A', .c2 = '0', .type = word,
 	  .w.mask = 0x0001, .w.data = &fp_led_address }
 };
-const int num_leds = sizeof(leds) / sizeof(struct led);
+static const int num_leds = sizeof(leds) / sizeof(struct led);
 
+/*
+ *	draw a 10x10 LED circular socket
+ */
 static inline void __not_in_flash_func(lcd_draw_socket)(uint16_t x, uint16_t y)
 {
 	Paint_FastHLine(x + 2, y, 6, GRAY);
@@ -687,10 +710,19 @@ static inline void __not_in_flash_func(lcd_draw_socket)(uint16_t x, uint16_t y)
 	Paint_FastHLine(x + 2, y + 9, 6, GRAY);
 }
 
+#if LCD_COLOR_DEPTH == 12
+#define DKRED 0x0500
+#else
+#define DKRED 0x5000
+#endif
+
+/*
+ *	draw a LED inside a 10x10 circular socket
+ */
 static inline void __not_in_flash_func(lcd_draw_led)(uint16_t x, uint16_t y,
 						     int on_off)
 {
-	uint16_t col = on_off ? RED : BLACK;
+	uint16_t col = on_off ? RED : DKRED;
 
 	Paint_FastHLine(x + 2, y + 1, 6, col);
 	Paint_FastHLine(x + 1, y + 2, 8, col);
@@ -712,13 +744,16 @@ static void __not_in_flash_func(lcd_draw_panel)(int first_flag)
 	if (first_flag) {
 		Paint_Clear(DKBLUE);
 		for (i = 0; i < num_leds; i++) {
-			Paint_FastChar(p->x - 1, p->y - 14, p->c1,
-				       &Font12, WHITE, DKBLUE);
-			Paint_FastChar(p->x + 5, p->y - 14, p->c2,
-				       &Font12, WHITE, DKBLUE);
+			Paint_FastChar(p->x - PLEDXO,
+				       p->y - PLBLS - PFNTH,
+				       p->c1, &Font12, WHITE, DKBLUE);
+			Paint_FastChar(p->x - PLEDXO + PFNTW,
+				       p->y - PLBLS - PFNTH,
+				       p->c2, &Font12, WHITE, DKBLUE);
 			if (p->c1 == 'W' && p->c2 == 'O')
-				Paint_FastHLine(p->x - 1, p->y - 16, 11,
-						WHITE);
+				Paint_FastHLine(p->x - PLEDXO,
+						p->y - PLBLS - PFNTH - 2,
+						2 * PFNTW - 1, WHITE);
 			lcd_draw_socket(p->x, p->y);
 			p++;
 		}
