@@ -22,7 +22,7 @@ To build the application:
 cd RP2040-GEEK-80
 mkdir build
 cd build
-cmake ..
+cmake .. -G "Unix Makefiles"
 make
 ```
 
