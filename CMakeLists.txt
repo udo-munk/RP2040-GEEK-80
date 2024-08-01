@@ -75,6 +75,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	LCD_COLOR_DEPTH=12
 	# LCD refresh rate in Hz (30 works well with 12-bit frame buffer)
 	LCD_REFRESH=30
+	# the official VID/GID assigned to RP2040-GEEK-80 from Raspberry Pi
+	# see: https://github.com/raspberrypi/usb-pid
+	USBD_VID=0x2E8A
+	USBD_PID=0x1095
 )
 
 # compiler diagnostic options
