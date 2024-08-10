@@ -1,4 +1,3 @@
-#include "pico/platform.h"
 #include "GUI_Paint.h"
 #include "Debug.h"
 

@@ -1,5 +1,6 @@
 #include <string.h>
-#include "pico/platform.h"
+#include "pico.h"
+
 #include "GUI_Paint.h"
 #include "Debug.h"
 

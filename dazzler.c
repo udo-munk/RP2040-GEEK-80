@@ -6,7 +6,7 @@
  */
 
 #include <stdint.h>
-#include "pico/platform.h"
+#include "pico.h"
 #include "pico/time.h"
 
 #include "sim.h"
