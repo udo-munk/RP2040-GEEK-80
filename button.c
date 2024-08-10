@@ -6,8 +6,10 @@
 
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
+#include "hardware/gpio.h"
 #include "hardware/sync.h"
 #include "hardware/structs/ioqspi.h"
+#include "hardware/structs/sio.h"
 
 // Picoboard has a button attached to the flash CS pin, which the bootrom
 // checks, and jumps straight to the USB bootcode if the button is pressed
@@ -18,7 +20,7 @@
 // This doesn't work if others are trying to access flash at the same time,
 // e.g. XIP streamer, or the other core.
 
-int __no_inline_not_in_flash_func(get_bootsel_button)(void) {
+bool __no_inline_not_in_flash_func(get_bootsel_button)(void) {
     const uint CS_PIN_INDEX = 1;
 
     // Lock out the other core
@@ -38,7 +40,12 @@ int __no_inline_not_in_flash_func(get_bootsel_button)(void) {
 
     // The HI GPIO registers in SIO can observe and control the 6 QSPI pins.
     // Note the button pulls the pin *low* when pressed.
-    bool button_state = !(sio_hw->gpio_hi_in & (1u << CS_PIN_INDEX));
+#if PICO_RP2040
+    #define CS_BIT (1u << 1)
+#else
+    #define CS_BIT SIO_GPIO_HI_IN_QSPI_CSN_BITS
+#endif
+    bool button_state = !(sio_hw->gpio_hi_in & CS_BIT);
 
     // Need to restore the state of chip select, else we are going to have a
     // bad time when we return to code in flash!

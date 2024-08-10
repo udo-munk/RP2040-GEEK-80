@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-extern int get_bootsel_button(void);
+extern bool get_bootsel_button(void);
