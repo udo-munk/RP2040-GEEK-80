@@ -7,7 +7,8 @@
  * Licensed under the SIL Open Font License, Version 1.1
  */
 
-#include "pico/platform.h"
+#include "pico.h"
+
 #include "fonts.h"
 
 static const uint8_t __not_in_flash("font_data") Font28_Table[] = {

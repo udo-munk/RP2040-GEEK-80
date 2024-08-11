@@ -7,6 +7,6 @@
 #ifndef PICOSIM_INC
 #define PICOSIM_INC
 
-extern int speed;
+extern int speed, initial_lcd;
 
 #endif /* !PICOSIM_INC */

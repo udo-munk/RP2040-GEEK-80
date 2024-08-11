@@ -34,6 +34,7 @@
 #include "simio.h"
 
 #include "dazzler.h"
+#include "lcd.h"
 #include "rtc80.h"
 #include "sd-fdc.h"
 
@@ -186,6 +187,7 @@ static void p001_out(BYTE data)
  *	Virtual hardware control output.
  *	Used to shutdown and switch CPU's.
  *
+ *	bit 3 = 1	select next LCD status display
  *	bit 4 = 1	switch CPU model to 8080
  *	bit 5 = 1	switch CPU model to Z80
  *	bit 6 = 1	reset system
@@ -222,16 +224,21 @@ static void hwctl_out(BYTE data)
 	}
 
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
-	if (data & 32) {	/* switch cpu model to Z80 */
+	if (data & 32) {		/* switch cpu model to Z80 */
 		switch_cpu(Z80);
 		return;
 	}
 
-	if (data & 16) {	/* switch cpu model to 8080 */
+	if (data & 16) {		/* switch cpu model to 8080 */
 		switch_cpu(I8080);
 		return;
 	}
 #endif
+
+	if (data & 8) {			/* select next LCD status display */
+		lcd_status_next();
+		return;
+	}
 }
 
 /*

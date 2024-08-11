@@ -18,7 +18,6 @@
 #include "simmem.h"
 
 #include "lcd.h"
-#include "button.h"
 
 /* memory image for drawing */
 #if LCD_COLOR_DEPTH == 12
@@ -36,6 +35,8 @@ static volatile int lcd_task_busy;
 static char info_line[16];	/* last line in CPU display */
 
 static void lcd_draw_cpu_reg(int first_flag);
+static void lcd_draw_memory(int first_flag);
+static void lcd_draw_panel(int first_flag);
 static void lcd_task(void);
 
 void lcd_init(void)
@@ -60,9 +61,6 @@ void lcd_init(void)
 	mutex_init(&lcd_mutex);
 
 	lcd_status_func = lcd_draw_cpu_reg;
-
-	/* make core 0 a lockout victim for the bootsel button check */
-	multicore_lockout_victim_init();
 
 	/* launch LCD draw & refresh task */
 	multicore_launch_core1(lcd_task);
@@ -104,12 +102,45 @@ void lcd_custom_disp(lcd_func_t draw_func)
 	mutex_exit(&lcd_mutex);
 }
 
-void lcd_status_disp(void)
+void lcd_status_disp(int which)
 {
 	mutex_enter_blocking(&lcd_mutex);
+	switch (which) {
+	case LCD_STATUS_REGISTERS:
+		lcd_status_func = lcd_draw_cpu_reg;
+		break;
+	case LCD_STATUS_MEMORY:
+		lcd_status_func = lcd_draw_memory;
+		break;
+#ifdef SIMPLEPANEL
+	case LCD_STATUS_PANEL:
+		lcd_status_func = lcd_draw_panel;
+		break;
+#endif
+	case LCD_STATUS_CURRENT:
+	default:
+		break;
+	}
 	lcd_draw_func = lcd_status_func;
 	lcd_shows_status = 1;
 	mutex_exit(&lcd_mutex);
+}
+
+void lcd_status_next(void)
+{
+	if (lcd_status_func == lcd_draw_cpu_reg)
+#ifdef SIMPLEPANEL
+		lcd_status_func = lcd_draw_panel;
+	else if (lcd_status_func == lcd_draw_panel)
+#endif
+		lcd_status_func = lcd_draw_memory;
+	else
+		lcd_status_func = lcd_draw_cpu_reg;
+	if (lcd_shows_status) {
+		mutex_enter_blocking(&lcd_mutex);
+		lcd_draw_func = lcd_status_func;
+		mutex_exit(&lcd_mutex);
+	}
 }
 
 /*
@@ -787,33 +818,6 @@ static void __not_in_flash_func(lcd_refresh)(void)
 	mutex_exit(&lcd_mutex);
 }
 
-static void __not_in_flash_func(lcd_check_button)(void)
-{
-	static int button, counter;
-
-	/* check bootsel button every 1/5 sec */
-	if (++counter == LCD_REFRESH / 5) {
-		counter = 0;
-		if (get_bootsel_button()) {
-			if (!button) {
-				button = 1;
-				if (lcd_status_func == lcd_draw_cpu_reg)
-#ifdef SIMPLEPANEL
-					lcd_status_func = lcd_draw_panel;
-				else if (lcd_status_func == lcd_draw_panel)
-#endif
-					lcd_status_func = lcd_draw_memory;
-				else
-					lcd_status_func = lcd_draw_cpu_reg;
-				mutex_enter_blocking(&lcd_mutex);
-				lcd_draw_func = lcd_status_func;
-				mutex_exit(&lcd_mutex);
-			}
-		} else if (button)
-			button = 0;
-	}
-}
-
 #define LCD_REFRESH_US (1000000 / LCD_REFRESH)
 
 static void __not_in_flash_func(lcd_task)(void)
@@ -826,9 +830,6 @@ static void __not_in_flash_func(lcd_task)(void)
 		/* loops every LCD_REFRESH_US */
 
 		t = get_absolute_time();
-
-		if (lcd_shows_status)
-			lcd_check_button();
 
 		if (curr_func != lcd_draw_func) {
 			curr_func = lcd_draw_func;

@@ -6,7 +6,7 @@
  */
 
 #include <stdint.h>
-#include "pico/platform.h"
+#include "pico.h"
 #include "pico/time.h"
 
 #include "sim.h"
@@ -329,7 +329,7 @@ void dazzler_ctl_out(BYTE data)
 	} else {
 		if (state == 1) {
 			state = 0;
-			lcd_status_disp();
+			lcd_status_disp(LCD_STATUS_CURRENT);
 		}
 	}
 }
