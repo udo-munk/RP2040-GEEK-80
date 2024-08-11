@@ -53,6 +53,9 @@
 /* CPU speed */
 int speed = CPU_SPEED;
 
+/* initial LCD status display */
+int initial_lcd = LCD_STATUS_REGISTERS;
+
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 {
@@ -167,7 +170,7 @@ int main(void)
 	fp_led_data = getmem(PC);
 #endif
 
-	lcd_status_disp();	/* tell LCD task to display status */
+	lcd_status_disp(initial_lcd); /* tell LCD task to display status */
 
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE

@@ -104,12 +104,23 @@ void config(void)
 		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
 		f_read(&sd_file, &brightness, sizeof(brightness), &br);
 		f_read(&sd_file, &rotated, sizeof(rotated), &br);
+		f_read(&sd_file, &initial_lcd, sizeof(initial_lcd), &br);
 		f_read(&sd_file, &t, sizeof(datetime_t), &br);
 		f_read(&sd_file, &disks[0], DISKLEN, &br);
 		f_read(&sd_file, &disks[1], DISKLEN, &br);
 		f_read(&sd_file, &disks[2], DISKLEN, &br);
 		f_read(&sd_file, &disks[3], DISKLEN, &br);
 		f_close(&sd_file);
+		switch (initial_lcd) {
+		case LCD_STATUS_REGISTERS:
+#ifdef SIMPLEPANEL
+		case LCD_STATUS_PANEL:
+#endif
+		case LCD_STATUS_MEMORY:
+			break;
+		default:
+			initial_lcd = LCD_STATUS_REGISTERS;
+		}
 	}
 	lcd_brightness(brightness);
 	lcd_set_rotated(rotated);
@@ -127,6 +138,23 @@ void config(void)
 			}
 			printf("b - LCD brightness: %d\n", brightness);
 			printf("m - rotate LCD\n");
+			printf("l - LCD status display: ");
+			switch (initial_lcd) {
+			case LCD_STATUS_MEMORY:
+				printf("memory pixmap\n");
+				break;
+#ifdef SIMPLEPANEL
+			case LCD_STATUS_PANEL:
+				printf("classic front panel\n");
+				break;
+#endif
+			case LCD_STATUS_REGISTERS:
+				printf("CPU registers\n");
+				break;
+			default:
+				printf("unknown!\n");
+				break;
+			}
 			printf("a - set date\n");
 			printf("t - set time\n");
 #if LIB_STDIO_MSC_USB
@@ -166,6 +194,17 @@ void config(void)
 		case 'm':
 			rotated = !rotated;
 			lcd_set_rotated(rotated);
+			break;
+
+		case 'l':
+			if (initial_lcd == LCD_STATUS_REGISTERS)
+#ifdef SIMPLEPANEL
+				initial_lcd = LCD_STATUS_PANEL;
+			else if (initial_lcd == LCD_STATUS_PANEL)
+#endif
+				initial_lcd = LCD_STATUS_MEMORY;
+			else
+				initial_lcd = LCD_STATUS_REGISTERS;
 			break;
 
 		case 'a':
@@ -310,6 +349,7 @@ again:
 		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
 		f_write(&sd_file, &brightness, sizeof(brightness), &br);
 		f_write(&sd_file, &rotated, sizeof(rotated), &br);
+		f_write(&sd_file, &initial_lcd, sizeof(initial_lcd), &br);
 		f_write(&sd_file, &t, sizeof(datetime_t), &br);
 		f_write(&sd_file, &disks[0], DISKLEN, &br);
 		f_write(&sd_file, &disks[1], DISKLEN, &br);
