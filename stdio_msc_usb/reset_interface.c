@@ -24,7 +24,11 @@ static uint8_t itf_num;
 #define BOS_TOTAL_LEN      (TUD_BOS_DESC_LEN + TUD_BOS_MICROSOFT_OS_DESC_LEN)
 
 #define MS_OS_20_DESC_LEN  166
-#define USBD_ITF_RPI_RESET 2
+#ifdef STDIO_MSC_USB_DISABLE_STDIO
+#define USBD_ITF_RPI_RESET 1
+#else
+#define USBD_ITF_RPI_RESET 3
+#endif
 
 uint8_t const desc_bos[] =
 {
