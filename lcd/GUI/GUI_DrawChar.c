@@ -2,11 +2,11 @@
 #include "Debug.h"
 
 /******************************************************************************
-function: Show English characters
+function: Show ASCII characters
 parameter:
     Xpoint           : X coordinate
     Ypoint           : Y coordinate
-    Acsii_Char       : To display the English characters
+    Acsii_Char       : To display the ASCII characters
     Font             : A structure pointer that displays a character size
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color

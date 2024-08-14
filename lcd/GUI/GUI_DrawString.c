@@ -6,7 +6,7 @@ function:	Display the string
 parameter:
     Xstart           : X coordinate
     Ystart           : Y coordinate
-    pString          : The first address of the English string to be displayed
+    pString          : The first address of the ASCII string to be displayed
     Font             : A structure pointer that displays a character size
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
