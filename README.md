@@ -1,7 +1,7 @@
 # z80pack on RP2040-GEEK
 
 While looking arround for RP2040 based systems that can easily be
-used by non technical users, I found this:
+used by those who don't want to tinker with the hardware, I found this:
 
 [Waveshare RP2040-GEEK product page](https://www.waveshare.com/rp2040-geek.htm) and
 [Waveshare RP2040-GEEK Wiki](https://www.waveshare.com/wiki/RP2040-GEEK)
