@@ -26,7 +26,9 @@ cmake .. -G "Unix Makefiles"
 make
 ```
 
-Flash picosim.uf2 into the device, and then prepare a MicroSD card.
+If you don't want to build it your self, directory flash contains the
+current build. Flash picosim.uf2 into the device, and then prepare a
+MicroSD card.
 
 In the root directory of the card create these directories:
 ```
