@@ -98,6 +98,8 @@ void config(void)
 			.hour = 20, .min = 27, .sec = 53 };
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
+	UNUSED(DS3231_MONTHS);
+	UNUSED(DS3231_WDAYS);
 
 	/* try to read config file */
 	sd_res = f_open(&sd_file, cfg, FA_READ);
