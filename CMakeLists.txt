@@ -65,6 +65,7 @@ add_subdirectory(lcd/LCD)
 add_subdirectory(lcd/Fonts)
 add_subdirectory(lcd/GUI)
 add_subdirectory(stdio_msc_usb)
+add_subdirectory(ds3231)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_STACK_SIZE=4096
@@ -105,6 +106,8 @@ target_link_libraries(${PROJECT_NAME}
 	Fonts
 	GUI
 	LCD
+	hardware_i2c
+	pico-ds3231
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
