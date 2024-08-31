@@ -12,6 +12,7 @@
  * 27-MAY-2024 implemented load file
  * 28-MAY-2024 implemented mount/unmount of disk images
  * 03-JUN-2024 added directory list for code files and disk images
+ * 31-AUG-2024 read date/time from an optional I2C battery backed RTC
  */
 
 #include <stdint.h>
@@ -20,10 +21,12 @@
 #include <string.h>
 #include <ctype.h>
 #include "hardware/rtc.h"
+#include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
 
 #include "ff.h"
+#include "ds3231.h"
 
 #include "sim.h"
 #include "simdefs.h"
@@ -122,6 +125,44 @@ void config(void)
 			initial_lcd = LCD_STATUS_REGISTERS;
 		}
 	}
+
+	/* Create a real-time clock structure and initiate this */
+	struct ds3231_rtc rtc;
+	ds3231_init(PICO_DEFAULT_I2C, PICO_DEFAULT_I2C_SDA_PIN,
+		    PICO_DEFAULT_I2C_SCL_PIN, &rtc);
+
+	/* A `ds3231_datetime_t` structure holds date and time values. It is */
+	/* used first to set the initial (user-defined) date/time. After */
+	/* these initial values are set, then this same structure will be */
+	/* updated by the ds3231 functions as needed with the most current */
+	/* time and date values. */
+	ds3231_datetime_t dt = {
+		.year = 2000,	/* Year (2000-2099) */
+		.month = 1,	/* Month (1-12, 1=January, 12=December) */
+		.day = 1,	/* Day (1-31) */
+		.hour = 0,	/* Hour, in 24-h format (0-23) */
+		.minutes = 0,	/* Minutes (0-59) */
+		.seconds = 0,	/* Seconds (0-59) */
+		.dotw = 1,	/* Day of the week (1-7, 1=Monday, 7=Sunday) */
+	};
+
+	/* Read the date and time from the DS3231 RTC */
+        ds3231_get_datetime(&dt, &rtc);
+
+	/* if we read something take it over */
+	if (dt.year != 2000) {
+		t.year = dt.year;
+		t.month = dt.month;
+		t.day = dt.day;
+		t.hour = dt.hour;
+		t.min = dt.minutes;
+		t.sec = dt.seconds;
+		if (dt.dotw < 7)
+			t.dotw = dt.dotw;
+		else
+			t.dotw = 0;
+	}
+
 	lcd_brightness(brightness);
 	lcd_set_rotated(rotated);
 	rtc_set_datetime(&t);
