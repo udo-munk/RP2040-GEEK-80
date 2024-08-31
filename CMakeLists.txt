@@ -97,7 +97,9 @@ target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unused-parameter)
 target_link_libraries(${PROJECT_NAME}
 	hardware_adc
 	hardware_spi
+	hardware_i2c
 	pico_multicore
+	pico-ds3231
 	pico_stdlib
 	stdio_msc_usb
 	tinyusb_device
@@ -106,8 +108,6 @@ target_link_libraries(${PROJECT_NAME}
 	Fonts
 	GUI
 	LCD
-	hardware_i2c
-	pico-ds3231
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
