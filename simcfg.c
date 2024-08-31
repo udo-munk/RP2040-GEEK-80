@@ -130,7 +130,9 @@ void config(void)
 
 	/* Create a real-time clock structure and initiate this */
 	struct ds3231_rtc rtc;
-	ds3231_init(PICO_DEFAULT_I2C, PICO_DEFAULT_I2C_SDA_PIN,
+	//FIXME
+	//ds3231_init(PICO_DEFAULT_I2C_INSTANCE, PICO_DEFAULT_I2C_SDA_PIN,
+	ds3231_init(i2c0, PICO_DEFAULT_I2C_SDA_PIN,
 		    PICO_DEFAULT_I2C_SCL_PIN, &rtc);
 
 	/* A `ds3231_datetime_t` structure holds date and time values. It is */
