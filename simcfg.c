@@ -252,23 +252,32 @@ void config(void)
 
 		case 'a':
 			n = 0;
+			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("weekday", " (0=Sun)", 0, 6)) >= 0) {
 				t.dotw = i;
+				if (i == 0)
+					dt.dotw = 7;
+				else
+					dt.dotw = i;
 				n++;
 			}
 			if ((i = get_int("year", "", 0, 4095)) >= 0) {
 				t.year = i;
+				dt.year = i;
 				n++;
 			}
 			if ((i = get_int("month", "", 1, 12)) >= 0) {
 				t.month = i;
+				dt.month = i;
 				n++;
 			}
 			if ((i = get_int("day", "", 1, 31)) >= 0) {
 				t.day = i;
+				dt.day = i;
 				n++;
 			}
 			if (n > 0) {
+				ds3231_set_datetime(&dt, &rtc);
 				rtc_set_datetime(&t);
 				sleep_us(64);
 			}
@@ -277,19 +286,24 @@ void config(void)
 
 		case 't':
 			n = 0;
+			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("hour", "", 0, 23)) >= 0) {
 				t.hour = i;
+				dt.hour = i;
 				n++;
 			}
 			if ((i = get_int("minute", "", 0, 59)) >= 0) {
 				t.min = i;
+				dt.minutes = i;
 				n++;
 			}
 			if ((i = get_int("second", "", 0, 59)) >= 0) {
 				t.sec = i;
+				dt.seconds = i;
 				n++;
 			}
 			if (n > 0) {
+				ds3231_set_datetime(&dt, &rtc);
 				rtc_set_datetime(&t);
 				sleep_us(64);
 			}
