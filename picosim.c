@@ -47,8 +47,8 @@
 #include "disks.h"
 #include "lcd.h"
 
-#define BS  0x08 /* backspace */
-#define DEL 0x7f /* delete */
+#define BS  0x08 /* ASCII backspace */
+#define DEL 0x7f /* ASCII delete */
 
 /* CPU speed */
 int speed = CPU_SPEED;
@@ -56,6 +56,10 @@ int speed = CPU_SPEED;
 /* initial LCD status display */
 int initial_lcd = LCD_STATUS_REGISTERS;
 
+/*
+ * callback for TinyUSB when terminal sends a break
+ * stops CPU
+ */
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 {
