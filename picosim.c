@@ -27,6 +27,8 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "hardware/adc.h"
+#include "hardware/uart.h"
+#include "hardware/watchdog.h"
 
 #include "hw_config.h"
 #include "rtc.h"
@@ -146,10 +148,17 @@ int main(void)
 	adc_select_input(4);
 
 	/* when using USB UART wait until it is connected */
+	/* also get out if input on the default UART is available */
+	uart_inst_t *my_uart = uart_default;
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 	lcd_custom_disp(lcd_draw_wait_term);
-	while (!tud_cdc_connected())
+	while (!tud_cdc_connected()) {
+		if (uart_is_readable(my_uart)) {
+			getchar();
+			break;
+		}
 		sleep_ms(100);
+	}
 #endif
 
 	/* print banner */
@@ -195,8 +204,9 @@ int main(void)
 
 	lcd_exit();		/* shutdown LCD */
 
-	stdio_flush();
-	return 0;
+	/* reset machine */
+	watchdog_enable(1, 1);
+	for (;;);
 }
 
 /*
