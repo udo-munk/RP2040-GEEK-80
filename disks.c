@@ -37,7 +37,7 @@ char disks[NUMDISK][DISKLEN]; /* path name for 4 disk images /DISKS80/filename.D
 static FATFS fs; /* FatFs on MicroSD */
 
 /* buffer for disk/memory transfers */
-static unsigned char dsk_buf[SEC_SZ];
+static unsigned char __aligned(4) dsk_buf[SEC_SZ];
 
 /* global variables for access to MicroSD card */
 
