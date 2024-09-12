@@ -27,6 +27,7 @@ specific language governing permissions and limitations under the License.
 #include "my_debug.h"
 #include "sd_card_constants.h"
 #include "sd_regs.h"
+#include "sd_timeouts.h"
 #include "util.h"
 //
 #include "diskio.h" /* Declarations of disk functions */  // Needed for STA_NOINIT, ...
@@ -35,6 +36,10 @@ specific language governing permissions and limitations under the License.
 
 #define TRACE_PRINTF(fmt, args...)
 // #define TRACE_PRINTF printf
+
+#ifdef NDEBUG 
+#  pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
 
 static bool driver_initialized;
 
