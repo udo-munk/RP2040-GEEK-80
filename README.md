@@ -41,3 +41,5 @@ Into the CODE80 directory copy all the .bin files from src-examples.
 Into the DISKS80 directory copy the disk images from disks.
 CONF80 is used to save the configuration, nothing more to do there,
 the directory must exist though.
+
+![image](https://github.com/udo-munk/RP2040-GEEK-80/blob/main/resources/RTC.png "battery backed RTC")
