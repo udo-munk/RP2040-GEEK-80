@@ -1,6 +1,6 @@
 # z80pack on RP2040-GEEK
 
-While looking arround for RP2040 based systems that can easily be
+While looking around for RP2040 based systems that can easily be
 used by those who don't want to tinker with the hardware, I found this:
 
 [Waveshare RP2040-GEEK product page](https://www.waveshare.com/rp2040-geek.htm) and
@@ -41,5 +41,8 @@ Into the CODE80 directory copy all the .bin files from src-examples.
 Into the DISKS80 directory copy the disk images from disks.
 CONF80 is used to save the configuration, nothing more to do there,
 the directory must exist though.
+
+I also attached an optional battery backed RTC to the I2C port, so that I don't
+have to update date/time information my self anymore:
 
 ![image](https://github.com/udo-munk/RP2040-GEEK-80/blob/main/resources/RTC.png "battery backed RTC")
