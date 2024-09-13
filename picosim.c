@@ -148,9 +148,19 @@ int main(void)
 	adc_select_input(4);
 
 	/* when using USB UART wait until it is connected */
+	/* but also get out if there is input at default UART */
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 	lcd_custom_disp(lcd_draw_wait_term);
 	while (!tud_cdc_connected()) {
+#if LIB_PICO_STDIO_UART
+		// doesn't work, UART sometimes is readable even
+		// if nothing is connected
+		//uart_inst_t *my_uart = uart_default;
+		//if (uart_is_readable(my_uart)) {
+		//	getchar();
+		//	break;
+		//}
+#endif
 		sleep_ms(100);
 	}
 #endif

@@ -165,20 +165,24 @@ void config(void)
 			t.dotw = 0;
 	}
 
-	lcd_brightness(brightness);
-	lcd_set_rotated(rotated);
 	rtc_set_datetime(&t);
 	sleep_us(64);
+
+	lcd_brightness(brightness);
+	lcd_set_rotated(rotated);
+
 	menu = 1;
+
+	/* drop first random character after connecting terminal */
+	getchar_timeout_us(1);
 
 	while (!go_flag) {
 		if (menu) {
-			if (rtc_get_datetime(&t)) {
-				printf("Current time: %s %04d-%02d-%02d "
-				       "%02d:%02d:%02d\n", dotw[t.dotw],
-				       t.year, t.month, t.day,
-				       t.hour, t.min, t.sec);
-			}
+			rtc_get_datetime(&t);
+			printf("Current time: %s %04d-%02d-%02d "
+			       "%02d:%02d:%02d\n", dotw[t.dotw],
+			       t.year, t.month, t.day,
+			       t.hour, t.min, t.sec);
 			printf("b - LCD brightness: %d\n", brightness);
 			printf("m - rotate LCD\n");
 			printf("l - LCD status display: ");
@@ -252,6 +256,7 @@ void config(void)
 
 		case 'a':
 			n = 0;
+			rtc_get_datetime(&t);
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("weekday", " (0=Sun)", 0, 6)) >= 0) {
 				t.dotw = i;
@@ -286,6 +291,7 @@ void config(void)
 
 		case 't':
 			n = 0;
+			rtc_get_datetime(&t);
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("hour", "", 0, 23)) >= 0) {
 				t.hour = i;
