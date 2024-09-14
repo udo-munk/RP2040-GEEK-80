@@ -42,7 +42,14 @@ Into the DISKS80 directory copy the disk images from disks.
 CONF80 is used to save the configuration, nothing more to do there,
 the directory must exist though.
 
-I also attached an optional battery backed RTC to the I2C port, so that I don't
-have to update date/time information my self anymore:
+I also attached a battery backed RTC to the I2C port, so that I don't
+have to update date/time information my self anymore. This is optional,
+the firmware will check if such a device is available, and if found use
+time/date informations from it.
 
 ![image](https://github.com/udo-munk/RP2040-GEEK-80/blob/main/resources/RTC.png "battery backed RTC")
+
+In the latest build the serial UART is enabled, so that one can connect
+a terminal. I tested this with connecting a Pico probe to the UART.
+
+![image]https://github.com/udo-munk/RP2040-GEEK-80/blob/main/resources/terminal.jpg "Pico probe terminal")
