@@ -52,4 +52,4 @@ time/date informations from it.
 In the latest build the serial UART is enabled, so that one can connect
 a terminal. I tested this with connecting a Pico probe to the UART.
 
-![image]https://github.com/udo-munk/RP2040-GEEK-80/blob/main/resources/terminal.jpg "Pico probe terminal")
+![image](https://github.com/udo-munk/RP2040-GEEK-80/blob/main/resources/terminal.jpg "Pico probe terminal")
