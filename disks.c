@@ -41,40 +41,10 @@ static unsigned char __aligned(4) dsk_buf[SEC_SZ];
 
 /* global variables for access to MicroSD card */
 
-/*
- * In the RP2024-GEEK the MicroSD card is connected to the MCU GPIO's
- * so that it either can be accessed with SPI or with SDIO. First it
- * was tested with SPI and then with SDIO, which is active because
- * data transfers are faster.
- */
-
-#if 0
-/* Configuration of RP2040 hardware SPI object */
-static spi_t spi = {
-	.hw_inst = spi0,  /* RP2040 SPI component */
-	.sck_gpio = 18,   /* GPIO number (not Pico pin number) */
-	.mosi_gpio = 19,
-	.miso_gpio = 20,
-	.baud_rate = 12 * 1000 * 1000 /* Actual frequency: 10416666 */
-};
-
-/* SPI Interface */
-static sd_spi_if_t spi_if = {
-	.spi = &spi,  /* Pointer to the SPI driving this card */
-	.ss_gpio = 23 /* The SPI slave select GPIO for this SD card */
-};
-
-/* Configuration of the SD Card socket object */
-static sd_card_t sd_card = {
-	.type = SD_IF_SPI,
-	.spi_if_p = &spi_if /* Pointer to the SPI interface driving this card */
-};
-#endif
-
 /* SDIO Interface */
 static sd_sdio_if_t sdio_if = {
-	.CMD_gpio = 19,
-	.D0_gpio = 20,
+	.CMD_gpio = PICO_SD_CMD_PIN,
+	.D0_gpio = PICO_SD_DAT0_PIN,
 	.baud_rate = 15 * 1000 * 1000 /* 15 MHz */
 };
 
