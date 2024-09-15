@@ -48,7 +48,7 @@
 #endif
 
 #ifndef USBD_PRODUCT
-#define USBD_PRODUCT "GEEK"
+#define USBD_PRODUCT "RP2040-GEEK"
 #endif
 
 #define TUD_RPI_RESET_DESC_LEN  9
