@@ -34,7 +34,7 @@ uint DEV_pwm_slice_num;
 void DEV_Module_Init(void)
 {
 	/* SPI Config */
-	spi_init(DEV_SPI_PORT, 40 * 1000 * 1000);
+	spi_init(DEV_SPI_PORT, 125 * 1000 * 1000 / 4); /* 31.25 MHz */
 	gpio_set_function(WAVESHARE_RP2040_LCD_SCLK_PIN, GPIO_FUNC_SPI);
 	gpio_set_function(WAVESHARE_RP2040_LCD_TX_PIN, GPIO_FUNC_SPI);
 
