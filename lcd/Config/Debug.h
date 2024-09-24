@@ -3,8 +3,6 @@
 * | Author	:
 * | Function	:	debug with printf
 * | Info	:
-*   Image scanning
-*      Please use progressive scanning to generate images or fonts
 *----------------
 * | This version:   V2.0
 * | Date	:   2018-10-30
