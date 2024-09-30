@@ -45,7 +45,8 @@ static unsigned char __aligned(4) dsk_buf[SEC_SZ];
 static sd_sdio_if_t sdio_if = {
 	.CMD_gpio = PICO_SD_CMD_PIN,
 	.D0_gpio = PICO_SD_DAT0_PIN,
-	.baud_rate = 15 * 1000 * 1000 /* 15 MHz */
+	//.baud_rate = 15 * 1000 * 1000 /* 15 MHz */
+	.baud_rate = 125 * 1000 * 1000 / 6  /* 20.833333 MHz */
 };
 
 /* Configuration of the SD Card socket object */
