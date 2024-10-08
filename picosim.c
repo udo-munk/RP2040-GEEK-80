@@ -26,6 +26,7 @@
 #endif
 #include "pico/stdlib.h"
 #include "pico/time.h"
+#include "pico/binary_info.h"
 #include "hardware/adc.h"
 #include "hardware/uart.h"
 #include "hardware/watchdog.h"
@@ -128,6 +129,9 @@ static void lcd_draw_wait_term(int first_flag)
 
 int main(void)
 {
+	bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN,
+				   PICO_DEFAULT_I2C_SCL_PIN,
+				   GPIO_FUNC_I2C));
 	char s[2];
 
 	stdio_init_all();	/* initialize stdio */
