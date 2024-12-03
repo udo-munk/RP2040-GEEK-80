@@ -79,6 +79,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	# see: https://github.com/raspberrypi/usb-pid
 	USBD_VID=0x2E8A
 	USBD_PID=0x1095
+	USBD_MANUFACTURER="Z80pack"
+	USBD_PRODUCT="RP2040-GEEK"
 )
 
 # compiler diagnostic options
