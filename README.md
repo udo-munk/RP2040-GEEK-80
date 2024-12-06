@@ -19,7 +19,7 @@ Then clone the GitHub repositories:
 
 To build the application:
 ```
-cd RP2040-GEEK-80
+cd RP2040-GEEK-80/srcsim
 mkdir build
 cd build
 cmake .. -G "Unix Makefiles"
