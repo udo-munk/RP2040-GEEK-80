@@ -281,7 +281,7 @@ static void __no_inline_not_in_flash_func(draw_bitmap)(const uint8_t *bitmap,
 		m = 0x80;
 		for (i = 0; i < width; i++) {
 			if (*bitmap & m)
-				Paint_FastPixel(x, y, BRRED);
+				Paint_FastPixel(x, y, GRAY);
 			if ((m >>= 1) == 0) {
 				m = 0x80;
 				bitmap++;
