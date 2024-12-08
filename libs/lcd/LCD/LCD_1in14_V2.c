@@ -37,11 +37,11 @@ parameter:
 ******************************************************************************/
 static void LCD_1IN14_V2_Reset(void)
 {
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_RST_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_RST_PIN, 1);
 	DEV_Delay_ms(100);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_RST_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_RST_PIN, 0);
 	DEV_Delay_ms(100);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_RST_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_RST_PIN, 1);
 	DEV_Delay_ms(100);
 }
 
@@ -52,10 +52,10 @@ parameter:
 ******************************************************************************/
 static void __not_in_flash_func(LCD_1IN14_V2_SendCommand)(uint8_t Reg)
 {
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 0);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
 	DEV_SPI_WriteByte(Reg);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -65,10 +65,10 @@ parameter:
 ******************************************************************************/
 static void __not_in_flash_func(LCD_1IN14_V2_SendData_8Bit)(uint8_t Data)
 {
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
 	DEV_SPI_WriteByte(Data);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -78,11 +78,11 @@ parameter:
 ******************************************************************************/
 static void __not_in_flash_func(LCD_1IN14_V2_SendData_16Bit)(uint16_t Data)
 {
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
 	DEV_SPI_WriteByte((Data >> 8) & 0xff);
 	DEV_SPI_WriteByte(Data & 0xff);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -286,15 +286,15 @@ void LCD_1IN14_V2_Clear(uint16_t Color)
 	uint16_t j, i;
 
 	LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
 	for (j = 0; j < LCD_1IN14_V2.HEIGHT; j++) {
 		for (i = 0; i < LCD_1IN14_V2.WIDTH; i++) {
 			DEV_SPI_WriteByte(Color >> 8);
 			DEV_SPI_WriteByte(Color & 0xff);
 		}
 	}
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -306,12 +306,12 @@ void __not_in_flash_func(LCD_1IN14_V2_Display)(uint16_t *Image)
 	uint16_t j;
 
 	LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
 	for (j = 0; j < LCD_1IN14_V2.HEIGHT; j++)
 		DEV_SPI_Write_nByte((uint8_t *) &Image[j * LCD_1IN14_V2.WIDTH],
 				    LCD_1IN14_V2.WIDTH * 2);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 1);
 	LCD_1IN14_V2_SendCommand(0x29); /* Display On */
 }
 
@@ -327,11 +327,11 @@ void __not_in_flash_func(LCD_1IN14_V2_Display12)(uint8_t *Image)
 	LCD_1IN14_V2_SendCommand(0x3a); /* Interface Pixel Format */
 	LCD_1IN14_V2_SendData_8Bit(0x03); /* 12-bit */
 	LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
 	for (j = 0; j < LCD_1IN14_V2.HEIGHT; j++)
 		DEV_SPI_Write_nByte(&Image[j * n], n);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 1);
 	LCD_1IN14_V2_SendCommand(0x29); /* Display On */
 	LCD_1IN14_V2_SendCommand(0x3a); /* Interface Pixel Format */
 	LCD_1IN14_V2_SendData_8Bit(0x05); /* 16-bit */
@@ -353,15 +353,15 @@ void LCD_1IN14_V2_DisplayWindows(uint16_t Xstart, uint16_t Ystart,
 	uint16_t j;
 
 	LCD_1IN14_V2_SetWindows(Xstart, Ystart, Xend, Yend);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_DC_PIN, 1);
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 0);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
 	Addr = Xstart + Ystart * LCD_1IN14_V2.WIDTH;
 	for (j = Ystart; j < Yend - 1; j++) {
 		DEV_SPI_Write_nByte((uint8_t *) &Image[Addr],
 				    (Xend - Xstart) * 2);
 		Addr += LCD_1IN14_V2.WIDTH;
 	}
-	DEV_Digital_Write(WAVESHARE_RP2040_LCD_CS_PIN, 1);
+	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 1);
 }
 
 /******************************************************************************
