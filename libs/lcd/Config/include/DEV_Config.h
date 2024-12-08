@@ -36,7 +36,7 @@
 #include "hardware/pwm.h"
 #include "pico/time.h"
 
-#define DEV_SPI_PORT (__CONCAT(spi,WAVESHARE_RP2040_LCD_SPI))
+#define DEV_SPI_PORT (__CONCAT(spi,WAVESHARE_GEEK_LCD_SPI))
 
 extern uint DEV_pwm_slice_num;
 
