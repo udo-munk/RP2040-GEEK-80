@@ -22,19 +22,22 @@ void Paint_DrawPoint(uint16_t Xpoint, uint16_t Ypoint, uint16_t Color,
 	}
 
 	if (Dot_Style == DOT_FILL_AROUND) {
-		for (XDir_Num = 0; XDir_Num < 2 * Dot_Pixel - 1; XDir_Num++)
-			for (YDir_Num = 0; YDir_Num < 2 * Dot_Pixel - 1;
+		for (XDir_Num = 0; XDir_Num < 2 * (int16_t) Dot_Pixel - 1;
+		     XDir_Num++)
+			for (YDir_Num = 0;
+			     YDir_Num < 2 * (int16_t) Dot_Pixel - 1;
 			     YDir_Num++) {
-				if (Xpoint + XDir_Num - Dot_Pixel < 0 ||
-				    Ypoint + YDir_Num - Dot_Pixel < 0)
+				if (Xpoint + XDir_Num - (int16_t) Dot_Pixel < 0 ||
+				    Ypoint + YDir_Num - (int16_t) Dot_Pixel < 0)
 					break;
 				Paint_SetPixel(Xpoint + XDir_Num - Dot_Pixel,
 					       Ypoint + YDir_Num - Dot_Pixel,
 					       Color);
 			}
 	} else {
-		for (XDir_Num = 0; XDir_Num < Dot_Pixel; XDir_Num++)
-			for (YDir_Num = 0; YDir_Num < Dot_Pixel; YDir_Num++)
+		for (XDir_Num = 0; XDir_Num < (int16_t) Dot_Pixel; XDir_Num++)
+			for (YDir_Num = 0; YDir_Num < (int16_t) Dot_Pixel;
+			     YDir_Num++)
 				Paint_SetPixel(Xpoint + XDir_Num - 1,
 					       Ypoint + YDir_Num - 1,
 					       Color);
