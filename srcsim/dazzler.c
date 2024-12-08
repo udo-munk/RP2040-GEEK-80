@@ -1,5 +1,5 @@
 /*
- * Emulation of Cromemco Dazzler on the RP2040-GEEK LCD
+ * Emulation of Cromemco Dazzler on the RP2040/RP2350-GEEK LCD
  *
  * Copyright (C) 2015-2019 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt

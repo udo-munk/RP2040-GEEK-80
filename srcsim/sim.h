@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2024 by Udo Munk
  *
- * This is the configuration for a Waveshare RP2040-GEEK board
+ * This is the configuration for a Waveshare RP2040/RP2350-GEEK board
  */
 
 #ifndef SIM_INC
