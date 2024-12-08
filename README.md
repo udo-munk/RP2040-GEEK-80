@@ -20,11 +20,11 @@ Then clone the GitHub repositories:
 
 1. clone z80pack: git clone https://github.com/udo-munk/z80pack.git
 2. checkout dev branch: cd z80pack; git checkout dev; cd ..
-3. clone this: git clone https://github.com/udo-munk/RP2040-GEEK-80.git
+3. clone this: git clone https://github.com/udo-munk/RP2xxx-GEEK-80.git
 
 To build the application for the Waveshare RP2040-GEEK:
 ```
-cd RP2040-GEEK-80/srcsim
+cd RP2xxx-GEEK-80/srcsim
 mkdir build
 cd build
 cmake -G "Unix Makefiles" ..
@@ -34,7 +34,7 @@ make -j
 For the Waveshare RP2350-GEEK use (you can also specify rp2350-riscv
 as the platform if you have the appropriate RISC-V toolchain installed):
 ```
-cd RP2040-GEEK-80/srcsim
+cd RP2xxx-GEEK-80/srcsim
 mkdir build
 cd build
 cmake -D PICO_PLATFORM=rp2350-arm-s -G "Unix Makefiles" ..
@@ -63,9 +63,9 @@ have to update date/time information my self anymore. This is optional,
 the firmware will check if such a device is available, and if found use
 time/date informations from it.
 
-![image](https://github.com/udo-munk/RP2040-GEEK-80/blob/main/resources/RTC.png "battery backed RTC")
+![image](https://github.com/udo-munk/RP2xxx-GEEK-80/blob/main/resources/RTC.png "battery backed RTC")
 
 In the latest build the serial UART is enabled, so that one can connect
 a terminal. I tested this with connecting a Pico probe to the UART.
 
-![image](https://github.com/udo-munk/RP2040-GEEK-80/blob/main/resources/terminal.jpg "Pico probe terminal")
+![image](https://github.com/udo-munk/RP2xxx-GEEK-80/blob/main/resources/terminal.jpg "Pico probe terminal")
