@@ -1,10 +1,15 @@
-# z80pack on RP2040-GEEK
+# z80pack on Waveshare RP2040-GEEK/RP2350-GEEK
 
 While looking around for RP2040 based systems that can easily be
 used by those who don't want to tinker with the hardware, I found this:
 
 [Waveshare RP2040-GEEK product page](https://www.waveshare.com/rp2040-geek.htm) and
 [Waveshare RP2040-GEEK Wiki](https://www.waveshare.com/wiki/RP2040-GEEK)
+
+and recently this:
+
+[Waveshare RP2350-GEEK product page](https://www.waveshare.com/rp2350-geek.htm) and
+[Waveshare RP2350-GEEK Wiki](https://www.waveshare.com/wiki/RP2350-GEEK)
 
 To build z80pack for this device you need to have the SDK for RP2040-based
 devices installed and configured. The SDK manual has detailed instructions
@@ -17,17 +22,28 @@ Then clone the GitHub repositories:
 2. checkout dev branch: cd z80pack; git checkout dev; cd ..
 3. clone this: git clone https://github.com/udo-munk/RP2040-GEEK-80.git
 
-To build the application:
+To build the application for the Waveshare RP2040-GEEK:
 ```
 cd RP2040-GEEK-80/srcsim
 mkdir build
 cd build
-cmake .. -G "Unix Makefiles"
-make
+cmake -G "Unix Makefiles" ..
+make -j
 ```
 
-If you don't want to build it your self, directory flash contains the
-current build. Flash picosim.uf2 into the device, and then prepare a
+For the Waveshare RP2350-GEEK use (you can also specify rp2350-riscv
+as the platform if you have the appropriate RISC-V toolchain installed):
+```
+cd RP2040-GEEK-80/srcsim
+mkdir build
+cd build
+cmake -D PICO_PLATFORM=rp2350-arm-s -G "Unix Makefiles" ..
+make -j
+```
+
+If you don't want to build it yourself, the directories flash-rp2040,
+flash-rp2350-arm-s, and flash-rp2350-riscv contain the
+current build. Flash `picosim.uf2` into the device, and then prepare a
 MicroSD card.
 
 In the root directory of the card create these directories:

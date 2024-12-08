@@ -856,7 +856,9 @@ static void __not_in_flash_func(lcd_task)(void)
 		// printf("SLEEP %lld\n", LCD_REFRESH_US - d);
 		if (d < LCD_REFRESH_US)
 			sleep_us(LCD_REFRESH_US - d);
+#if 0
 		else
 			puts("REFRESH!");
+#endif
 	}
 }
