@@ -169,6 +169,7 @@ void config(void)
 	}
 
 	ts.tv_sec = mktime(&t);
+	ts.tv_nsec = 0;
 	aon_timer_start(&ts);
 
 	lcd_brightness(brightness);
