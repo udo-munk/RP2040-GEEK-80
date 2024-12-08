@@ -2,13 +2,13 @@ File picosim.uf2 family ID 'rp2040':
 
 Program Information
  name:              z80pack picosim
- version:           1.3
- web site:          https://github.com/udo-munk/RP2040-GEEK-80
+ version:           1.4
+ web site:          https://github.com/udo-munk/RP2xxx-GEEK-80
  description:       z80pack on Waveshare RP2040-GEEK
  features:          UART stdin / stdout
                     USB stdin / stdout
  binary start:      0x10000000
- binary end:        0x1004aae0
+ binary end:        0x1004a7dc
 
 Fixed Pin Information
  4:                 UART1 TX

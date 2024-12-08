@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  *
- * This is the main program for a RP2040-GEEK board,
+ * This is the main program for a RP2040/RP2350-GEEK board,
  * substitutes z80core/simmain.c
  *
  * History:
@@ -16,6 +16,7 @@
  * 13-JUN-2024 ported to RP2040-GEEK
  * 15-JUN-2024 added access to RP2040-GEEK LCD display
  * 24-JUN-2024 added emulation of Cromemco Dazzler
+ * 08-DEC-2024 ported to RP2350-GEEK
  */
 
 /* Raspberry SDK and FatFS includes */
@@ -81,7 +82,11 @@ typedef struct banner {
 
 static const banner_t banner[] = {
 	{ "Z80pack " RELEASE, GREEN },
+#if PICO_RP2040
 	{ "RP2040-GEEK " USR_REL, RED },
+#else
+	{ "RP2350-GEEK " USR_REL, RED },
+#endif
 	{ "by Udo Munk &", WHITE },
 	{ "Thomas Eberhardt", WHITE }
 };
