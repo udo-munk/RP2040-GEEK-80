@@ -20,10 +20,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "hardware/rtc.h"
+#include <time.h>
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
+#include "pico/aon_timer.h"
 
 #include "ff.h"
 #include "ds3231.h"
@@ -85,7 +86,7 @@ static int get_int(const char *prompt, const char *hint,
  */
 void config(void)
 {
-	const char *cfg = "/CONF80/GEEK80.DAT";
+	const char *cfg = "/CONF80/" CONF_FILE;
 	const char *cpath = "/CODE80";
 	const char *cext = "*.BIN";
 	const char *dpath = "/DISKS80";
@@ -94,10 +95,12 @@ void config(void)
 	unsigned int br;
 	int go_flag = 0, brightness = 90, rotated = 0;
 	int i, n, menu;
-	datetime_t t = { .year = 2024, .month = 6, .day = 13, .dotw = 4,
-			.hour = 20, .min = 27, .sec = 53 };
+	struct tm t = { .tm_year = 124, .tm_mon = 0, .tm_mday = 1,
+			.tm_wday = 1, .tm_hour = 0, .tm_min = 0, .tm_sec = 0,
+			.tm_isdst = -1 };
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
+	struct timespec ts;
 	UNUSED(DS3231_MONTHS);
 	UNUSED(DS3231_WDAYS);
 
@@ -110,7 +113,7 @@ void config(void)
 		f_read(&sd_file, &brightness, sizeof(brightness), &br);
 		f_read(&sd_file, &rotated, sizeof(rotated), &br);
 		f_read(&sd_file, &initial_lcd, sizeof(initial_lcd), &br);
-		f_read(&sd_file, &t, sizeof(datetime_t), &br);
+		f_read(&sd_file, &t, sizeof(t), &br);
 		f_read(&sd_file, &disks[0], DISKLEN, &br);
 		f_read(&sd_file, &disks[1], DISKLEN, &br);
 		f_read(&sd_file, &disks[2], DISKLEN, &br);
@@ -149,24 +152,24 @@ void config(void)
 	};
 
 	/* Read the date and time from the DS3231 RTC */
-        ds3231_get_datetime(&dt, &rtc);
+	ds3231_get_datetime(&dt, &rtc);
 
 	/* if we read something take it over */
 	if (dt.year != 2000) {
-		t.year = dt.year;
-		t.month = dt.month;
-		t.day = dt.day;
-		t.hour = dt.hour;
-		t.min = dt.minutes;
-		t.sec = dt.seconds;
+		t.tm_year = dt.year - 1900;
+		t.tm_mon = dt.month - 1;
+		t.tm_mday = dt.day;
+		t.tm_hour = dt.hour;
+		t.tm_min = dt.minutes;
+		t.tm_sec = dt.seconds;
 		if (dt.dotw < 7)
-			t.dotw = dt.dotw;
+			t.tm_wday = dt.dotw;
 		else
-			t.dotw = 0;
+			t.tm_wday = 0;
 	}
 
-	rtc_set_datetime(&t);
-	sleep_us(64);
+	ts.tv_sec = mktime(&t);
+	aon_timer_start(&ts);
 
 	lcd_brightness(brightness);
 	lcd_set_rotated(rotated);
@@ -175,11 +178,12 @@ void config(void)
 
 	while (!go_flag) {
 		if (menu) {
-			rtc_get_datetime(&t);
+			aon_timer_get_time(&ts);
+			localtime_r(&ts.tv_sec, &t);
 			printf("Current time: %s %04d-%02d-%02d "
-			       "%02d:%02d:%02d\n", dotw[t.dotw],
-			       t.year, t.month, t.day,
-			       t.hour, t.min, t.sec);
+			       "%02d:%02d:%02d\n", dotw[t.tm_wday],
+			       t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
+			       t.tm_hour, t.tm_min, t.tm_sec);
 			printf("b - LCD brightness: %d\n", brightness);
 			printf("m - rotate LCD\n");
 			printf("l - LCD status display: ");
@@ -253,10 +257,11 @@ void config(void)
 
 		case 'a':
 			n = 0;
-			rtc_get_datetime(&t);
+			aon_timer_get_time(&ts);
+			localtime_r(&ts.tv_sec, &t);
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("weekday", " (0=Sun)", 0, 6)) >= 0) {
-				t.dotw = i;
+				t.tm_wday = i;
 				if (i == 0)
 					dt.dotw = 7;
 				else
@@ -264,51 +269,52 @@ void config(void)
 				n++;
 			}
 			if ((i = get_int("year", "", 0, 4095)) >= 0) {
-				t.year = i;
+				t.tm_year = i - 1900;
 				dt.year = i;
 				n++;
 			}
 			if ((i = get_int("month", "", 1, 12)) >= 0) {
-				t.month = i;
+				t.tm_mon = i - 1;
 				dt.month = i;
 				n++;
 			}
 			if ((i = get_int("day", "", 1, 31)) >= 0) {
-				t.day = i;
+				t.tm_mday = i;
 				dt.day = i;
 				n++;
 			}
 			if (n > 0) {
 				ds3231_set_datetime(&dt, &rtc);
-				rtc_set_datetime(&t);
-				sleep_us(64);
+				ts.tv_sec = mktime(&t);
+				aon_timer_set_time(&ts);
 			}
 			putchar('\n');
 			break;
 
 		case 't':
 			n = 0;
-			rtc_get_datetime(&t);
+			aon_timer_get_time(&ts);
+			localtime_r(&ts.tv_sec, &t);
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("hour", "", 0, 23)) >= 0) {
-				t.hour = i;
+				t.tm_hour = i;
 				dt.hour = i;
 				n++;
 			}
 			if ((i = get_int("minute", "", 0, 59)) >= 0) {
-				t.min = i;
+				t.tm_min = i;
 				dt.minutes = i;
 				n++;
 			}
 			if ((i = get_int("second", "", 0, 59)) >= 0) {
-				t.sec = i;
+				t.tm_sec = i;
 				dt.seconds = i;
 				n++;
 			}
 			if (n > 0) {
 				ds3231_set_datetime(&dt, &rtc);
-				rtc_set_datetime(&t);
-				sleep_us(64);
+				ts.tv_sec = mktime(&t);
+				aon_timer_set_time(&ts);
 			}
 			putchar('\n');
 			break;
@@ -410,7 +416,7 @@ again:
 		f_write(&sd_file, &brightness, sizeof(brightness), &br);
 		f_write(&sd_file, &rotated, sizeof(rotated), &br);
 		f_write(&sd_file, &initial_lcd, sizeof(initial_lcd), &br);
-		f_write(&sd_file, &t, sizeof(datetime_t), &br);
+		f_write(&sd_file, &t, sizeof(t), &br);
 		f_write(&sd_file, &disks[0], DISKLEN, &br);
 		f_write(&sd_file, &disks[1], DISKLEN, &br);
 		f_write(&sd_file, &disks[2], DISKLEN, &br);
