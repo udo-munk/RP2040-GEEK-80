@@ -6,7 +6,7 @@
 
 /*
  *	Image attributes
-*/
+ */
 typedef struct {
 	uint8_t *Image;
 	uint16_t Width;
@@ -32,7 +32,7 @@ extern PAINT Paint;
 
 /*
  *	Display flip
-*/
+ */
 typedef enum {
 	MIRROR_NONE  = 0x00,
 	MIRROR_HORIZONTAL = 0x01,
@@ -83,9 +83,9 @@ typedef enum {
 #define FONT_FOREGROUND	BLACK
 #define FONT_BACKGROUND	WHITE
 
-/**
+/*
  * The size of the point
-**/
+ */
 typedef enum {
 	DOT_PIXEL_1X1 = 1,	/* 1 x 1 */
 	DOT_PIXEL_2X2,		/* 2 x 2 */
@@ -117,7 +117,7 @@ typedef enum {
 
 /*
  *	Whether the graphic is filled
-*/
+ */
 typedef enum {
 	DRAW_FILL_EMPTY = 0,
 	DRAW_FILL_FULL
