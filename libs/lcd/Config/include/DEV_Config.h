@@ -31,6 +31,7 @@
 #define _DEV_CONFIG_H_
 
 #include <stdint.h>
+#include "hardware/clocks.h"
 #include "hardware/gpio.h"
 #include "hardware/spi.h"
 #include "hardware/pwm.h"
