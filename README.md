@@ -11,9 +11,9 @@ and recently this:
 [Waveshare RP2350-GEEK product page](https://www.waveshare.com/rp2350-geek.htm) and
 [Waveshare RP2350-GEEK Wiki](https://www.waveshare.com/wiki/RP2350-GEEK)
 
-To build z80pack for this device you need to have the SDK for RP2040-based
-devices installed and configured. The SDK manual has detailed instructions
-how to install on all major PC platforms, it is available here:
+To build z80pack for this device you need to have the SDK for RP2040/RP2350
+based devices installed and configured. The SDK manual has detailed
+instructions how to install on all major PC platforms, it is available here:
 [Raspberry Pi Pico Documentation](https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html)
 
 Then clone the GitHub repositories:
