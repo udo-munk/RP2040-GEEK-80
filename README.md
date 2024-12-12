@@ -11,6 +11,8 @@ and recently this:
 [Waveshare RP2350-GEEK product page](https://www.waveshare.com/rp2350-geek.htm) and
 [Waveshare RP2350-GEEK Wiki](https://www.waveshare.com/wiki/RP2350-GEEK)
 
+# Building
+
 To build z80pack for this device you need to have the SDK for RP2040/RP2350
 based devices installed and configured. The SDK manual has detailed
 instructions how to install on all major PC platforms, it is available here:
@@ -43,8 +45,9 @@ make -j
 
 If you don't want to build it yourself, the directories flash-rp2040,
 flash-rp2350-arm-s, and flash-rp2350-riscv contain the
-current build. Flash `picosim.uf2` into the device, and then prepare a
-MicroSD card.
+current build, flash `picosim.uf2` into the device.
+
+# Preparing MicroSD card
 
 In the root directory of the card create these directories:
 ```
@@ -58,14 +61,16 @@ Into the DISKS80 directory copy the disk images from disks.
 CONF80 is used to save the configuration, nothing more to do there,
 the directory must exist though.
 
-I also attached a battery backed RTC to the I2C port, so that I don't
+# Optional features
+
+I attached a battery backed RTC to the I2C port, so that I don't
 have to update date/time information my self anymore. This is optional,
 the firmware will check if such a device is available, and if found use
 time/date informations from it.
 
 ![image](https://github.com/udo-munk/RP2xxx-GEEK-80/blob/main/resources/RTC.png "battery backed RTC")
 
-In the latest build the serial UART is enabled, so that one can connect
-a terminal. I tested this with connecting a Pico probe to the UART.
+The serial UART is enabled, so that one can connect a terminal. I tested
+this with connecting a Pico probe to the UART.
 
 ![image](https://github.com/udo-munk/RP2xxx-GEEK-80/blob/main/resources/terminal.jpg "Pico probe terminal")
