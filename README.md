@@ -11,6 +11,20 @@ and recently this:
 [Waveshare RP2350-GEEK product page](https://www.waveshare.com/rp2350-geek.htm) and
 [Waveshare RP2350-GEEK Wiki](https://www.waveshare.com/wiki/RP2350-GEEK)
 
+# Emulation
+
+z80pack on the RP2xxx GEEK devices emulates a Intel 8080 / Zilog Z80 system
+from ca. 1976 with the following components:
+
+- 8080 and Z80 CPU, switchable
+- 112 KB RAM, two banks with 48 KB and a common segment with 16 KB
+- 256 bytes boot ROM with power on jump in upper most memory page
+- MITS Altair 88SIO Rev. 1 for serial communication with a terminal, runs
+  over USB and the serial UART
+- DMA floppy disk controller
+- four standard single density 8" IBM compatible floppy disk drives
+- Cromemco Dazzler graphics board with output on the LCD
+
 # Building
 
 To build z80pack for this device you need to have the SDK for RP2040/RP2350
