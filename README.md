@@ -25,6 +25,33 @@ from ca. 1976 with the following components:
 - four standard single density 8" IBM compatible floppy disk drives
 - Cromemco Dazzler graphics board with output on the LCD
 
+Disk images, standalone programs and virtual machine  configuration are saved
+on a MicroSD card, plugged into the GEEK. It can make the MicroSD card
+available as USB drive on any PC, so the MicroSD can be filled with contents,
+without the need to remove it and stick it into some PC.
+
+The virtual machine can run any standanlone 8080 and Z80 software, like
+MITS BASIC for the Altair 8080, examples are available in directory
+src-examples. With a bootable disk in drive 0 it can run these
+operating systems:
+
+- CP/M 2.2
+- CP/M 3 banked, so with all features enabled
+- UCSD p-System IV
+- FIG Forth 8080 using drive 1 as block device, so true operating system
+
+All implemented operating systems use 8080 instructions only, so it is
+possible to switch CPU's anytime, even 'on the fly'.
+
+The LCD can show several stati of the virtual machine, displays are switched
+with a CP/M program:
+
+- Z80 or 8080 registers
+- frontpanel like IMSAI 8080 with the output LED's
+- memory contents
+
+And of course Cormenco Dazzler.
+
 # Building
 
 To build z80pack for this device you need to have the SDK for RP2040/RP2350
