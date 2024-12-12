@@ -50,7 +50,7 @@ with a CP/M program:
 - frontpanel like IMSAI 8080 with the output LED's
 - memory contents
 
-And of course Cormenco Dazzler.
+And of course Cromemco Dazzler.
 
 # Building
 
