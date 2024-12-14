@@ -15,8 +15,11 @@
 
 #include "sim.h"
 #include "simdefs.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
 
-#ifdef SIMPLEPANEL
+#if defined(SIMPLEPANEL) || defined(BUS_8080)
 #include "simglb.h"
 #endif
 
@@ -35,12 +38,17 @@ extern void init_memory(void), reset_memory(void);
 static inline void memwrt(WORD addr, BYTE data)
 {
 #ifdef BUS_8080
-	cpu_bus &= ~(CPU_WO | CPU_M1 | CPU_MEMR);
+	cpu_bus &= ~(CPU_M1 | CPU_WO | CPU_MEMR);
 #endif
 
 #ifdef SIMPLEPANEL
 	fp_led_address = addr;
 	fp_led_data = data;
+#endif
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr && (hb_mode & HB_WRITE))
+		hb_trig = HB_WRITE;
 #endif
 
 	if ((selbnk == 0) || (addr >= 0xc000)) {
@@ -54,6 +62,18 @@ static inline void memwrt(WORD addr, BYTE data)
 static inline BYTE memrdr(WORD addr)
 {
 	register BYTE data;
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr) {
+		if (cpu_bus & CPU_M1) {
+			if (hb_mode & HB_EXEC)
+				hb_trig = HB_EXEC;
+		} else {
+			if (hb_mode & HB_READ)
+				hb_trig = HB_READ;
+		}
+	}
+#endif
 
 	if ((selbnk == 0) || (addr >= 0xc000))
 		data = bnk0[addr];
