@@ -195,9 +195,9 @@ int main(void)
 
 	PC = 0xff00;		/* power on jump into the boot ROM */
 #ifdef SIMPLEPANEL
-	cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 	fp_led_address = PC;
 	fp_led_data = getmem(PC);
+	cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
 
 	lcd_status_disp(initial_lcd); /* tell LCD task to display status */
