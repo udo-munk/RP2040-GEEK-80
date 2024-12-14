@@ -36,7 +36,9 @@ static char info_line[16];	/* last line in CPU display */
 
 static void lcd_draw_cpu_reg(int first_flag);
 static void lcd_draw_memory(int first_flag);
+#ifdef SIMPLEPANEL
 static void lcd_draw_panel(int first_flag);
+#endif
 static void lcd_task(void);
 
 void lcd_init(void)
