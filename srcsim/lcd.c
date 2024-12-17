@@ -10,7 +10,9 @@
 #include "pico/sync.h"
 #include "pico/time.h"
 #include "hardware/adc.h"
+#if PICO_RP2040
 #include "hardware/divider.h"
+#endif
 
 #include "sim.h"
 #include "simdefs.h"
@@ -311,7 +313,9 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 	BYTE r;
 	char *p;
 	int temp;
+#if PICO_RP2040
 	divmod_result_t res;
+#endif
 	static int cpu_type, counter;
 
 	if (first_flag || (cpu_type != cpu)) {
@@ -538,6 +542,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 			/*                  xx xx   */
 			counter = 0;
 			temp = (int) (read_onboard_temp() * 100.0f + 0.5f);
+#if PICO_RP2040
 			res = hw_divider_divmod_u32(temp, 10);
 			cpu_char20(21, 5, '0' + to_remainder_u32(res), BRRED);
 			res = hw_divider_divmod_u32(to_quotient_u32(res), 10);
@@ -546,6 +551,15 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first_flag)
 			cpu_char20(18, 5, '0' + to_remainder_u32(res), BRRED);
 			res = hw_divider_divmod_u32(to_quotient_u32(res), 10);
 			cpu_char20(17, 5, '0' + to_remainder_u32(res), BRRED);
+#else
+			cpu_char20(21, 5, '0' + temp % 10, BRRED);
+			temp /= 10;
+			cpu_char20(20, 5, '0' + temp % 10, BRRED);
+			temp /= 10;
+			cpu_char20(18, 5, '0' + temp % 10, BRRED);
+			temp /= 10;
+			cpu_char20(17, 5, '0' + temp % 10, BRRED);
+#endif
 		}
 	}
 }
