@@ -80,19 +80,20 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	LCD_COLOR_DEPTH=12
 	# LCD refresh rate in Hz (30 works well with 12-bit frame buffer)
 	LCD_REFRESH=30
-	# the official VID/PID assigned to RP2040-GEEK-80 from Raspberry Pi
-	# see: https://github.com/raspberrypi/usb-pid
-	USBD_VID=0x2E8A
-	USBD_PID=0x1095
 	USBD_MANUFACTURER="Z80pack"
 )
 if(PICO_RP2040)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE
+		#USBD_PID=0x1056 # Waveshare RP2040-GEEK
+		# the official PID assigned to RP2040-GEEK-80 from Raspberry Pi
+		# see: https://github.com/raspberrypi/usb-pid
+		USBD_PID=0x1095
 		USBD_PRODUCT="RP2040-GEEK"
 		CONF_FILE="GEEK2040.DAT"
 	)
 else()
 	target_compile_definitions(${PROJECT_NAME} PRIVATE
+		USBD_PID=0x10B6 # Waveshare RP2350-GEEK
 		USBD_PRODUCT="RP2350-GEEK"
 		CONF_FILE="GEEK2350.DAT"
 	)
