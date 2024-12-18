@@ -50,7 +50,7 @@ extern void LCD_1IN14_V2_Init(uint8_t Scan_dir);
 extern void LCD_1IN14_V2_Exit(void);
 extern void LCD_1IN14_V2_SetRotated(uint8_t Rotated);
 extern void LCD_1IN14_V2_Clear(uint16_t Color);
-extern void LCD_1IN14_V2_Display(uint16_t *Image);
+extern void LCD_1IN14_V2_Display16(uint8_t *Image);
 extern void LCD_1IN14_V2_Display12(uint8_t *Image);
 extern void LCD_1IN14_V2_DisplayWindows(uint16_t Xstart, uint16_t Ystart,
 					uint16_t Xend, uint16_t Yend,

@@ -6,8 +6,9 @@ target_include_directories(lcd-Config INTERFACE
 
 target_link_libraries(lcd-Config INTERFACE
 	pico_stdlib
-	hardware_spi
 	hardware_pwm
+	hardware_spi
+	hardware_sync
 )
 
 target_sources(lcd-Config INTERFACE

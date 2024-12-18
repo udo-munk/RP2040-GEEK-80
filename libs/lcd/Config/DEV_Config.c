@@ -29,17 +29,37 @@
 
 #include "DEV_Config.h"
 
-uint DEV_pwm_slice_num;
+uint DEV_DMA_Channel;
+bool DEV_DMA_Done;
+void (*DEV_DMA_Done_Func)(void);
+uint DEV_PWM_Slice_Num;
+
+static void __not_in_flash_func(DEV_DMA_IRQ_Handler)(void)
+{
+	if (!DEV_DMA_Done) { /* is there an active transfer from us? */
+		if (DEV_DMA_IRQ == DMA_IRQ_0)
+			dma_channel_acknowledge_irq0(DEV_DMA_Channel);
+		else
+			dma_channel_acknowledge_irq1(DEV_DMA_Channel);
+		DEV_DMA_Done = true;
+		if (DEV_DMA_Done_Func != NULL) {
+			(*DEV_DMA_Done_Func)();
+			DEV_DMA_Done_Func = NULL;
+		}
+	}
+}
 
 void DEV_Module_Init(void)
 {
-	/* SPI Config */
-	/* 31.25 MHz on 125 MHz RP2040, 37.5 MHz on 150 MHz RP2350 */
-	spi_init(DEV_SPI_PORT, clock_get_hz(clk_sys) / 4);
+	dma_channel_config c;
+
+	/* SPI Config for LCD */
+	/* 41.67 MHz on 125 MHz RP2040, 50 MHz on 150 MHz RP2350 */
+	spi_init(DEV_SPI_PORT, clock_get_hz(clk_sys) / 3);
 	gpio_set_function(WAVESHARE_GEEK_LCD_SCLK_PIN, GPIO_FUNC_SPI);
 	gpio_set_function(WAVESHARE_GEEK_LCD_TX_PIN, GPIO_FUNC_SPI);
 
-	/* GPIO Config */
+	/* GPIO Config for LCD */
 	gpio_init(WAVESHARE_GEEK_LCD_RST_PIN);
 	gpio_set_dir(WAVESHARE_GEEK_LCD_RST_PIN, GPIO_OUT);
 	gpio_init(WAVESHARE_GEEK_LCD_DC_PIN);
@@ -52,18 +72,43 @@ void DEV_Module_Init(void)
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 0);
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_BL_PIN, 1);
 
-	/* PWM Config */
+	/* PWM Config for backlight */
 	gpio_set_function(WAVESHARE_GEEK_LCD_BL_PIN, GPIO_FUNC_PWM);
-	DEV_pwm_slice_num = pwm_gpio_to_slice_num(WAVESHARE_GEEK_LCD_BL_PIN);
-	pwm_set_wrap(DEV_pwm_slice_num, 100);
-	pwm_set_chan_level(DEV_pwm_slice_num, PWM_CHAN_B, 1);
-	pwm_set_clkdiv(DEV_pwm_slice_num, 50);
-	pwm_set_enabled(DEV_pwm_slice_num, true);
+	DEV_PWM_Slice_Num = pwm_gpio_to_slice_num(WAVESHARE_GEEK_LCD_BL_PIN);
+	pwm_set_wrap(DEV_PWM_Slice_Num, 100);
+	pwm_set_chan_level(DEV_PWM_Slice_Num, PWM_CHAN_B, 1);
+	pwm_set_clkdiv(DEV_PWM_Slice_Num, 50);
+	pwm_set_enabled(DEV_PWM_Slice_Num, true);
+
+	/* DMA Config for framebuffer transfer */
+	DEV_DMA_Done = true;
+	DEV_DMA_Done_Func = NULL;
+	DEV_DMA_Channel = dma_claim_unused_channel(true);
+	c = dma_channel_get_default_config(DEV_DMA_Channel);
+	channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+	channel_config_set_dreq(&c, spi_get_dreq(DEV_SPI_PORT, true));
+	dma_channel_set_config(DEV_DMA_Channel, &c, false);
+	dma_channel_set_write_addr(DEV_DMA_Channel,
+				   &spi_get_hw(DEV_SPI_PORT)->dr, false);
+	if (DEV_DMA_IRQ == DMA_IRQ_0)
+		dma_channel_set_irq0_enabled(DEV_DMA_Channel, true);
+	else
+		dma_channel_set_irq1_enabled(DEV_DMA_Channel, true);
+	irq_add_shared_handler(DEV_DMA_IRQ, DEV_DMA_IRQ_Handler,
+			       PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
+	irq_set_enabled(DEV_DMA_IRQ, true);
 }
 
 void DEV_Module_Exit(void)
 {
-	pwm_set_enabled(DEV_pwm_slice_num, false);
+	DEV_Wait_DMA_Done();
+
+	irq_set_enabled(DEV_DMA_IRQ, false);
+	irq_remove_handler(DEV_DMA_IRQ, DEV_DMA_IRQ_Handler);
+	dma_channel_cleanup(DEV_DMA_Channel); /* also disables interrupt */
+	dma_channel_unclaim(DEV_DMA_Channel);
+
+	pwm_set_enabled(DEV_PWM_Slice_Num, false);
 	gpio_deinit(WAVESHARE_GEEK_LCD_BL_PIN);
 
 	gpio_deinit(WAVESHARE_GEEK_LCD_DC_PIN);

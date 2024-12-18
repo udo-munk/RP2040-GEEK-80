@@ -25,39 +25,27 @@
 #if LCD_COLOR_DEPTH == 12
 static uint8_t img[LCD_1IN14_V2_HEIGHT * ((LCD_1IN14_V2_WIDTH + 1) / 2) * 3];
 #else
-static uint16_t img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH];
+static uint8_t img[LCD_1IN14_V2_HEIGHT * LCD_1IN14_V2_WIDTH * 2];
 #endif
 
 static mutex_t lcd_mutex;
 static volatile lcd_func_t lcd_draw_func;
 static volatile lcd_func_t lcd_status_func;
 static volatile int lcd_shows_status;
-static volatile int lcd_task_busy;
+static volatile int lcd_task_done;
 
 static char info_line[16];	/* last line in CPU display */
 
+static void lcd_task(void);
+static void lcd_draw_empty(int first_flag);
 static void lcd_draw_cpu_reg(int first_flag);
 static void lcd_draw_memory(int first_flag);
 #ifdef SIMPLEPANEL
 static void lcd_draw_panel(int first_flag);
 #endif
-static void lcd_task(void);
 
 void lcd_init(void)
 {
-	/* initialize LCD device */
-	/* set orientation, x = 240 width and y = 135 height */
-	LCD_1IN14_V2_Init(LCD_HORIZONTAL);
-
-	/* use this image memory */
-	Paint_NewImage((uint8_t *) &img[0], LCD_1IN14_V2.WIDTH,
-		       LCD_1IN14_V2.HEIGHT, 0, WHITE);
-
-	/* with this depth */
-	Paint_SetDepth(LCD_COLOR_DEPTH);
-
-	/* 0,0 is upper left corner */
-	Paint_SetRotate(ROTATE_0);
 
 	/* initialize here to not waste time in draw function */
 	snprintf(info_line, sizeof(info_line), "Z80pack %s", USR_REL);
@@ -65,30 +53,92 @@ void lcd_init(void)
 	mutex_init(&lcd_mutex);
 
 	lcd_status_func = lcd_draw_cpu_reg;
+	lcd_draw_func = lcd_draw_empty;
+	lcd_task_done = 0;
 
-	/* launch LCD draw & refresh task */
+	/* launch LCD task on other core */
 	multicore_launch_core1(lcd_task);
 }
 
 void lcd_exit(void)
 {
-	/* tell LCD refresh task to stop drawing */
+	/* tell LCD refresh task to finish */
 	lcd_custom_disp(NULL);
+
 	/* wait until it stopped */
-	while (lcd_task_busy)
+	while (!lcd_task_done)
 		sleep_ms(20);
 
 	/* kill LCD refresh task and reset core 1 */
 	multicore_reset_core1();
+}
 
+#define LCD_REFRESH_US (1000000 / LCD_REFRESH)
+
+static void __not_in_flash_func(lcd_task)(void)
+{
+	absolute_time_t t;
+	int first_flag = 1;
+	int64_t d;
+	lcd_func_t curr_func = NULL;
+
+	/* initialize LCD device */
+	/* set orientation, x = 240 width and y = 135 height */
+	LCD_1IN14_V2_Init(LCD_HORIZONTAL);
+
+	/* use this image memory */
+	Paint_NewImage(img, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT, 0, WHITE);
+
+	/* with this depth */
+	Paint_SetDepth(LCD_COLOR_DEPTH);
+
+	/* 0,0 is upper left corner */
+	Paint_SetRotate(ROTATE_0);
+
+	while (1) {
+		/* loops every LCD_REFRESH_US */
+
+		t = get_absolute_time();
+
+		if (lcd_draw_func == NULL)
+			break;
+
+		if (curr_func != lcd_draw_func) {
+			curr_func = lcd_draw_func;
+			first_flag = 1;
+		}
+		(*curr_func)(first_flag);
+		first_flag = 0;
+		mutex_enter_blocking(&lcd_mutex);
+#if LCD_COLOR_DEPTH == 12
+		LCD_1IN14_V2_Display12(Paint.Image);
+#else
+		LCD_1IN14_V2_Display16(Paint.Image);
+#endif
+		mutex_exit(&lcd_mutex);
+
+		d = absolute_time_diff_us(t, get_absolute_time());
+		// printf("SLEEP %lld\n", LCD_REFRESH_US - d);
+		if (d < LCD_REFRESH_US)
+			sleep_us(LCD_REFRESH_US - d);
+#if 0
+		else
+			puts("REFRESH!");
+#endif
+	}
+
+	mutex_enter_blocking(&lcd_mutex);
 	LCD_1IN14_V2_Exit();
+	mutex_exit(&lcd_mutex);
+	lcd_task_done = 1;
+
+	while (1)
+		__wfi();
 }
 
 void lcd_brightness(int brightness)
 {
-	mutex_enter_blocking(&lcd_mutex);
 	LCD_1IN14_V2_SetBacklight((uint8_t) brightness);
-	mutex_exit(&lcd_mutex);
 }
 
 void lcd_set_rotated(int rotated)
@@ -147,6 +197,12 @@ void lcd_status_next(void)
 	}
 }
 
+static void lcd_draw_empty(int first_flag)
+{
+	if (first_flag)
+		Paint_Clear(BLACK);
+}
+
 /*
  *	CPU status displays:
  *
@@ -188,6 +244,11 @@ void lcd_status_next(void)
 #define YOFF28	0	/* y pixel offset of text coordinate grid for Font28 */
 #define SPC28	1	/* vertical spacing for Font28 */
 
+/*
+ * Attribute used to disable cloning of __no_inline_not_in_flash functions
+ * with constant arguments at high optimization levels.
+ * Reduces RAM usage dramatically.
+ */
 #ifndef __noclone
 #define __noclone	__attribute__((__noclone__))
 #endif
@@ -822,59 +883,3 @@ static void __not_in_flash_func(lcd_draw_panel)(int first_flag)
 }
 
 #endif /* SIMPLEPANEL */
-
-static void __not_in_flash_func(lcd_refresh)(void)
-{
-	mutex_enter_blocking(&lcd_mutex);
-#if LCD_COLOR_DEPTH == 12
-	LCD_1IN14_V2_Display12(&img[0]);
-#else
-	LCD_1IN14_V2_Display(&img[0]);
-#endif
-	mutex_exit(&lcd_mutex);
-}
-
-#define LCD_REFRESH_US (1000000 / LCD_REFRESH)
-
-static void __not_in_flash_func(lcd_task)(void)
-{
-	absolute_time_t t;
-	int64_t d;
-	static lcd_func_t curr_func;
-
-	while (1) {
-		/* loops every LCD_REFRESH_US */
-
-		t = get_absolute_time();
-
-		if (curr_func != lcd_draw_func) {
-			curr_func = lcd_draw_func;
-			/* new draw function */
-			if (curr_func == NULL) {
-				/* new function is NULL, clear screen,
-				   and refresh one last time */
-				Paint_Clear(BLACK);
-				lcd_refresh();
-				lcd_task_busy = 0;
-			} else {
-				/* new function, call with parameter 1 to
-				   mark the first call */
-				lcd_task_busy = 1;
-				(*curr_func)(1);
-				lcd_refresh();
-			}
-		} else if (curr_func != NULL) {
-			(*curr_func)(0);
-			lcd_refresh();
-		}
-
-		d = absolute_time_diff_us(t, get_absolute_time());
-		// printf("SLEEP %lld\n", LCD_REFRESH_US - d);
-		if (d < LCD_REFRESH_US)
-			sleep_us(LCD_REFRESH_US - d);
-#if 0
-		else
-			puts("REFRESH!");
-#endif
-	}
-}
