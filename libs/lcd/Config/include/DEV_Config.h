@@ -32,14 +32,20 @@
 
 #include <stdint.h>
 #include "hardware/clocks.h"
+#include "hardware/dma.h"
 #include "hardware/gpio.h"
-#include "hardware/spi.h"
 #include "hardware/pwm.h"
+#include "hardware/spi.h"
+#include "hardware/sync.h"
 #include "pico/time.h"
 
-#define DEV_SPI_PORT (__CONCAT(spi,WAVESHARE_GEEK_LCD_SPI))
+#define DEV_SPI_PORT	(__CONCAT(spi,WAVESHARE_GEEK_LCD_SPI))
+#define DEV_DMA_IRQ	(DMA_IRQ_1)
 
-extern uint DEV_pwm_slice_num;
+extern uint DEV_DMA_Channel;
+extern bool DEV_DMA_Done;
+extern void (*DEV_DMA_Done_Func)(void);
+extern uint DEV_PWM_Slice_Num;
 
 /*---------------------------------------------------------------------------*/
 
@@ -69,6 +75,23 @@ static inline void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
 	spi_write_blocking(DEV_SPI_PORT, pData, Len);
 }
 
+static inline void DEV_SPI_Write_DMA(uint8_t *pData, uint32_t Len,
+				     void (*Done_Func)(void))
+{
+	DEV_DMA_Done = false;
+	DEV_DMA_Done_Func = Done_Func;
+	dma_channel_transfer_from_buffer_now(DEV_DMA_Channel, pData, Len);
+}
+
+/*
+ *	Wait for DMA transfer to finish
+ */
+static inline void DEV_Wait_DMA_Done(void)
+{
+	while (!DEV_DMA_Done)
+		__wfi();
+}
+
 /*
  *	Delay x ms
  */
@@ -83,7 +106,7 @@ static inline void DEV_Delay_ms(uint32_t xms)
 static inline void DEV_Set_PWM(uint8_t Value)
 {
 	if (Value <= 100)
-		pwm_set_chan_level(DEV_pwm_slice_num, PWM_CHAN_B, Value);
+		pwm_set_chan_level(DEV_PWM_Slice_Num, PWM_CHAN_B, Value);
 }
 
 extern void DEV_Module_Init(void);

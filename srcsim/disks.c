@@ -45,6 +45,7 @@ static unsigned char __aligned(4) dsk_buf[SEC_SZ];
 static sd_sdio_if_t sdio_if = {
 	.CMD_gpio = PICO_SD_CMD_PIN,
 	.D0_gpio = PICO_SD_DAT0_PIN,
+	.DMA_IRQ_num = DMA_IRQ_0,
 #if PICO_RP2040
 	//.baud_rate = 125 * 1000 * 1000 / 8,	/* 15.625 MHz */
 	.baud_rate = 125 * 1000 * 1000 / 6,	/* 20.833333 MHz */

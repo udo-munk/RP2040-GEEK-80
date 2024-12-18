@@ -78,8 +78,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_HEAP_SIZE=8192
 	# LCD frame buffer color depth (12 or 16 bits)
 	LCD_COLOR_DEPTH=12
-	# LCD refresh rate in Hz (30 works well with 12-bit frame buffer)
-	LCD_REFRESH=30
+	# LCD refresh rate in Hz (60 works well with 12-bit frame buffer)
+	LCD_REFRESH=60
 	USBD_MANUFACTURER="Z80pack"
 )
 if(PICO_RP2040)
