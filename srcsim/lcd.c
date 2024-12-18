@@ -846,7 +846,11 @@ static inline void __not_in_flash_func(lcd_draw_led)(uint16_t x, uint16_t y,
 static void __not_in_flash_func(lcd_draw_panel)(int first_flag)
 {
 	const struct led *p;
+#if PICO_RP2040
 	const char *model = "Z80pack RP2040-GEEK " USR_REL, *s;
+#else
+	const char *model = "Z80pack RP2350-GEEK " USR_REL, *s;
+#endif
 	int i, bit;
 
 	p = leds;
