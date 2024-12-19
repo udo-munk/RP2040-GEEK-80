@@ -30,18 +30,21 @@
 #include "DEV_Config.h"
 
 uint DEV_DMA_Channel;
-bool DEV_DMA_Done;
+bool DEV_DMA_Active;
 void (*DEV_DMA_Done_Func)(void);
 uint DEV_PWM_Slice_Num;
 
 static void __not_in_flash_func(DEV_DMA_IRQ_Handler)(void)
 {
-	if (!DEV_DMA_Done) { /* is there an active transfer from us? */
+	if (DEV_DMA_Active) { /* is there an active transfer from us? */
 		if (DEV_DMA_IRQ == DMA_IRQ_0)
 			dma_channel_acknowledge_irq0(DEV_DMA_Channel);
 		else
 			dma_channel_acknowledge_irq1(DEV_DMA_Channel);
-		DEV_DMA_Done = true;
+		/* DMA transfer done doesn't mean that the SPI FIFO is empty */
+		while (spi_is_busy(DEV_SPI_PORT))
+			tight_loop_contents();
+		DEV_DMA_Active = false;
 		if (DEV_DMA_Done_Func != NULL) {
 			(*DEV_DMA_Done_Func)();
 			DEV_DMA_Done_Func = NULL;
@@ -81,7 +84,7 @@ void DEV_Module_Init(void)
 	pwm_set_enabled(DEV_PWM_Slice_Num, true);
 
 	/* DMA Config for framebuffer transfer */
-	DEV_DMA_Done = true;
+	DEV_DMA_Active = false;
 	DEV_DMA_Done_Func = NULL;
 	DEV_DMA_Channel = dma_claim_unused_channel(true);
 	c = dma_channel_get_default_config(DEV_DMA_Channel);

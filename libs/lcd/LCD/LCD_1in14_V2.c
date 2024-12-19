@@ -288,6 +288,8 @@ void LCD_1IN14_V2_Clear(uint16_t Color)
 	uint16_t j, i;
 
 	DEV_Wait_DMA_Done();
+	LCD_1IN14_V2_SendCommand(0x3a); /* Interface Pixel Format */
+	LCD_1IN14_V2_SendData_8Bit(0x05); /* 16-bit */
 	LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
@@ -306,13 +308,7 @@ parameter:
 ******************************************************************************/
 static void __not_in_flash_func(LCD_1IN14_V2_DMA_Done)(void)
 {
-	/* DMA transfer done doesn't mean that the SPI FIFO is also empty */
-	while (spi_is_busy(DEV_SPI_PORT))
-		tight_loop_contents();
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 1);
-	LCD_1IN14_V2_SendCommand(0x29); /* Display On */
-	LCD_1IN14_V2_SendCommand(0x3a); /* Interface Pixel Format */
-	LCD_1IN14_V2_SendData_8Bit(0x05); /* 16-bit */
 }
 
 /******************************************************************************
@@ -324,10 +320,12 @@ void __not_in_flash_func(LCD_1IN14_V2_Display16)(uint8_t *Image)
 	const uint32_t n = LCD_1IN14_V2.HEIGHT * LCD_1IN14_V2.WIDTH * 2;
 
 	DEV_Wait_DMA_Done();
+	LCD_1IN14_V2_SendCommand(0x3a); /* Interface Pixel Format */
+	LCD_1IN14_V2_SendData_8Bit(0x05); /* 16-bit */
 	LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
-	DEV_SPI_Write_DMA(Image, n, LCD_1IN14_V2_DMA_Done);
+	DEV_SPI_Start_DMA_Write(Image, n, LCD_1IN14_V2_DMA_Done);
 }
 
 /******************************************************************************
@@ -345,7 +343,7 @@ void __not_in_flash_func(LCD_1IN14_V2_Display12)(uint8_t *Image)
 	LCD_1IN14_V2_SetWindows(0, 0, LCD_1IN14_V2.WIDTH, LCD_1IN14_V2.HEIGHT);
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
-	DEV_SPI_Write_DMA(Image, n, LCD_1IN14_V2_DMA_Done);
+	DEV_SPI_Start_DMA_Write(Image, n, LCD_1IN14_V2_DMA_Done);
 }
 
 /******************************************************************************
@@ -364,6 +362,8 @@ void LCD_1IN14_V2_DisplayWindows(uint16_t Xstart, uint16_t Ystart,
 	uint16_t j;
 
 	DEV_Wait_DMA_Done();
+	LCD_1IN14_V2_SendCommand(0x3a); /* Interface Pixel Format */
+	LCD_1IN14_V2_SendData_8Bit(0x05); /* 16-bit */
 	LCD_1IN14_V2_SetWindows(Xstart, Ystart, Xend, Yend);
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_DC_PIN, 1);
 	DEV_Digital_Write(WAVESHARE_GEEK_LCD_CS_PIN, 0);
@@ -386,6 +386,8 @@ parameter:
 void LCD_1IN14_V2_DisplayPoint(uint16_t X, uint16_t Y, uint16_t Color)
 {
 	DEV_Wait_DMA_Done();
+	LCD_1IN14_V2_SendCommand(0x3a); /* Interface Pixel Format */
+	LCD_1IN14_V2_SendData_8Bit(0x05); /* 16-bit */
 	LCD_1IN14_V2_SetWindows(X, Y, X, Y);
 	LCD_1IN14_V2_SendData_16Bit(Color);
 }
