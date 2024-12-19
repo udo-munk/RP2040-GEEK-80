@@ -43,7 +43,7 @@
 #define DEV_DMA_IRQ	(DMA_IRQ_1)
 
 extern uint DEV_DMA_Channel;
-extern bool DEV_DMA_Done;
+extern bool DEV_DMA_Active;
 extern void (*DEV_DMA_Done_Func)(void);
 extern uint DEV_PWM_Slice_Num;
 
@@ -75,10 +75,10 @@ static inline void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
 	spi_write_blocking(DEV_SPI_PORT, pData, Len);
 }
 
-static inline void DEV_SPI_Write_DMA(uint8_t *pData, uint32_t Len,
-				     void (*Done_Func)(void))
+static inline void DEV_SPI_Start_DMA_Write(uint8_t *pData, uint32_t Len,
+					   void (*Done_Func)(void))
 {
-	DEV_DMA_Done = false;
+	DEV_DMA_Active = true;
 	DEV_DMA_Done_Func = Done_Func;
 	dma_channel_transfer_from_buffer_now(DEV_DMA_Channel, pData, Len);
 }
@@ -88,7 +88,7 @@ static inline void DEV_SPI_Write_DMA(uint8_t *pData, uint32_t Len,
  */
 static inline void DEV_Wait_DMA_Done(void)
 {
-	while (!DEV_DMA_Done)
+	while (DEV_DMA_Active)
 		__wfi();
 }
 
