@@ -134,6 +134,7 @@ static void lcd_draw_wait_term(int first_flag)
 
 int main(void)
 {
+	/* strings for picotool, so that it shows used pins */
 	bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN,
 				   PICO_DEFAULT_I2C_SCL_PIN,
 				   GPIO_FUNC_I2C));
