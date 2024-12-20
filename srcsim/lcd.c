@@ -46,7 +46,6 @@ static void lcd_draw_panel(int first_flag);
 
 void lcd_init(void)
 {
-
 	/* initialize here to not waste time in draw function */
 	snprintf(info_line, sizeof(info_line), "Z80pack %s", USR_REL);
 
