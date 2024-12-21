@@ -106,7 +106,7 @@ extern const font_t font32;	/* 16 x 32 pixels */
 extern void draw_clear(uint16_t color);
 extern void draw_string(uint16_t x, uint16_t y, const char *s,
 			const font_t *font, uint16_t fgc, uint16_t bgc);
-extern void draw_bitmap(const draw_ro_pixmap_t *bitmap, uint16_t x, uint16_t y,
+extern void draw_bitmap(uint16_t x, uint16_t y, const draw_ro_pixmap_t *bitmap,
 			uint16_t color);
 extern void draw_banner(const draw_banner_t *banner, const font_t *font,
 			uint16_t color);

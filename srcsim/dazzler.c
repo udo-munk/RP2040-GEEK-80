@@ -284,13 +284,12 @@ static void __not_in_flash_func(dazzler_draw)(int first)
 		x_off = (draw_pixmap->width - 128) / 2;
 		y_off = (draw_pixmap->height - 128) / 2;
 		draw_clear(C_BLACK);
-		draw_bitmap(&cromemco_bitmap,
-			    x_off - cromemco_bitmap.width - 25,
+		draw_bitmap(x_off - cromemco_bitmap.width - 25,
 			    (draw_pixmap->height - cromemco_bitmap.height) / 2,
-			    C_GRAY);
-		draw_bitmap(&dazzler_bitmap, x_off + 128 + 25,
+			    &cromemco_bitmap, C_GRAY);
+		draw_bitmap(x_off + 128 + 25,
 			    (draw_pixmap->height - dazzler_bitmap.height) / 2,
-			    C_GRAY);
+			    &dazzler_bitmap, C_GRAY);
 	} else {
 		if (format & 64)
 			draw_hires();

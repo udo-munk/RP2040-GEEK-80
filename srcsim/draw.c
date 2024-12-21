@@ -61,8 +61,9 @@ void __not_in_flash_func(draw_string)(uint16_t x, uint16_t y, const char *s,
 /*
  *	Draw a bitmap in the specified color (always uses a depth of 1).
  */
-void __not_in_flash_func(draw_bitmap)(const draw_ro_pixmap_t *bitmap,
-				      uint16_t x, uint16_t y, uint16_t color)
+void __not_in_flash_func(draw_bitmap)(uint16_t x, uint16_t y,
+				      const draw_ro_pixmap_t *bitmap,
+				      uint16_t color)
 {
 	const uint8_t *p0 = bitmap->bits, *p;
 	uint8_t m;
