@@ -338,7 +338,7 @@ typedef struct lbl {
 } lbl_t;
 
 #ifndef EXCLUDE_Z80
-static const lbl_t lbls_z80[] = {
+static const lbl_t __not_in_flash("lcd_tables") lbls_z80[] = {
 	{  0, 0, 'A'},
 	{  8, 0, 'B'}, {  9, 0, 'C'},
 	{ 16, 0, 'D'}, { 17, 0, 'E'},
@@ -359,7 +359,7 @@ static const int num_lbls_z80 = sizeof(lbls_z80) / sizeof(lbl_t);
 #endif
 
 #ifndef EXCLUDE_I8080
-static const lbl_t lbls_8080[] = {
+static const lbl_t __not_in_flash("lcd_tables") lbls_8080[] = {
 	{  0, 0, 'A'},
 	{  9, 0, 'B'}, { 10, 0, 'C'},
 	{  0, 1, 'D'}, {  1, 1, 'E'},
@@ -393,7 +393,7 @@ typedef struct reg {
 } reg_t;
 
 #ifndef EXCLUDE_Z80
-static const reg_t regs_z80[] = {
+static const reg_t __not_in_flash("lcd_tables") regs_z80[] = {
 	{  3, 0, RB, .b.p = &A,  .b.s =  4 },
 	{  4, 0, RB, .b.p = &A,  .b.s =  0 },
 	{ 11, 0, RB, .b.p = &B,  .b.s =  4 },
@@ -457,7 +457,7 @@ static const int num_regs_z80 = sizeof(regs_z80) / sizeof(reg_t);
 #endif
 
 #ifndef EXCLUDE_I8080
-static const reg_t regs_8080[] = {
+static const reg_t __not_in_flash("lcd_tables") regs_8080[] = {
 	{  3, 0, RB, .b.p = &A,  .b.s =  4 },
 	{  4, 0, RB, .b.p = &A,  .b.s =  0 },
 	{ 12, 0, RB, .b.p = &B,  .b.s =  4 },
@@ -720,7 +720,7 @@ static void __not_in_flash_func(lcd_draw_memory)(int first)
 
 static BYTE fp_led_wait;			/* dummy */
 
-static const struct led {
+typedef struct led {
 	uint16_t x;
 	uint16_t y;
 	char c1;
@@ -737,7 +737,9 @@ static const struct led {
 			const WORD *p;
 		} w;
 	};
-} leds[] = {
+} led_t;
+
+static const led_t __not_in_flash("lcd_tables") leds[] = {
 	{ PLEDX( 0), PLEDY(0), 'P', '7', LB, .b.i = 0xff, .b.m = 0x80,
 	  .b.p = &fp_led_output },
 	{ PLEDX( 1), PLEDY(0), 'P', '6', LB, .b.i = 0xff, .b.m = 0x40,
