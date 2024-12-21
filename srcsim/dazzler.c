@@ -17,11 +17,12 @@
 #include "simport.h"
 
 #include "dazzler.h"
+#include "draw.h"
 #include "lcd.h"
 
 /* Graphics stuff */
-#if LCD_COLOR_DEPTH == 12
-/* 444 colors and grays */
+#if COLOR_DEPTH == 12
+/* 444 RGB colors and grays */
 static const uint16_t __not_in_flash("color_map") colors[16] = {
 	0x0000, 0x0800, 0x0080, 0x0880,
 	0x0008, 0x0808, 0x0088, 0x0888,
@@ -35,7 +36,7 @@ static const uint16_t __not_in_flash("color_map") grays[16] = {
 	0x0ccc, 0x0ddd, 0x0eee, 0x0fff
 };
 #else
-/* 565 colors and grays */
+/* 565 RGB colors and grays */
 static const uint16_t __not_in_flash("color_map") colors[16] = {
 	0x0000, 0x8000, 0x0400, 0x8400,
 	0x0010, 0x8010, 0x0410, 0x8410,
@@ -50,9 +51,7 @@ static const uint16_t __not_in_flash("color_map") grays[16] = {
 };
 #endif
 
-#define CROMEMCO_WIDTH	17
-#define CROMEMCO_HEIGHT	132
-static const uint8_t cromemco[] = {
+static const uint8_t cromemco_bits[] = {
 	0x01, 0xf8, 0x00, 0x03, 0xfe, 0x00, 0x03, 0xff, 0x00, 0x03, 0xff, 0x00,
 	0x07, 0x3f, 0x80, 0x06, 0x03, 0x80, 0x03, 0x01, 0x80, 0x03, 0xf1, 0x80,
 	0x03, 0xff, 0x80, 0x01, 0xff, 0x80, 0x00, 0xff, 0x80, 0x00, 0x7f, 0x00,
@@ -87,10 +86,15 @@ static const uint8_t cromemco[] = {
 	0xf0, 0x07, 0x80, 0x7c, 0x0f, 0x80, 0x7f, 0xff, 0x80, 0x3f, 0xff, 0x80,
 	0x3f, 0xff, 0x00, 0x1f, 0xff, 0x00, 0x07, 0xfe, 0x00, 0x03, 0xfc, 0x00
 };
+static const draw_ro_pixmap_t cromemco_bitmap = {
+	.bits = cromemco_bits,
+	.depth = 1,
+	.width = 17,
+	.height = 132,
+	.stride = 3
+};
 
-#define DAZZLER_WIDTH	21
-#define DAZZLER_HEIGHT	130
-static const uint8_t dazzler[] = {
+static const uint8_t dazzler_bits[] = {
 	0x80, 0x00, 0x08, 0xc0, 0x00, 0x18, 0xe0, 0x00, 0x38, 0xff, 0xff, 0xf8,
 	0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8, 0xff, 0xff, 0xf8,
 	0xe0, 0x00, 0x18, 0xc0, 0x00, 0x18, 0xc0, 0x00, 0x18, 0xc0, 0x00, 0x18,
@@ -125,20 +129,24 @@ static const uint8_t dazzler[] = {
 	0xfc, 0x07, 0xf0, 0xf8, 0x03, 0xc0, 0xf0, 0x00, 0x00, 0xc0, 0x00, 0x00,
 	0xc0, 0x00, 0x00, 0x80, 0x00, 0x00
 };
+static const draw_ro_pixmap_t dazzler_bitmap = {
+	.bits = dazzler_bits,
+	.depth = 1,
+	.width = 21,
+	.height = 130,
+	.stride = 3
+};
 
 /* DAZZLER stuff */
 static int state;
 static WORD dma_addr;
 static BYTE flags = 64;
 static BYTE format;
-
-/* centered image on 240x135 LCD */
-#define XOFF	56
-#define YOFF	3
+static uint16_t x_off, y_off;
 
 static inline void pixel(uint16_t x, uint16_t y, uint16_t color)
 {
-	Paint_FastPixel(XOFF + x, YOFF + y, color);
+	draw_pixel(x_off + x, y_off + y, color);
 }
 
 /* draw pixels for one frame in hires */
@@ -151,7 +159,7 @@ static void __not_in_flash_func(draw_hires)(void)
 
 	/* set color or grayscale from lower nibble in graphics format */
 	c = format & 0x0f;
-	cmap[0] = BLACK;
+	cmap[0] = C_BLACK;
 	cmap[1] = (format & 16) ? colors[c] : grays[c];
 
 	if (format & 32) {	/* 2048 bytes memory */
@@ -270,49 +278,29 @@ static void __not_in_flash_func(draw_lowres)(void)
 	}
 }
 
-static void __no_inline_not_in_flash_func(draw_bitmap)(const uint8_t *bitmap,
-						       int width, int height,
-						       int x, int y)
+static void __not_in_flash_func(dazzler_draw)(int first)
 {
-	int i, j;
-	uint8_t m;
+	if (first) {
+		x_off = (draw_pixmap->width - 128) / 2;
+		y_off = (draw_pixmap->height - 128) / 2;
+		draw_clear(C_BLACK);
+		draw_bitmap(x_off - cromemco_bitmap.width - 25,
+			    (draw_pixmap->height - cromemco_bitmap.height) / 2,
+			    &cromemco_bitmap, C_GRAY);
+		draw_bitmap(x_off + 128 + 25,
+			    (draw_pixmap->height - dazzler_bitmap.height) / 2,
+			    &dazzler_bitmap, C_GRAY);
+	} else {
+		if (format & 64)
+			draw_hires();
+		else
+			draw_lowres();
 
-	for (j = 0; j < height; j++) {
-		m = 0x80;
-		for (i = 0; i < width; i++) {
-			if (*bitmap & m)
-				Paint_FastPixel(x, y, GRAY);
-			if ((m >>= 1) == 0) {
-				m = 0x80;
-				bitmap++;
-			}
-			x++;
-		}
-		if (width & 7)
-			bitmap++;
-		x -= width;
-		y++;
+		/* frame done, set frame flag for 4ms */
+		flags = 0;
+		sleep_ms(4);
+		flags = 64;
 	}
-}
-
-static void __not_in_flash_func(dazzler_draw)(int first_flag)
-{
-	if (first_flag) {
-		Paint_Clear(BLACK);
-		draw_bitmap(cromemco, CROMEMCO_WIDTH, CROMEMCO_HEIGHT, 14, 1);
-		draw_bitmap(dazzler, DAZZLER_WIDTH, DAZZLER_HEIGHT, 209, 2);
-		return;
-	}
-
-	if (format & 64)
-		draw_hires();
-	else
-		draw_lowres();
-
-	/* frame done, set frame flag for 4ms */
-	flags = 0;
-	sleep_ms(4);
-	flags = 64;
 }
 
 void dazzler_ctl_out(BYTE data)
