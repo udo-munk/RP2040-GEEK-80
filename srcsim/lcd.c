@@ -594,7 +594,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 				break;
 			case RI: /* interrupt register */
 				c = rp->f.c;
-				if ((IFF & rp->f.m) == rp->f.m)
+				if ((IFF & rp->f.m) != rp->f.m)
 					col = C_RED;
 				break;
 #ifndef EXCLUDE_Z80
