@@ -829,7 +829,7 @@ static const led_t __not_in_flash("lcd_tables") leds[] = {
 	{ PLEDX(15), PLEDY(2), 'A', '0', LW, .w.m = 0x0001,
 	  .w.p = &fp_led_address }
 };
-static const int num_leds = sizeof(leds) / sizeof(struct led);
+static const int num_leds = sizeof(leds) / sizeof(led_t);
 
 /*
  *	Draw a 10x10 LED circular bracket.
@@ -865,7 +865,7 @@ static inline void __not_in_flash_func(panel_led)(uint16_t x, uint16_t y,
 
 static void __not_in_flash_func(lcd_draw_panel)(int first)
 {
-	const struct led *p;
+	const led_t *p;
 #if PICO_RP2040
 	const char *model = "Z80pack RP2040-GEEK " USR_REL;
 #else
