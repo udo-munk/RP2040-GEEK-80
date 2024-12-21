@@ -67,10 +67,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 add_subdirectory(fonts)
-add_subdirectory(stdio_msc_usb)
 
 add_subdirectory(../libs/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs)
 add_subdirectory(../libs/pico-ds3231/lib ds3231)
+add_subdirectory(../libs/stdio_msc_usb stdio_msc_usb)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_STACK_SIZE=4096
@@ -123,10 +123,10 @@ target_link_libraries(${PROJECT_NAME}
 	tinyusb_device
 
 	fonts
-	stdio_msc_usb
 
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 	pico-ds3231
+	stdio_msc_usb
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
