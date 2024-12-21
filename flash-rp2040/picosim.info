@@ -8,7 +8,7 @@ Program Information
  features:          UART stdin / stdout
                     USB stdin / stdout
  binary start:      0x10000000
- binary end:        0x10051a8c
+ binary end:        0x1005000c
 
 Fixed Pin Information
  4:                 UART1 TX
@@ -20,7 +20,7 @@ Build Information
  sdk version:       2.1.0
  pico_board:        waveshare_rp2040_geek
  boot2_name:        boot2_w25q080
- build date:        Dec 19 2024
+ build date:        Dec 21 2024
  build attributes:  Release
 
 Metadata Blocks
