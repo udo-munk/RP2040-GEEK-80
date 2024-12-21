@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2024 by Udo Munk
+ * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  *
  * This is the configuration for a Waveshare RP2040/RP2350-GEEK board
  */
