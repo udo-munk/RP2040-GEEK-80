@@ -46,8 +46,6 @@ static volatile lcd_func_t lcd_status_func;
 static volatile int lcd_shows_status;
 static volatile int lcd_task_done;
 
-static char info_line[16];	/* last line in CPU display */
-
 static void lcd_task(void);
 static void lcd_draw_empty(int first);
 static void lcd_draw_cpu_reg(int first);
@@ -58,9 +56,6 @@ static void lcd_draw_panel(int first);
 
 void lcd_init(void)
 {
-	/* initialize here to not waste time in draw function */
-	snprintf(info_line, sizeof(info_line), "Z80pack %s", USR_REL);
-
 	mutex_init(&lcd_mutex);
 
 	lcd_status_func = lcd_draw_cpu_reg;
@@ -215,7 +210,7 @@ static void lcd_draw_empty(int first)
  *	2 IX 1234 IY 1234 AF`1234
  *	3 BC'1234 DE'1234 HL`1234
  *	4 F  SZHPNC  IF12 IR 1234
- *	5 info_line        xx.xxC
+ *	5 info             xx.xxC
  *
  *	8080 CPU using font28 (14 x 28 pixels)
  *	--------------------------------------
@@ -225,7 +220,7 @@ static void lcd_draw_empty(int first)
  *	1 DE 1234  HL 1234
  *	2 SP 1234  PC 1234
  *	3 F  SZHPC    IF 1
- *	4 info_line xx.xxC (font20)
+ *	4 info      xx.xxC (font20)
  */
 
 #define XOFF20	5	/* x pixel offset of text coordinate grid for font20 */
@@ -544,7 +539,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 #ifndef EXCLUDE_I8080
 		if (cpu_type == I8080) {
 			/* adjustment keeps vertical grid line outside
-			   "info_line" */
+			   "info" */
 			cpu_gridv28(8, 3, 2, C_DKYELLOW);
 			/* draw horizontal grid lines */
 			for (i = 0; i < 3; i++)
@@ -558,8 +553,9 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 		}
 #endif
 		/* draw info line */
-		for (p = info_line; *p; p++)
-			cpu_char20(p - info_line, 5, *p, C_ORANGE);
+		p = "Z80pack " USR_REL;
+		for (i = 0; *p && i < 16; i++)
+			cpu_char20(i, 5, *p++, C_ORANGE);
 		cpu_char20(19, 5, '.', C_ORANGE);
 		cpu_char20(22, 5, 'C', C_ORANGE);
 	} else {
@@ -626,8 +622,8 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 		if (cpu_type == I8080) {
 			/*
 			 *	The adjustment moves the grid line from inside
-			 *	the "info_line" into the descenders space of
-			 *	the "F IF" line, therefore the need to draw it
+			 *	the "info" into the descenders space of the
+			 *	"F IF" line, therefore the need to draw it
 			 *	inside the refresh code.
 			 */
 			cpu_gridh28(3, 2, C_DKYELLOW);
