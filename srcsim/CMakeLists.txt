@@ -38,7 +38,9 @@ add_executable(${PROJECT_NAME}
 	picosim.c
 	dazzler.c
 	disks.c
+	draw.c
 	lcd.c
+	lcd_dev.c
 	simcfg.c
 	simio.c
 	simmem.c
@@ -64,20 +66,18 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	${Z80PACK}/z80core
 )
 
+add_subdirectory(fonts)
+add_subdirectory(stdio_msc_usb)
+
 add_subdirectory(../libs/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs)
-add_subdirectory(../libs/lcd/Config lcd-Config)
-add_subdirectory(../libs/lcd/LCD lcd-LCD)
-add_subdirectory(../libs/lcd/Fonts lcd-Fonts)
-add_subdirectory(../libs/lcd/GUI lcd-GUI)
-add_subdirectory(../libs/stdio_msc_usb stdio_msc_usb)
 add_subdirectory(../libs/pico-ds3231/lib ds3231)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_STACK_SIZE=4096
 	PICO_CORE1_STACK_SIZE=4096
 	PICO_HEAP_SIZE=8192
-	# LCD frame buffer color depth (12 or 16 bits)
-	LCD_COLOR_DEPTH=12
+	# frame buffer color depth (12 or 16 bits)
+	COLOR_DEPTH=12
 	# LCD refresh rate in Hz (60 works well with 12-bit frame buffer)
 	LCD_REFRESH=60
 	USBD_MANUFACTURER="Z80pack"
@@ -109,24 +109,24 @@ target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra)
 if(PICO_C_COMPILER_IS_CLANG)
 	target_compile_options(${PROJECT_NAME} PUBLIC -Weverything)
 endif()
-# -Wno-unused-parameter because no-OS-FatFS-SD-SDIO-SPI-RPi-Pico isn't clean
-target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unused-parameter)
 
 target_link_libraries(${PROJECT_NAME}
 	hardware_adc
-	hardware_spi
+	hardware_dma
+	hardware_gpio
 	hardware_i2c
+	hardware_pwm
+	hardware_spi
+	hardware_sync
 	pico_multicore
 	pico_stdlib
 	tinyusb_device
 
-	lcd-Config
-	lcd-Fonts
-	lcd-GUI
-	lcd-LCD
+	fonts
+	stdio_msc_usb
+
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 	pico-ds3231
-	stdio_msc_usb
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})

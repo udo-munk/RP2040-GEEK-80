@@ -49,6 +49,7 @@
 #endif
 
 #include "disks.h"
+#include "draw.h"
 #include "lcd.h"
 
 #define BS  0x08 /* ASCII backspace */
@@ -75,60 +76,35 @@ void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 }
 #endif
 
-typedef struct banner {
-	const char *text;
-	uint16_t color;
-} banner_t;
-
-static const banner_t banner[] = {
-	{ "Z80pack " RELEASE, GREEN },
+static const draw_banner_t banner[] = {
+	{ "Z80pack " RELEASE, C_GREEN },
 #if PICO_RP2040
-	{ "RP2040-GEEK " USR_REL, RED },
+	{ "RP2040-GEEK " USR_REL, C_RED },
 #else
-	{ "RP2350-GEEK " USR_REL, RED },
+	{ "RP2350-GEEK " USR_REL, C_RED },
 #endif
-	{ "by Udo Munk &", WHITE },
-	{ "Thomas Eberhardt", WHITE }
+	{ "by Udo Munk &", C_WHITE },
+	{ "Thomas Eberhardt", C_WHITE },
+	{ NULL, 0 }
 };
 
-static void draw_banner(const banner_t *bp, int lines, uint16_t frame_col)
+static void lcd_draw_banner(int first)
 {
-	int i, y0;
-
-	Paint_Clear(BLACK);
-	Paint_FastHLine(0, 0, Paint.Width, frame_col);
-	Paint_FastVLine(0, 0, Paint.Height, frame_col);
-	Paint_FastVLine(Paint.Width - 1, 0, Paint.Height, frame_col);
-	Paint_FastHLine(0, Paint.Height - 1, Paint.Width, frame_col);
-	y0 = (Paint.Height - lines * (Font28.Height + 2)) / 2;
-	for (i = 0; i < lines; i++) {
-		Paint_DrawString((Paint.Width -
-				  strlen(bp->text) * Font28.Width) / 2,
-				 y0 + i * (Font28.Height + 2),
-				 bp->text, &Font28,
-				 bp->color, BLACK);
-		bp++;
-	}
-}
-
-static void lcd_draw_banner(int first_flag)
-{
-	if (!first_flag)
-		return;
-	draw_banner(banner, sizeof(banner) / sizeof(banner_t), BLUE);
+	if (first)
+		draw_banner(banner, &font28, C_BLUE);
 }
 
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
-static const banner_t wait_term[] = {
-	{ "Waiting for", RED },
-	{ "terminal", RED }
+static const draw_banner_t wait_term[] = {
+	{ "Waiting for", C_RED },
+	{ "terminal", C_RED },
+	{ NULL, 0 }
 };
 
-static void lcd_draw_wait_term(int first_flag)
+static void lcd_draw_wait_term(int first)
 {
-	if (!first_flag)
-		return;
-	draw_banner(wait_term, sizeof(wait_term) / sizeof(banner_t), WHITE);
+	if (first)
+		draw_banner(wait_term, &font28, C_WHITE);
 }
 #endif
 
