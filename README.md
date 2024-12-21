@@ -30,7 +30,7 @@ on a MicroSD card, plugged into the GEEK. It can make the MicroSD card
 available as USB drive on any PC, so the MicroSD can be filled with contents,
 without the need to remove it and stick it into some PC.
 
-The virtual machine can run any standanlone 8080 and Z80 software, like
+The virtual machine can run any standalone 8080 and Z80 software, like
 MITS BASIC for the Altair 8080, examples are available in directory
 src-examples. With a bootable disk in drive 0 it can run these
 operating systems:
