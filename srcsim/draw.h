@@ -8,6 +8,9 @@
 #define DRAW_INC
 
 #include <stdint.h>
+#ifdef DRAW_DEBUG
+#include <stdio.h>
+#endif
 
 #if COLOR_DEPTH != 12 && COLOR_DEPTH != 16
 #error "Unsupported COLOR_DEPTH"
@@ -116,6 +119,10 @@ extern void draw_banner(const draw_banner_t *banner, const font_t *font,
  */
 static inline void draw_set_pixmap(draw_pixmap_t *pixmap)
 {
+#ifdef DRAW_DEBUG
+	if (pixmap == NULL)
+		fprintf(stderr, "%s: NULL pixmap specified\n", __func__);
+#endif
 	draw_pixmap = pixmap;
 }
 
@@ -126,6 +133,18 @@ static inline void draw_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
 	uint8_t *p;
 
+#ifdef DRAW_DEBUG
+	if (draw_pixmap == NULL) {
+		fprintf(stderr, "%s: draw pixmap is NULL\n", __func__);
+		return;
+	}
+	if (x >= draw_pixmap->width || y >= draw_pixmap->height) {
+		fprintf(stderr, "%s: coord (%d,%d) is outside (%d,%d)\n",
+			__func__, x, y, draw_pixmap->width - 1,
+			draw_pixmap->height - 1);
+		return;
+	}
+#endif
 #if COLOR_DEPTH == 12
 	p = draw_pixmap->bits + ((x >> 1) * 3 + y * draw_pixmap->stride);
 	if ((x & 1) == 0) {
@@ -155,6 +174,25 @@ static inline void draw_char(uint16_t x, uint16_t y, const char c,
 	uint8_t m;
 	uint16_t i, j;
 
+#ifdef DRAW_DEBUG
+	if (draw_pixmap == NULL) {
+		fprintf(stderr, "%s: draw pixmap is NULL\n", __func__);
+		return;
+	}
+	if (font == NULL) {
+		fprintf(stderr, "%s: font is NULL\n", __func__);
+		return;
+	}
+	if (x >= draw_pixmap->width || y >= draw_pixmap->height ||
+	    x + font->width > draw_pixmap->width ||
+	    y + font->height > draw_pixmap->height) {
+		fprintf(stderr, "%s: char '%c' at (%d,%d)-(%d,%d) is "
+			"outside (0,0)-(%d,%d)\n", __func__, c, x, y,
+			x + font->width - 1, y + font->height - 1,
+			draw_pixmap->width - 1, draw_pixmap->height - 1);
+		return;
+	}
+#endif
 	for (j = font->height; j > 0; j--) {
 		m = m0;
 		p = p0;
@@ -180,6 +218,19 @@ static inline void draw_char(uint16_t x, uint16_t y, const char c,
  */
 static inline void draw_hline(uint16_t x, uint16_t y, uint16_t w, uint16_t col)
 {
+#ifdef DRAW_DEBUG
+	if (draw_pixmap == NULL) {
+		fprintf(stderr, "%s: draw pixmap is NULL\n", __func__);
+		return;
+	}
+	if (x >= draw_pixmap->width || y >= draw_pixmap->height ||
+	    x + w > draw_pixmap->width) {
+		fprintf(stderr, "%s: line (%d,%d)-(%d,%d) is outside "
+			"(0,0)-(%d,%d)\n", __func__, x, y, x + w - 1, y,
+			draw_pixmap->width - 1, draw_pixmap->height - 1);
+		return;
+	}
+#endif
 	while (w--)
 		draw_pixel(x++, y, col);
 }
@@ -189,6 +240,19 @@ static inline void draw_hline(uint16_t x, uint16_t y, uint16_t w, uint16_t col)
  */
 static inline void draw_vline(uint16_t x, uint16_t y, uint16_t h, uint16_t col)
 {
+#ifdef DRAW_DEBUG
+	if (draw_pixmap == NULL) {
+		fprintf(stderr, "%s: draw pixmap is NULL\n", __func__);
+		return;
+	}
+	if (x >= draw_pixmap->width || y >= draw_pixmap->height ||
+	    y + h > draw_pixmap->width) {
+		fprintf(stderr, "%s: line (%d,%d)-(%d,%d) is outside "
+			"(0,0)-(%d,%d)\n", __func__, x, y, x, y + h - 1,
+			draw_pixmap->width - 1, draw_pixmap->height - 1);
+		return;
+	}
+#endif
 	while (h--)
 		draw_pixel(x, y++, col);
 }
