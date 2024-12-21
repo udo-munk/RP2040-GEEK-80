@@ -70,6 +70,7 @@ static void __not_in_flash_func(lcd_dev_send_word)(uint16_t data)
  */
 static const uint8_t lcd_init_tab[] = {
 	/* cmd, nargs, args... */
+	/* nargs with bit 7 set delays 100 ms after command is sent */
 	0x36, 1, 0x70,				/* Memory Data Access Control */
 	0xb2, 5, 0x0c, 0x0c, 0x00, 0x33, 0x33,	/* Porch Setting */
 	0xb7, 1, 0x35,				/* Gate Control */
@@ -88,8 +89,8 @@ static const uint8_t lcd_init_tab[] = {
 		0x2c, 0x3f, 0x44, 0x51, 0x2f,
 		0x1f, 0x1f, 0x20, 0x23,
 	0x21, 0,				/* Display Inversion On */
-	0x11, 0,				/* Sleep Out */
-	0x29, 0,				/* Display On */
+	0x11, 0 | 0x80,				/* Sleep Out */
+	0x29, 0 | 0x80,				/* Display On */
 	0xff
 };
 
@@ -100,7 +101,7 @@ void lcd_dev_init(void)
 {
 	dma_channel_config c;
 	const uint8_t *p;
-	int i;
+	int i, n;
 
 	/*
 	 * ST7789VW datasheet says 16 ns minimum serial write clock cycle,
@@ -165,8 +166,11 @@ void lcd_dev_init(void)
 	/* initialize LCD controller registers */
 	for (p = lcd_init_tab; *p != 0xff;) {
 		lcd_dev_send_cmd(*p++);
-		for (i = *p++; i; i--)
+		n = *p++;
+		for (i = n & 0x7f; i; i--)
 			lcd_dev_send_byte(*p++);
+		if (n & 0x80)
+			sleep_ms(100);
 	}
 
 	lcd_rotated = false;
@@ -183,7 +187,9 @@ void lcd_dev_exit(void)
 	lcd_dev_backlight(0);
 
 	lcd_dev_send_cmd(0x28);			/* Display Off */
+	sleep_ms(100);
 	lcd_dev_send_cmd(0x10);			/* Sleep In */
+	sleep_ms(100);
 
 	irq_set_enabled(LCD_DMA_IRQ, false);
 	irq_remove_handler(LCD_DMA_IRQ, lcd_dma_irq_handler);
