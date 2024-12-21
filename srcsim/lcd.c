@@ -67,6 +67,8 @@ void lcd_init(void)
 	lcd_draw_func = lcd_draw_empty;
 	lcd_task_done = 0;
 
+	draw_set_pixmap(&lcd_pixmap);
+
 	/* launch LCD task on other core */
 	multicore_launch_core1(lcd_task);
 }
@@ -95,8 +97,6 @@ static void __not_in_flash_func(lcd_task)(void)
 
 	/* initialize the LCD controller */
 	lcd_dev_init();
-
-	draw_set_pixmap(&lcd_pixmap);
 
 	while (1) {
 		/* loops every LCD_REFRESH_US */
