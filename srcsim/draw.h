@@ -139,7 +139,7 @@ static inline void draw_pixel(uint16_t x, uint16_t y, uint16_t color)
 		return;
 	}
 	if (x >= draw_pixmap->width || y >= draw_pixmap->height) {
-		fprintf(stderr, "%s: coord (%d,%d) is outside (%d,%d)\n",
+		fprintf(stderr, "%s: coord (%d,%d) is outside (0,0)-(%d,%d)\n",
 			__func__, x, y, draw_pixmap->width - 1,
 			draw_pixmap->height - 1);
 		return;
