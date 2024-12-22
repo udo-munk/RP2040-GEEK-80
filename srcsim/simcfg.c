@@ -28,6 +28,9 @@
 
 #include "ff.h"
 #include "ds3231.h"
+#if LIB_STDIO_MSC_USB
+#include "stdio_msc_usb.h"
+#endif
 
 #include "sim.h"
 #include "simdefs.h"
@@ -40,9 +43,6 @@
 #include "disks.h"
 #include "lcd.h"
 #include "picosim.h"
-#if LIB_STDIO_MSC_USB
-#include "stdio_msc_usb.h"
-#endif
 
 /*
  * prompt for a filename
