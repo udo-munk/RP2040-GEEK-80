@@ -648,7 +648,8 @@ static void __not_in_flash_func(lcd_draw_panel)(int first)
 	const led_t *p;
 	const char *model = "Z80pack " MODEL " " USR_REL;
 	const char *s;
-	int i, bit;
+	int i;
+	uint16_t col;
 
 	p = leds;
 	if (first) {
@@ -672,24 +673,26 @@ static void __not_in_flash_func(lcd_draw_panel)(int first)
 		}
 	} else {
 		for (i = 0; i < num_leds; i++) {
+			col = C_DKRED;
 			switch (p->type) {
 			case LB:
-				bit = (*(p->b.p) ^ p->b.i) & p->b.m;
-				draw_led(p->x, p->y, bit ? C_RED : C_DKRED);
+				if ((*(p->b.p) ^ p->b.i) & p->b.m)
+					col = C_RED;
 				break;
 			case LW:
-				bit = *(p->w.p) & p->w.m;
-				draw_led(p->x, p->y, bit ? C_RED : C_DKRED);
+				if (*(p->w.p) & p->w.m)
+					col = C_RED;
 				break;
 			case LD:
-				draw_led(p->x, p->y,
-					 disk_led == DISK_LED_OFF ? C_DKRED :
-					 (disk_led == DISK_LED_READ ? C_GREEN
-								    : C_RED));
+				if (disk_led == DISK_LED_READ)
+					col = C_GREEN;
+				else if (disk_led == DISK_LED_WRITE)
+					col = C_RED;
 				break;
 			default:
 				break;
 			}
+			draw_led(p->x, p->y, col);
 			p++;
 		}
 	}
