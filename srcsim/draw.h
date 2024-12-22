@@ -58,7 +58,7 @@
 #endif
 
 /*
- *	Type for pixmap to draw into.
+ *	Pixmap type for drawing into.
  *	The depth field is currently ignored, and COLOR_DEPTH is used for
  *	conditional compilation.
  */
@@ -71,25 +71,39 @@ typedef struct draw_pixmap {
 } draw_pixmap_t;
 
 /*
- *	Types for pixmaps used as read-only source (fonts, prepared images).
+ *	Pixmap type used as read-only source (fonts, prepared images).
  *	In fonts the width field specifies the width of a single character.
  */
-typedef struct draw_ro_pixmap {
+typedef const struct draw_ro_pixmap {
 	const uint8_t *bits;
-	uint8_t depth;
-	uint16_t width;
-	uint16_t height;
-	uint16_t stride;
+	const uint8_t depth;
+	const uint16_t width;
+	const uint16_t height;
+	const uint16_t stride;
 } draw_ro_pixmap_t;
 typedef draw_ro_pixmap_t font_t;
 
 /*
- *	Type for banners drawn by draw_banner().
+ *	Element type of NULL terminated array drawn by draw_banner().
  */
 typedef struct draw_banner {
 	const char *text;
 	uint16_t color;
 } draw_banner_t;
+
+/*
+ *	Grid type for drawing text with character based coordinates.
+ */
+typedef struct draw_grid {
+	const font_t *font;
+	uint16_t xoff;
+	uint16_t yoff;
+	uint16_t spc;
+	uint16_t cwidth;
+	uint16_t cheight;
+	uint16_t cols;
+	uint16_t rows;
+} draw_grid_t;
 
 extern draw_pixmap_t *draw_pixmap;
 
@@ -255,6 +269,117 @@ static inline void draw_vline(uint16_t x, uint16_t y, uint16_t h, uint16_t col)
 #endif
 	while (h--)
 		draw_pixel(x, y++, col);
+}
+
+/*
+ *	Setup a text grid defined by font and spacing.
+ */
+static inline void draw_setup_grid(draw_grid_t *grid, uint16_t xoff,
+					  uint16_t yoff, const font_t *font,
+					  uint16_t spc)
+{
+#ifdef DRAW_DEBUG
+	if (draw_pixmap == NULL) {
+		fprintf(stderr, "%s: draw pixmap is NULL\n", __func__);
+		return;
+	}
+	if (grid == NULL) {
+		fprintf(stderr, "%s: grid is NULL\n", __func__);
+		return;
+	}
+	if (font == NULL) {
+		fprintf(stderr, "%s: font is NULL\n", __func__);
+		return;
+	}
+#endif
+	grid->font = font;
+	grid->xoff = xoff;
+	grid->yoff = yoff;
+	grid->spc = spc;
+	grid->cwidth = font->width;
+	grid->cheight = font->height + spc;
+	grid->cols = (draw_pixmap->width - xoff) / grid->cwidth;
+	grid->rows = (draw_pixmap->height - yoff + spc) / grid->cheight;
+}
+
+/*
+ *	Draw a character using grid coordinates in the specified color.
+ */
+static inline void draw_grid_char(uint16_t x, uint16_t y, char c,
+				  const draw_grid_t *grid, uint16_t fgc,
+				  uint16_t bgc)
+{
+#ifdef DRAW_DEBUG
+	if (draw_pixmap == NULL) {
+		fprintf(stderr, "%s: draw pixmap is NULL\n", __func__);
+		return;
+	}
+	if (grid == NULL) {
+		fprintf(stderr, "%s: grid is NULL\n", __func__);
+		return;
+	}
+#endif
+	draw_char(x * grid->cwidth + grid->xoff,
+		  y * grid->cheight + grid->yoff,
+		  c, grid->font, fgc, bgc);
+}
+
+/*
+ *	Draw a horizontal grid line in the middle of the spacing
+ *	above the y grid coordinate specified.
+ */
+static inline void draw_grid_hline(uint16_t x, uint16_t y, uint16_t w,
+				   const draw_grid_t *grid, uint16_t col)
+{
+#ifdef DRAW_DEBUG
+	if (draw_pixmap == NULL) {
+		fprintf(stderr, "%s: draw pixmap is NULL\n", __func__);
+		return;
+	}
+	if (grid == NULL) {
+		fprintf(stderr, "%s: grid is NULL\n", __func__);
+		return;
+	}
+#endif
+	if (w) {
+		x = x * grid->cwidth;
+		if (y)
+			y = y * grid->cheight - (grid->spc + 1) / 2;
+		w = w * grid->cwidth;
+		draw_hline(x + grid->xoff, y + grid->yoff, w, col);
+	}
+}
+
+/*
+ *	Draw a vertical grid line in the middle of the x grid coordinate
+ *	specified.
+ */
+static inline void draw_grid_vline(uint16_t x, uint16_t y, uint16_t h,
+				   const draw_grid_t *grid, uint16_t col)
+{
+#ifdef DRAW_DEBUG
+	if (draw_pixmap == NULL) {
+		fprintf(stderr, "%s: draw pixmap is NULL\n", __func__);
+		return;
+	}
+	if (grid == NULL) {
+		fprintf(stderr, "%s: grid is NULL\n", __func__);
+		return;
+	}
+#endif
+	uint16_t hadj = 0;
+
+	if (h) {
+		x = x * grid->cwidth + (grid->cwidth + 1) / 2;
+		if (y + h < grid->rows)
+			hadj += grid->spc / 2 + 1;
+		if (y) {
+			y = y * grid->cheight - (grid->spc + 1) / 2;
+			hadj += (grid->spc + 1) / 2;
+		}
+		h = h * grid->cheight - grid->spc + hadj;
+		draw_vline(x + grid->xoff, y + grid->yoff, h, col);
+	}
 }
 
 #endif /* !DRAW_INC */

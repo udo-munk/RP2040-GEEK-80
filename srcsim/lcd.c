@@ -10,9 +10,6 @@
 #include "pico/sync.h"
 #include "pico/time.h"
 #include "hardware/adc.h"
-#if PICO_RP2040
-#include "hardware/divider.h"
-#endif
 
 #include "sim.h"
 #include "simdefs.h"
@@ -108,7 +105,7 @@ static void __not_in_flash_func(lcd_task)(void)
 		(*curr_func)(first);
 		first = 0;
 		mutex_enter_blocking(&lcd_mutex);
-		lcd_dev_display(draw_pixmap);
+		lcd_dev_send_pixmap(draw_pixmap);
 		mutex_exit(&lcd_mutex);
 
 		d = absolute_time_diff_us(t, get_absolute_time());
@@ -136,10 +133,10 @@ void lcd_brightness(int brightness)
 	lcd_dev_backlight((uint8_t) brightness);
 }
 
-void lcd_set_rotated(int rotated)
+void lcd_set_rotation(int rotated)
 {
 	mutex_enter_blocking(&lcd_mutex);
-	lcd_dev_rotated(rotated);
+	lcd_dev_rotation(rotated);
 	mutex_exit(&lcd_mutex);
 }
 
@@ -207,8 +204,8 @@ static void lcd_draw_empty(int first)
  *	  012345678901234567890123
  *	0 A  12   BC 1234 DE 1234
  *	1 HL 1234 SP 1234 PC 1234
- *	2 IX 1234 IY 1234 AF`1234
- *	3 BC'1234 DE'1234 HL`1234
+ *	2 IX 1234 IY 1234 AF'1234
+ *	3 BC'1234 DE'1234 HL'1234
  *	4 F  SZHPNC  IF12 IR 1234
  *	5 info             xx.xxC
  *
@@ -230,106 +227,6 @@ static void lcd_draw_empty(int first)
 #define XOFF28	8	/* x pixel offset of text coordinate grid for font28 */
 #define YOFF28	0	/* y pixel offset of text coordinate grid for font28 */
 #define SPC28	1	/* vertical spacing for font28 */
-
-/*
- *	Attribute used to disable cloning of __no_inline_not_in_flash functions
- *	with constant arguments at high optimization levels.
- *	Reduces RAM usage dramatically.
- */
-#ifndef __noclone
-#define __noclone	__attribute__((__noclone__))
-#endif
-
-/*
- *	Draw character "c" at text coordinates "x, y" with color "col".
- */
-static void __noclone __no_inline_not_in_flash_func(cpu_char)
-	(uint16_t x, uint16_t y, const char c, uint16_t col,
-	 const font_t *font, uint16_t offx, uint16_t offy, uint16_t spc)
-{
-	draw_char(x * font->width + offx, y * (font->height + spc) + offy, c,
-		  font, col, C_DKBLUE);
-}
-
-static inline void cpu_char20(uint16_t x, uint16_t y, const char c,
-			      uint16_t col)
-{
-	cpu_char(x, y, c, col, &font20, XOFF20, YOFF20, SPC20);
-}
-
-static inline void cpu_char28(uint16_t x, uint16_t y, const char c,
-			      uint16_t col)
-{
-	cpu_char(x, y, c, col, &font28, XOFF28, YOFF28, SPC28);
-}
-
-/*
- *	Draw horizontal grid line in the middle of vertical spacing below
- *	text row "y" with color "col" and vertical adjustment "adj".
- */
-static void __noclone __no_inline_not_in_flash_func(cpu_gridh)
-	(uint16_t y, uint16_t adj, uint16_t col, const font_t *font,
-	 uint16_t offy, uint16_t spc)
-{
-	draw_hline(0,
-		   (y + 1) * (font->height + spc) - (spc + 1) / 2 + offy - adj,
-		   draw_pixmap->width, col);
-}
-
-static inline void cpu_gridh20(uint16_t y, uint16_t adj, uint16_t col)
-{
-	cpu_gridh(y, adj, col, &font20, YOFF20, SPC20);
-}
-
-static inline void cpu_gridh28(uint16_t y, uint16_t adj, uint16_t col)
-{
-	cpu_gridh(y, adj, col, &font28, YOFF28, SPC28);
-}
-
-/*
- *	Draw vertical grid line in the middle of text column "x" with
- *	color "col" from the top of the screen to the middle of vertical
- *	spacing below text row "y" with vertical adjustment "adj".
- */
-static void __noclone __no_inline_not_in_flash_func(cpu_gridv)
-	(uint16_t x, uint16_t y, uint16_t adj, uint16_t col,
-	 const font_t *font, uint16_t offx, uint16_t offy, uint16_t spc)
-{
-	draw_vline(x * font->width + font->width / 2 + offx, 0,
-		   (y + 1) * (font->height + spc) - (spc + 1) / 2 + offy - adj,
-		   col);
-}
-
-static inline void cpu_gridv20(uint16_t x, uint16_t y, uint16_t adj,
-			       uint16_t col) {
-	cpu_gridv(x, y, adj, col, &font20, XOFF20, YOFF20, SPC20);
-}
-
-static inline void cpu_gridv28(uint16_t x, uint16_t y, uint16_t adj,
-			       uint16_t col) {
-	cpu_gridv(x, y, adj, col, &font28, XOFF28, YOFF28, SPC28);
-}
-
-/*
- *	Draw short vertical grid line in the middle of text column "x" with
- *	color "col" from the middle of vertical spacing above text row "y0"
- *	to the middle of vertical spacing below text row "y1" with vertical
- *	adjustment "adj".
- */
-static void __noclone __no_inline_not_in_flash_func(cpu_gridvs)
-	(uint16_t x, uint16_t y0, uint16_t y1, uint16_t adj, uint16_t col,
-	 const font_t *font, uint16_t offx, uint16_t offy, uint16_t spc)
-{
-	draw_vline(x * font->width + font->width / 2 + offx,
-		   y0 * (font->height + spc) - (spc + 1) / 2 + offy,
-		   (y1 - y0 + 1) * (font->height + spc) - adj, col);
-}
-
-static inline void cpu_gridvs20(uint16_t x, uint16_t y0, uint16_t y1,
-				uint16_t adj, uint16_t col)
-{
-	cpu_gridvs(x, y0, y1, adj, col, &font20, XOFF20, YOFF20, SPC20);
-}
 
 typedef struct lbl {
 	uint8_t x;
@@ -379,11 +276,9 @@ typedef struct reg {
 	union {
 		struct {
 			const BYTE *p;
-			uint8_t s;
 		} b;
 		struct {
 			const WORD *p;
-			uint8_t s;
 		} w;
 		struct {
 			char c;
@@ -394,98 +289,56 @@ typedef struct reg {
 
 #ifndef EXCLUDE_Z80
 static const reg_t __not_in_flash("lcd_tables") regs_z80[] = {
-	{  3, 0, RB, .b.p = &A,  .b.s =  4 },
-	{  4, 0, RB, .b.p = &A,  .b.s =  0 },
-	{ 11, 0, RB, .b.p = &B,  .b.s =  4 },
-	{ 12, 0, RB, .b.p = &B,  .b.s =  0 },
-	{ 13, 0, RB, .b.p = &C,  .b.s =  4 },
-	{ 14, 0, RB, .b.p = &C,  .b.s =  0 },
-	{ 19, 0, RB, .b.p = &D,  .b.s =  4 },
-	{ 20, 0, RB, .b.p = &D,  .b.s =  0 },
-	{ 21, 0, RB, .b.p = &E,  .b.s =  4 },
-	{ 22, 0, RB, .b.p = &E,  .b.s =  0 },
-	{  3, 1, RB, .b.p = &H,  .b.s =  4 },
-	{  4, 1, RB, .b.p = &H,  .b.s =  0 },
-	{  5, 1, RB, .b.p = &L,  .b.s =  4 },
-	{  6, 1, RB, .b.p = &L,  .b.s =  0 },
-	{ 11, 1, RW, .w.p = &SP, .w.s = 12 },
-	{ 12, 1, RW, .w.p = &SP, .w.s =  8 },
-	{ 13, 1, RW, .w.p = &SP, .w.s =  4 },
-	{ 14, 1, RW, .w.p = &SP, .w.s =  0 },
-	{ 19, 1, RW, .w.p = &PC, .w.s = 12 },
-	{ 20, 1, RW, .w.p = &PC, .w.s =  8 },
-	{ 21, 1, RW, .w.p = &PC, .w.s =  4 },
-	{ 22, 1, RW, .w.p = &PC, .w.s =  0 },
-	{  3, 2, RW, .w.p = &IX, .w.s = 12 },
-	{  4, 2, RW, .w.p = &IX, .w.s =  8 },
-	{  5, 2, RW, .w.p = &IX, .w.s =  4 },
-	{  6, 2, RW, .w.p = &IX, .w.s =  0 },
-	{ 11, 2, RW, .w.p = &IY, .w.s = 12 },
-	{ 12, 2, RW, .w.p = &IY, .w.s =  8 },
-	{ 13, 2, RW, .w.p = &IY, .w.s =  4 },
-	{ 14, 2, RW, .w.p = &IY, .w.s =  0 },
-	{ 19, 2, RB, .b.p = &A_, .b.s =  4 },
-	{ 20, 2, RB, .b.p = &A_, .b.s =  0 },
-	{ 21, 2, RFA, .b.p = NULL, .b.s = 4 },
-	{ 22, 2, RFA, .b.p = NULL, .b.s = 0 },
-	{  3, 3, RB, .b.p = &B_, .b.s =  4 },
-	{  4, 3, RB, .b.p = &B_, .b.s =  0 },
-	{  5, 3, RB, .b.p = &C_, .b.s =  4 },
-	{  6, 3, RB, .b.p = &C_, .b.s =  0 },
-	{ 11, 3, RB, .b.p = &D_, .b.s =  4 },
-	{ 12, 3, RB, .b.p = &D_, .b.s =  0 },
-	{ 13, 3, RB, .b.p = &E_, .b.s =  4 },
-	{ 14, 3, RB, .b.p = &E_, .b.s =  0 },
-	{ 19, 3, RB, .b.p = &H_, .b.s =  4 },
-	{ 20, 3, RB, .b.p = &H_, .b.s =  0 },
-	{ 21, 3, RB, .b.p = &L_, .b.s =  4 },
-	{ 22, 3, RB, .b.p = &L_, .b.s =  0 },
+	{  4, 0, RB, .b.p = &A },
+	{ 12, 0, RB, .b.p = &B },
+	{ 14, 0, RB, .b.p = &C },
+	{ 20, 0, RB, .b.p = &D },
+	{ 22, 0, RB, .b.p = &E },
+	{  4, 1, RB, .b.p = &H },
+	{  6, 1, RB, .b.p = &L },
+	{ 14, 1, RW, .w.p = &SP },
+	{ 22, 1, RW, .w.p = &PC },
+	{  6, 2, RW, .w.p = &IX },
+	{ 14, 2, RW, .w.p = &IY },
+	{ 20, 2, RB, .b.p = &A_ },
+	{ 22, 2, RFA, .b.p = NULL },
+	{  4, 3, RB, .b.p = &B_ },
+	{  6, 3, RB, .b.p = &C_ },
+	{ 12, 3, RB, .b.p = &D_ },
+	{ 14, 3, RB, .b.p = &E_ },
+	{ 20, 3, RB, .b.p = &H_ },
+	{ 22, 3, RB, .b.p = &L_ },
 	{  3, 4, RF, .f.c = 'S', .f.m = S_FLAG },
 	{  4, 4, RF, .f.c = 'Z', .f.m = Z_FLAG },
 	{  5, 4, RF, .f.c = 'H', .f.m = H_FLAG },
 	{  6, 4, RF, .f.c = 'P', .f.m = P_FLAG },
 	{  7, 4, RF, .f.c = 'N', .f.m = N_FLAG },
 	{  8, 4, RF, .f.c = 'C', .f.m = C_FLAG },
-	{ 13, 4, RI, .f.c = '1', .f.m =  1 },
-	{ 14, 4, RI, .f.c = '2', .f.m =  2 },
-	{ 19, 4, RB, .b.p = &I,  .b.s =  4 },
-	{ 20, 4, RB, .b.p = &I,  .b.s =  0 },
-	{ 21, 4, RR, .b.p = NULL, .b.s =  4 },
-	{ 22, 4, RR, .b.p = NULL, .b.s =  0 }
+	{ 13, 4, RI, .f.c = '1', .f.m = 1 },
+	{ 14, 4, RI, .f.c = '2', .f.m = 2 },
+	{ 20, 4, RB, .b.p = &I },
+	{ 22, 4, RR, .b.p = NULL }
 };
 static const int num_regs_z80 = sizeof(regs_z80) / sizeof(reg_t);
 #endif
 
 #ifndef EXCLUDE_I8080
 static const reg_t __not_in_flash("lcd_tables") regs_8080[] = {
-	{  3, 0, RB, .b.p = &A,  .b.s =  4 },
-	{  4, 0, RB, .b.p = &A,  .b.s =  0 },
-	{ 12, 0, RB, .b.p = &B,  .b.s =  4 },
-	{ 13, 0, RB, .b.p = &B,  .b.s =  0 },
-	{ 14, 0, RB, .b.p = &C,  .b.s =  4 },
-	{ 15, 0, RB, .b.p = &C,  .b.s =  0 },
-	{  3, 1, RB, .b.p = &D,  .b.s =  4 },
-	{  4, 1, RB, .b.p = &D,  .b.s =  0 },
-	{  5, 1, RB, .b.p = &E,  .b.s =  4 },
-	{  6, 1, RB, .b.p = &E,  .b.s =  0 },
-	{ 12, 1, RB, .b.p = &H,  .b.s =  4 },
-	{ 13, 1, RB, .b.p = &H,  .b.s =  0 },
-	{ 14, 1, RB, .b.p = &L,  .b.s =  4 },
-	{ 15, 1, RB, .b.p = &L,  .b.s =  0 },
-	{  3, 2, RW, .w.p = &SP, .w.s = 12 },
-	{  4, 2, RW, .w.p = &SP, .w.s =  8 },
-	{  5, 2, RW, .w.p = &SP, .w.s =  4 },
-	{  6, 2, RW, .w.p = &SP, .w.s =  0 },
-	{ 12, 2, RW, .w.p = &PC, .w.s = 12 },
-	{ 13, 2, RW, .w.p = &PC, .w.s =  8 },
-	{ 14, 2, RW, .w.p = &PC, .w.s =  4 },
-	{ 15, 2, RW, .w.p = &PC, .w.s =  0 },
+	{  4, 0, RB, .b.p = &A },
+	{ 13, 0, RB, .b.p = &B },
+	{ 15, 0, RB, .b.p = &C },
+	{  4, 1, RB, .b.p = &D },
+	{  6, 1, RB, .b.p = &E },
+	{ 13, 1, RB, .b.p = &H },
+	{ 15, 1, RB, .b.p = &L },
+	{  6, 2, RW, .w.p = &SP },
+	{ 15, 2, RW, .w.p = &PC },
 	{  3, 3, RF, .f.c = 'S', .f.m = S_FLAG },
 	{  4, 3, RF, .f.c = 'Z', .f.m = Z_FLAG },
 	{  5, 3, RF, .f.c = 'H', .f.m = H_FLAG },
 	{  6, 3, RF, .f.c = 'P', .f.m = P_FLAG },
 	{  7, 3, RF, .f.c = 'C', .f.m = C_FLAG },
-	{ 15, 3, RI, .f.c = '1', .f.m =  3 }
+	{ 15, 3, RI, .f.c = '1', .f.m = 3 }
 };
 static const int num_regs_8080 = sizeof(regs_8080) / sizeof(reg_t);
 #endif
@@ -504,153 +357,147 @@ static inline float read_onboard_temp(void)
 static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 {
 	char *p, c;
-	int i, n = 0, temp, rem;
-	uint16_t col;
+	int i, j, n = 0, temp;
+	uint16_t col, x;
+	WORD w;
 	const lbl_t *lp;
 	const reg_t *rp = NULL;
-#if PICO_RP2040
-	divmod_result_t res;
-#endif
+	const draw_grid_t *gridp = NULL;
 	static int cpu_type, counter;
+	static draw_grid_t grid20, grid28;
 
 	if (first || (cpu_type != cpu)) {
 		/* if first call or new CPU type, draw static background */
+
+		draw_setup_grid(&grid20, XOFF20, YOFF20, &font20, SPC20);
+		draw_setup_grid(&grid28, XOFF28, YOFF28, &font28, SPC28);
+		counter = LCD_REFRESH - 1;
+
 		draw_clear(C_DKBLUE);
 
 		cpu_type = cpu;
 		/* use cpu_type in the following code, since cpu can change */
 #ifndef EXCLUDE_Z80
 		if (cpu_type == Z80) {
-			/* draw vertical grid lines */
-			cpu_gridv20(7, 3, 0, C_DKYELLOW);
-			cpu_gridvs20(10, 4, 4, 0, C_DKYELLOW);
-			cpu_gridv20(15, 4, 0, C_DKYELLOW);
-			/* draw horizontal grid lines */
-			for (i = 0; i < 5; i++)
-				cpu_gridh20(i, 0, C_DKYELLOW);
-			/* draw labels */
+			gridp = &grid20;
 			lp = lbls_z80;
-			for (i = 0; i < num_lbls_z80; i++) {
-				cpu_char20(lp->x, lp->y, lp->c, C_WHITE);
-				lp++;
-			}
+			n = num_lbls_z80;
+
+			/* draw vertical grid lines */
+			draw_grid_vline(7, 0, 4, gridp, C_DKYELLOW);
+			draw_grid_vline(10, 4, 1, gridp, C_DKYELLOW);
+			draw_grid_vline(15, 0, 5, gridp, C_DKYELLOW);
+			/* draw horizontal grid lines */
+			for (i = 1; i <= 5; i++)
+				draw_grid_hline(0, i, gridp->cols, gridp,
+						C_DKYELLOW);
 		}
 #endif
 #ifndef EXCLUDE_I8080
 		if (cpu_type == I8080) {
-			/* adjustment keeps vertical grid line outside
-			   "info" */
-			cpu_gridv28(8, 3, 2, C_DKYELLOW);
-			/* draw horizontal grid lines */
-			for (i = 0; i < 3; i++)
-				cpu_gridh28(i, 0, C_DKYELLOW);
-			/* draw labels */
+			gridp = &grid28;
 			lp = lbls_8080;
-			for (i = 0; i < num_lbls_8080; i++) {
-				cpu_char28(lp->x, lp->y, lp->c, C_WHITE);
-				lp++;
-			}
+			n = num_lbls_8080;
+
+			/* draw vertical grid line */
+			draw_grid_vline(8, 0, 4, gridp, C_DKYELLOW);
+			/* draw horizontal grid lines */
+			for (i = 1; i <= 3; i++)
+				draw_grid_hline(0, i, gridp->cols, gridp,
+						C_DKYELLOW);
 		}
 #endif
-		/* draw info line */
+		/* draw labels */
+		for (i = 0; i < n; lp++, i++)
+			draw_grid_char(lp->x, lp->y, lp->c, gridp, C_WHITE,
+				       C_DKBLUE);
+		/* draw info line (font20) */
 		p = "Z80pack " USR_REL;
 		for (i = 0; *p && i < 16; i++)
-			cpu_char20(i, 5, *p++, C_ORANGE);
-		cpu_char20(19, 5, '.', C_ORANGE);
-		cpu_char20(22, 5, 'C', C_ORANGE);
+			draw_grid_char(i, 5, *p++, &grid20, C_ORANGE,
+				       C_DKBLUE);
+		draw_grid_char(19, 5, '.', &grid20, C_ORANGE, C_DKBLUE);
+		draw_grid_char(22, 5, 'C', &grid20, C_ORANGE, C_DKBLUE);
 	} else {
 #ifndef EXCLUDE_Z80
 		if (cpu_type == Z80) {
+			gridp = &grid20;
 			rp = regs_z80;
 			n = num_regs_z80;
 		}
 #endif
 #ifndef EXCLUDE_I8080
 		if (cpu_type == I8080) {
+			gridp = &grid28;
 			rp = regs_8080;
 			n = num_regs_8080;
 		}
 #endif
 		/* draw register contents */
-		for (i = 0; i < n; i++) {
+		for (i = 0; i < n; rp++, i++) {
 			col = C_GREEN;
 			switch (rp->type) {
 			case RB: /* byte sized register */
-				c = (*(rp->b.p) >> rp->b.s) & 0xf;
-				c += c < 10 ? '0' : 'A' - 10;
+				w = *(rp->b.p);
+				j = 2;
 				break;
 			case RW: /* word sized register */
-				c = (*(rp->w.p) >> rp->w.s) & 0xf;
-				c += c < 10 ? '0' : 'A' - 10;
+				w = *(rp->w.p);
+				j = 4;
 				break;
 			case RF: /* flags */
-				c = rp->f.c;
 				if (!(F & rp->f.m))
 					col = C_RED;
-				break;
+				draw_grid_char(rp->x, rp->y, rp->f.c, gridp,
+					       col, C_DKBLUE);
+				continue;
 			case RI: /* interrupt register */
-				c = rp->f.c;
 				if ((IFF & rp->f.m) != rp->f.m)
 					col = C_RED;
-				break;
+				draw_grid_char(rp->x, rp->y, rp->f.c, gridp,
+					       col, C_DKBLUE);
+				continue;
 #ifndef EXCLUDE_Z80
 			case RFA: /* alternate flags (int) */
-				c = (F_ >> rp->b.s) & 0xf;
-				c += c < 10 ? '0' : 'A' - 10;
+				w = F_;
+				j = 2;
 				break;
 			case RR: /* refresh register */
-				c = (((R_ & 0x80) | (R & 0x7f)) >> rp->b.s)
-					& 0xf;
-				c += c < 10 ? '0' : 'A' - 10;
+				w = (R_ & 0x80) | (R & 0x7f);
+				j = 2;
 				break;
 #endif
-			default: /* shouldn't happen, silence compiler */
-				c = ' ';
-				break;
+			default:
+				continue;
 			}
-#ifndef EXCLUDE_Z80
-			if (cpu_type == Z80)
-				cpu_char20(rp->x, rp->y, c, col);
-#endif
-#ifndef EXCLUDE_I8080
-			if (cpu_type == I8080)
-				cpu_char28(rp->x, rp->y, c, col);
-#endif
-			rp++;
+			x = rp->x;
+			while (j--) {
+				c = w & 0xf;
+				c += c < 10 ? '0' : 'A' - 10;
+				draw_grid_char(x--, rp->y, c, gridp, col,
+					       C_DKBLUE);
+				w >>= 4;
+			}
 		}
-#ifndef EXCLUDE_I8080
-		if (cpu_type == I8080) {
-			/*
-			 *	The adjustment moves the grid line from inside
-			 *	the "info" into the descenders space of the
-			 *	"F IF" line, therefore the need to draw it
-			 *	inside the refresh code.
-			 */
-			cpu_gridh28(3, 2, C_DKYELLOW);
-		}
-#endif
 		/* update temperature every second */
-		if (++counter == LCD_REFRESH) {
+		if (++counter >= LCD_REFRESH) {
 			counter = 0;
 			temp = (int) (read_onboard_temp() * 100.0f + 0.5f);
-#if PICO_RP2040
-			res = (divmod_result_t) temp;
-#endif
 			for (i = 0; i < 5; i++) {
-#if PICO_RP2040
-				res = hw_divider_divmod_u32
-					(to_quotient_u32(res), 10);
-				rem = to_remainder_u32(res);
-#else
-				rem = temp % 10;
+				draw_grid_char(21 - i, 5, '0' + temp % 10,
+					       &grid20, C_ORANGE, C_DKBLUE);
 				if (i < 4)
 					temp /= 10;
-#endif
-				cpu_char20(21 - i, 5, '0' + rem, C_ORANGE);
 				if (i == 1)
 					i++; /* skip decimal point */
 			}
 		}
+#ifndef EXCLUDE_I8080
+		if (cpu_type == I8080) {
+			/* info occupies the same space, so it is draw here */
+			draw_grid_hline(0, 4, gridp->cols, gridp, C_DKYELLOW);
+		}
+#endif
 	}
 }
 
@@ -715,8 +562,8 @@ static void __not_in_flash_func(lcd_draw_memory)(int first)
 #define PLEDHO	(PLBLW + PLEDS)			/* horiz. offset to next LED */
 #define PLEDVO	(3 * PFNTH)			/* vert. offset to next row */
 
-#define PLEDX(x) (PXOFF + PLEDXO + PLEDBS * ((x) / 8) + PLEDHO * (x))
-#define PLEDY(y) (PYOFF + PLEDYO + PLEDVO * (y))
+#define LX(x)	(PXOFF + PLEDXO + PLEDBS * ((x) / 8) + PLEDHO * (x))
+#define LY(y)	(PYOFF + PLEDYO + PLEDVO * (y))
 
 static BYTE fp_led_wait;			/* dummy */
 
@@ -740,101 +587,58 @@ typedef struct led {
 } led_t;
 
 static const led_t __not_in_flash("lcd_tables") leds[] = {
-	{ PLEDX( 0), PLEDY(0), 'P', '7', LB, .b.i = 0xff, .b.m = 0x80,
-	  .b.p = &fp_led_output },
-	{ PLEDX( 1), PLEDY(0), 'P', '6', LB, .b.i = 0xff, .b.m = 0x40,
-	  .b.p = &fp_led_output },
-	{ PLEDX( 2), PLEDY(0), 'P', '5', LB, .b.i = 0xff, .b.m = 0x20,
-	  .b.p = &fp_led_output },
-	{ PLEDX( 3), PLEDY(0), 'P', '4', LB, .b.i = 0xff, .b.m = 0x10,
-	  .b.p = &fp_led_output },
-	{ PLEDX( 4), PLEDY(0), 'P', '3', LB, .b.i = 0xff, .b.m = 0x08,
-	  .b.p = &fp_led_output },
-	{ PLEDX( 5), PLEDY(0), 'P', '2', LB, .b.i = 0xff, .b.m = 0x04,
-	  .b.p = &fp_led_output },
-	{ PLEDX( 6), PLEDY(0), 'P', '1', LB, .b.i = 0xff, .b.m = 0x02,
-	  .b.p = &fp_led_output },
-	{ PLEDX( 7), PLEDY(0), 'P', '0', LB, .b.i = 0xff, .b.m = 0x01,
-	  .b.p = &fp_led_output },
-	{ PLEDX(12), PLEDY(0), 'I', 'E', LB, .b.i = 0x00, .b.m = 0x01,
-	  .b.p = &IFF },
-	{ PLEDX(13), PLEDY(0), 'R', 'U', LB, .b.i = 0x00, .b.m = 0x01,
-	  .b.p = &cpu_state },
-	{ PLEDX(14), PLEDY(0), 'W', 'A', LB, .b.i = 0x00, .b.m = 0x01,
-	  .b.p = &fp_led_wait },
-	{ PLEDX(15), PLEDY(0), 'H', 'O', LB, .b.i = 0x00, .b.m = 0x01,
-	  .b.p = &bus_request },
-	{ PLEDX( 0), PLEDY(1), 'M', 'R', LB, .b.i = 0x00, .b.m = 0x80,
-	  .b.p = &cpu_bus },
-	{ PLEDX( 1), PLEDY(1), 'I', 'P', LB, .b.i = 0x00, .b.m = 0x40,
-	  .b.p = &cpu_bus },
-	{ PLEDX( 2), PLEDY(1), 'M', '1', LB, .b.i = 0x00, .b.m = 0x20,
-	  .b.p = &cpu_bus },
-	{ PLEDX( 3), PLEDY(1), 'O', 'P', LB, .b.i = 0x00, .b.m = 0x10,
-	  .b.p = &cpu_bus },
-	{ PLEDX( 4), PLEDY(1), 'H', 'A', LB, .b.i = 0x00, .b.m = 0x08,
-	  .b.p = &cpu_bus },
-	{ PLEDX( 5), PLEDY(1), 'S', 'T', LB, .b.i = 0x00, .b.m = 0x04,
-	  .b.p = &cpu_bus },
-	{ PLEDX( 6), PLEDY(1), 'W', 'O', LB, .b.i = 0x00, .b.m = 0x02,
-	  .b.p = &cpu_bus },
-	{ PLEDX( 7), PLEDY(1), 'I', 'A', LB, .b.i = 0x00, .b.m = 0x01,
-	  .b.p = &cpu_bus },
-	{ PLEDX( 8), PLEDY(1), 'D', '7', LB, .b.i = 0x00, .b.m = 0x80,
-	  .b.p = &fp_led_data },
-	{ PLEDX( 9), PLEDY(1), 'D', '6', LB, .b.i = 0x00, .b.m = 0x40,
-	  .b.p = &fp_led_data },
-	{ PLEDX(10), PLEDY(1), 'D', '5', LB, .b.i = 0x00, .b.m = 0x20,
-	  .b.p = &fp_led_data },
-	{ PLEDX(11), PLEDY(1), 'D', '4', LB, .b.i = 0x00, .b.m = 0x10,
-	  .b.p = &fp_led_data },
-	{ PLEDX(12), PLEDY(1), 'D', '3', LB, .b.i = 0x00, .b.m = 0x08,
-	  .b.p = &fp_led_data },
-	{ PLEDX(13), PLEDY(1), 'D', '2', LB, .b.i = 0x00, .b.m = 0x04,
-	  .b.p = &fp_led_data },
-	{ PLEDX(14), PLEDY(1), 'D', '1', LB, .b.i = 0x00, .b.m = 0x02,
-	  .b.p = &fp_led_data },
-	{ PLEDX(15), PLEDY(1), 'D', '0', LB, .b.i = 0x00, .b.m = 0x01,
-	  .b.p = &fp_led_data },
-	{ PLEDX( 0), PLEDY(2), '1', '5', LW, .w.m = 0x8000,
-	  .w.p = &fp_led_address },
-	{ PLEDX( 1), PLEDY(2), '1', '4', LW, .w.m = 0x4000,
-	  .w.p = &fp_led_address },
-	{ PLEDX( 2), PLEDY(2), '1', '3', LW, .w.m = 0x2000,
-	  .w.p = &fp_led_address },
-	{ PLEDX( 3), PLEDY(2), '1', '2', LW, .w.m = 0x1000,
-	  .w.p = &fp_led_address },
-	{ PLEDX( 4), PLEDY(2), '1', '1', LW, .w.m = 0x0800,
-	  .w.p = &fp_led_address },
-	{ PLEDX( 5), PLEDY(2), '1', '0', LW, .w.m = 0x0400,
-	  .w.p = &fp_led_address },
-	{ PLEDX( 6), PLEDY(2), 'A', '9', LW, .w.m = 0x0200,
-	  .w.p = &fp_led_address },
-	{ PLEDX( 7), PLEDY(2), 'A', '8', LW, .w.m = 0x0100,
-	  .w.p = &fp_led_address },
-	{ PLEDX( 8), PLEDY(2), 'A', '7', LW, .w.m = 0x0080,
-	  .w.p = &fp_led_address },
-	{ PLEDX( 9), PLEDY(2), 'A', '6', LW, .w.m = 0x0040,
-	  .w.p = &fp_led_address },
-	{ PLEDX(10), PLEDY(2), 'A', '5', LW, .w.m = 0x0020,
-	  .w.p = &fp_led_address },
-	{ PLEDX(11), PLEDY(2), 'A', '4', LW, .w.m = 0x0010,
-	  .w.p = &fp_led_address },
-	{ PLEDX(12), PLEDY(2), 'A', '3', LW, .w.m = 0x0008,
-	  .w.p = &fp_led_address },
-	{ PLEDX(13), PLEDY(2), 'A', '2', LW, .w.m = 0x0004,
-	  .w.p = &fp_led_address },
-	{ PLEDX(14), PLEDY(2), 'A', '1', LW, .w.m = 0x0002,
-	  .w.p = &fp_led_address },
-	{ PLEDX(15), PLEDY(2), 'A', '0', LW, .w.m = 0x0001,
-	  .w.p = &fp_led_address }
+	{ LX( 0), LY(0), 'P', '7', LB, .b.i = 0xff, .b.m = 0x80, .b.p = &fp_led_output },
+	{ LX( 1), LY(0), 'P', '6', LB, .b.i = 0xff, .b.m = 0x40, .b.p = &fp_led_output },
+	{ LX( 2), LY(0), 'P', '5', LB, .b.i = 0xff, .b.m = 0x20, .b.p = &fp_led_output },
+	{ LX( 3), LY(0), 'P', '4', LB, .b.i = 0xff, .b.m = 0x10, .b.p = &fp_led_output },
+	{ LX( 4), LY(0), 'P', '3', LB, .b.i = 0xff, .b.m = 0x08, .b.p = &fp_led_output },
+	{ LX( 5), LY(0), 'P', '2', LB, .b.i = 0xff, .b.m = 0x04, .b.p = &fp_led_output },
+	{ LX( 6), LY(0), 'P', '1', LB, .b.i = 0xff, .b.m = 0x02, .b.p = &fp_led_output },
+	{ LX( 7), LY(0), 'P', '0', LB, .b.i = 0xff, .b.m = 0x01, .b.p = &fp_led_output },
+	{ LX(12), LY(0), 'I', 'E', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &IFF },
+	{ LX(13), LY(0), 'R', 'U', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &cpu_state },
+	{ LX(14), LY(0), 'W', 'A', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &fp_led_wait },
+	{ LX(15), LY(0), 'H', 'O', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &bus_request },
+	{ LX( 0), LY(1), 'M', 'R', LB, .b.i = 0x00, .b.m = 0x80, .b.p = &cpu_bus },
+	{ LX( 1), LY(1), 'I', 'P', LB, .b.i = 0x00, .b.m = 0x40, .b.p = &cpu_bus },
+	{ LX( 2), LY(1), 'M', '1', LB, .b.i = 0x00, .b.m = 0x20, .b.p = &cpu_bus },
+	{ LX( 3), LY(1), 'O', 'P', LB, .b.i = 0x00, .b.m = 0x10, .b.p = &cpu_bus },
+	{ LX( 4), LY(1), 'H', 'A', LB, .b.i = 0x00, .b.m = 0x08, .b.p = &cpu_bus },
+	{ LX( 5), LY(1), 'S', 'T', LB, .b.i = 0x00, .b.m = 0x04, .b.p = &cpu_bus },
+	{ LX( 6), LY(1), 'W', 'O', LB, .b.i = 0x00, .b.m = 0x02, .b.p = &cpu_bus },
+	{ LX( 7), LY(1), 'I', 'A', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &cpu_bus },
+	{ LX( 8), LY(1), 'D', '7', LB, .b.i = 0x00, .b.m = 0x80, .b.p = &fp_led_data },
+	{ LX( 9), LY(1), 'D', '6', LB, .b.i = 0x00, .b.m = 0x40, .b.p = &fp_led_data },
+	{ LX(10), LY(1), 'D', '5', LB, .b.i = 0x00, .b.m = 0x20, .b.p = &fp_led_data },
+	{ LX(11), LY(1), 'D', '4', LB, .b.i = 0x00, .b.m = 0x10, .b.p = &fp_led_data },
+	{ LX(12), LY(1), 'D', '3', LB, .b.i = 0x00, .b.m = 0x08, .b.p = &fp_led_data },
+	{ LX(13), LY(1), 'D', '2', LB, .b.i = 0x00, .b.m = 0x04, .b.p = &fp_led_data },
+	{ LX(14), LY(1), 'D', '1', LB, .b.i = 0x00, .b.m = 0x02, .b.p = &fp_led_data },
+	{ LX(15), LY(1), 'D', '0', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &fp_led_data },
+	{ LX( 0), LY(2), '1', '5', LW, .w.m = 0x8000, .w.p = &fp_led_address },
+	{ LX( 1), LY(2), '1', '4', LW, .w.m = 0x4000, .w.p = &fp_led_address },
+	{ LX( 2), LY(2), '1', '3', LW, .w.m = 0x2000, .w.p = &fp_led_address },
+	{ LX( 3), LY(2), '1', '2', LW, .w.m = 0x1000, .w.p = &fp_led_address },
+	{ LX( 4), LY(2), '1', '1', LW, .w.m = 0x0800, .w.p = &fp_led_address },
+	{ LX( 5), LY(2), '1', '0', LW, .w.m = 0x0400, .w.p = &fp_led_address },
+	{ LX( 6), LY(2), 'A', '9', LW, .w.m = 0x0200, .w.p = &fp_led_address },
+	{ LX( 7), LY(2), 'A', '8', LW, .w.m = 0x0100, .w.p = &fp_led_address },
+	{ LX( 8), LY(2), 'A', '7', LW, .w.m = 0x0080, .w.p = &fp_led_address },
+	{ LX( 9), LY(2), 'A', '6', LW, .w.m = 0x0040, .w.p = &fp_led_address },
+	{ LX(10), LY(2), 'A', '5', LW, .w.m = 0x0020, .w.p = &fp_led_address },
+	{ LX(11), LY(2), 'A', '4', LW, .w.m = 0x0010, .w.p = &fp_led_address },
+	{ LX(12), LY(2), 'A', '3', LW, .w.m = 0x0008, .w.p = &fp_led_address },
+	{ LX(13), LY(2), 'A', '2', LW, .w.m = 0x0004, .w.p = &fp_led_address },
+	{ LX(14), LY(2), 'A', '1', LW, .w.m = 0x0002, .w.p = &fp_led_address },
+	{ LX(15), LY(2), 'A', '0', LW, .w.m = 0x0001, .w.p = &fp_led_address }
 };
 static const int num_leds = sizeof(leds) / sizeof(led_t);
 
 /*
  *	Draw a 10x10 LED circular bracket.
  */
-static inline void __not_in_flash_func(panel_bracket)(uint16_t x, uint16_t y)
+static inline void __not_in_flash_func(draw_led_bracket)(uint16_t x,
+							 uint16_t y)
 {
 	draw_hline(x + 2, y, 6, C_GRAY);
 	draw_pixel(x + 1, y + 1, C_GRAY);
@@ -849,8 +653,8 @@ static inline void __not_in_flash_func(panel_bracket)(uint16_t x, uint16_t y)
 /*
  *	Draw a LED inside a 10x10 circular bracket.
  */
-static inline void __not_in_flash_func(panel_led)(uint16_t x, uint16_t y,
-						  int on_off)
+static inline void __not_in_flash_func(draw_led)(uint16_t x, uint16_t y,
+						 int on_off)
 {
 	uint16_t col = on_off ? C_RED : C_DKRED;
 	int i;
@@ -866,11 +670,7 @@ static inline void __not_in_flash_func(panel_led)(uint16_t x, uint16_t y,
 static void __not_in_flash_func(lcd_draw_panel)(int first)
 {
 	const led_t *p;
-#if PICO_RP2040
-	const char *model = "Z80pack RP2040-GEEK " USR_REL;
-#else
-	const char *model = "Z80pack RP2350-GEEK " USR_REL;
-#endif
+	const char *model = "Z80pack " MODEL " " USR_REL;
 	const char *s;
 	int i, bit;
 
@@ -885,7 +685,7 @@ static void __not_in_flash_func(lcd_draw_panel)(int first)
 			if (p->c1 == 'W' && p->c2 == 'O')
 				draw_hline(p->x - PLEDXO, p->y - PLEDYO - 2,
 					   PLBLW, C_WHITE);
-			panel_bracket(p->x, p->y);
+			draw_led_bracket(p->x, p->y);
 			p++;
 		}
 		i = (draw_pixmap->width - strlen(model) * font20.width) / 2;
@@ -900,7 +700,7 @@ static void __not_in_flash_func(lcd_draw_panel)(int first)
 				bit = (*(p->b.p) ^ p->b.i) & p->b.m;
 			else
 				bit = *(p->w.p) & p->w.m;
-			panel_led(p->x, p->y, bit);
+			draw_led(p->x, p->y, bit);
 			p++;
 		}
 	}

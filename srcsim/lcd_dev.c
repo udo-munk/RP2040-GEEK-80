@@ -220,7 +220,7 @@ void lcd_dev_backlight(uint8_t value)
 /*
  *	Set LCD rotation mode
  */
-void lcd_dev_rotated(uint8_t rotated)
+void lcd_dev_rotation(uint8_t rotated)
 {
 	lcd_dma_wait();
 
@@ -264,7 +264,7 @@ static void __not_in_flash_func(lcd_dma_wait)(void)
 /*
  *	Send a pixmap to the LCD controller using DMA
  */
-void __not_in_flash_func(lcd_dev_display)(draw_pixmap_t *pixmap)
+void __not_in_flash_func(lcd_dev_send_pixmap)(draw_pixmap_t *pixmap)
 {
 	uint8_t x = 40, y = lcd_rotated ? 52 : 53;
 

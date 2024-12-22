@@ -18,7 +18,7 @@
 typedef void (*lcd_func_t)(int first);
 
 extern void lcd_init(void), lcd_exit(void);
-extern void lcd_set_rotated(int rotated);
+extern void lcd_set_rotation(int rotated);
 extern void lcd_custom_disp(lcd_func_t draw_func);
 extern void lcd_status_disp(int which);
 extern void lcd_status_next(void);
