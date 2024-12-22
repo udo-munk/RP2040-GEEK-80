@@ -8,7 +8,7 @@ Program Information
  features:            UART stdin / stdout
                       USB stdin / stdout
  binary start:        0x10000000
- binary end:          0x1004c83c
+ binary end:          0x1004cec4
  target chip:         RP2350
  image type:          ARM Secure
 
@@ -22,17 +22,17 @@ Build Information
  sdk version:         2.1.0
  pico_board:          waveshare_rp2350_geek
  boot2_name:          boot2_w25q080
- build date:          Dec 21 2024
+ build date:          Dec 22 2024
  build attributes:    Release
 
 Metadata Block 1
  address:             0x10000138
- next block address:  0x1004c828
+ next block address:  0x1004ceb0
  block type:          image def
  target chip:         RP2350
  image type:          ARM Secure
 
 Metadata Block 2
- address:             0x1004c828
+ address:             0x1004ceb0
  next block address:  0x10000138
  block type:          ignored
