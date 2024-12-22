@@ -78,11 +78,7 @@ void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 
 static const draw_banner_t banner[] = {
 	{ "Z80pack " RELEASE, C_GREEN },
-#if PICO_RP2040
-	{ "RP2040-GEEK " USR_REL, C_RED },
-#else
-	{ "RP2350-GEEK " USR_REL, C_RED },
-#endif
+	{ MODEL " " USR_REL, C_RED },
 	{ "by Udo Munk &", C_WHITE },
 	{ "Thomas Eberhardt", C_WHITE },
 	{ NULL, 0 }

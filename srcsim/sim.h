@@ -30,10 +30,12 @@
 #endif
 
 #if PICO_RP2040
-#define USR_COM "Waveshare RP2040-GEEK Z80/8080 emulator"
+#define MODEL "RP2040-GEEK"
 #else
-#define USR_COM "Waveshare RP2350-GEEK Z80/8080 emulator"
+#define MODEL "RP2350-GEEK"
 #endif
+
+#define USR_COM "Waveshare " MODEL " Z80/8080 emulator"
 #define USR_REL "1.4"
 #define USR_CPR "Copyright (C) 2024 by Udo Munk & Thomas Eberhardt"
 

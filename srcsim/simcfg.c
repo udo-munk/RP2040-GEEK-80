@@ -164,7 +164,7 @@ void config(void)
 	aon_timer_start(&ts);
 
 	lcd_brightness(brightness);
-	lcd_set_rotated(rotated);
+	lcd_set_rotation(rotated);
 
 	menu = 1;
 
@@ -240,7 +240,7 @@ void config(void)
 
 		case 'm':
 			rotated = !rotated;
-			lcd_set_rotated(rotated);
+			lcd_set_rotation(rotated);
 			break;
 
 		case 'l':
