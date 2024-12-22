@@ -21,9 +21,15 @@
 #define NUMDISK	4	/* number of disk drives */
 #define DISKLEN	22	/* path length for disk drives /DISKS80/filename.DSK */
 
+/* disk access LED states */
+#define DISK_LED_OFF	0
+#define DISK_LED_READ	1
+#define DISK_LED_WRITE	2
+
 extern FIL sd_file;
 extern FRESULT sd_res;
 extern char disks[NUMDISK][DISKLEN];
+extern int disk_led;
 
 extern void init_disks(void), exit_disks(void);
 extern void list_files(const char *dir, const char *ext);

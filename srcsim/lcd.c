@@ -16,8 +16,9 @@
 #include "simglb.h"
 #include "simmem.h"
 
-#include "draw.h"
 #include "lcd.h"
+#include "draw.h"
+#include "disks.h"
 
 #if COLOR_DEPTH == 12
 #define STRIDE (((WAVESHARE_GEEK_LCD_WIDTH + 1) / 2) * 3)
@@ -207,7 +208,7 @@ static void lcd_draw_empty(int first)
  *	2 IX 1234 IY 1234 AF'1234
  *	3 BC'1234 DE'1234 HL'1234
  *	4 F  SZHPNC  IF12 IR 1234
- *	5 info             xx.xxC
+ *	5 info           o xx.xxC
  *
  *	8080 CPU using font28 (14 x 28 pixels)
  *	--------------------------------------
@@ -217,16 +218,19 @@ static void lcd_draw_empty(int first)
  *	1 DE 1234  HL 1234
  *	2 SP 1234  PC 1234
  *	3 F  SZHPC    IF 1
- *	4 info      xx.xxC (font20)
+ *	4 info    o xx.xxC (font20)
  */
 
-#define XOFF20	5	/* x pixel offset of text coordinate grid for font20 */
-#define YOFF20	0	/* y pixel offset of text coordinate grid for font20 */
+#define XOFF20	5	/* x pixel offset of text grid for font20 */
+#define YOFF20	0	/* y pixel offset of text grid for font20 */
 #define SPC20	3	/* vertical spacing for font20 */
 
-#define XOFF28	8	/* x pixel offset of text coordinate grid for font28 */
-#define YOFF28	0	/* y pixel offset of text coordinate grid for font28 */
+#define XOFF28	8	/* x pixel offset of text grid for font28 */
+#define YOFF28	0	/* y pixel offset of text grid for font28 */
 #define SPC28	1	/* vertical spacing for font28 */
+
+#define DISKLX	150	/* disk access LED position */
+#define DISKLY	120
 
 typedef struct lbl {
 	uint8_t x;
@@ -358,7 +362,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 {
 	char *p, c;
 	int i, j, n = 0, temp;
-	uint16_t col, x;
+	uint16_t x;
 	WORD w;
 	const lbl_t *lp;
 	const reg_t *rp = NULL;
@@ -371,7 +375,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 
 		draw_setup_grid(&grid20, XOFF20, YOFF20, &font20, SPC20);
 		draw_setup_grid(&grid28, XOFF28, YOFF28, &font28, SPC28);
-		counter = LCD_REFRESH - 1;
+		counter = LCD_REFRESH - 1; /* force temperature update */
 
 		draw_clear(C_DKBLUE);
 
@@ -388,7 +392,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 			draw_grid_vline(10, 4, 1, gridp, C_DKYELLOW);
 			draw_grid_vline(15, 0, 5, gridp, C_DKYELLOW);
 			/* draw horizontal grid lines */
-			for (i = 1; i <= 5; i++)
+			for (i = 1; i < 6; i++)
 				draw_grid_hline(0, i, gridp->cols, gridp,
 						C_DKYELLOW);
 		}
@@ -402,7 +406,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 			/* draw vertical grid line */
 			draw_grid_vline(8, 0, 4, gridp, C_DKYELLOW);
 			/* draw horizontal grid lines */
-			for (i = 1; i <= 3; i++)
+			for (i = 1; i < 4; i++)
 				draw_grid_hline(0, i, gridp->cols, gridp,
 						C_DKYELLOW);
 		}
@@ -413,11 +417,13 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 				       C_DKBLUE);
 		/* draw info line (font20) */
 		p = "Z80pack " USR_REL;
-		for (i = 0; *p && i < 16; i++)
+		for (i = 0; *p && i < 12; i++)
 			draw_grid_char(i, 5, *p++, &grid20, C_ORANGE,
 				       C_DKBLUE);
 		draw_grid_char(19, 5, '.', &grid20, C_ORANGE, C_DKBLUE);
 		draw_grid_char(22, 5, 'C', &grid20, C_ORANGE, C_DKBLUE);
+		/* draw the disk access LED bracket */
+		draw_led_bracket(DISKLX, DISKLY);
 	} else {
 #ifndef EXCLUDE_Z80
 		if (cpu_type == Z80) {
@@ -435,7 +441,6 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 #endif
 		/* draw register contents */
 		for (i = 0; i < n; rp++, i++) {
-			col = C_GREEN;
 			switch (rp->type) {
 			case RB: /* byte sized register */
 				w = *(rp->b.p);
@@ -446,16 +451,14 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 				j = 4;
 				break;
 			case RF: /* flags */
-				if (!(F & rp->f.m))
-					col = C_RED;
 				draw_grid_char(rp->x, rp->y, rp->f.c, gridp,
-					       col, C_DKBLUE);
+					       (F & rp->f.m) ? C_GREEN : C_RED,
+					       C_DKBLUE);
 				continue;
 			case RI: /* interrupt register */
-				if ((IFF & rp->f.m) != rp->f.m)
-					col = C_RED;
 				draw_grid_char(rp->x, rp->y, rp->f.c, gridp,
-					       col, C_DKBLUE);
+					       (IFF & rp->f.m) == rp->f.m ?
+					       C_GREEN : C_RED, C_DKBLUE);
 				continue;
 #ifndef EXCLUDE_Z80
 			case RFA: /* alternate flags (int) */
@@ -474,7 +477,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 			while (j--) {
 				c = w & 0xf;
 				c += c < 10 ? '0' : 'A' - 10;
-				draw_grid_char(x--, rp->y, c, gridp, col,
+				draw_grid_char(x--, rp->y, c, gridp, C_GREEN,
 					       C_DKBLUE);
 				w >>= 4;
 			}
@@ -492,12 +495,17 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 					i++; /* skip decimal point */
 			}
 		}
-#ifndef EXCLUDE_I8080
 		if (cpu_type == I8080) {
-			/* info occupies the same space, so it is draw here */
+			/*
+			 * do this here, because the line would be overdrawn
+			 * by the info line, as the font28 register display
+			 * is one pixel row larger than the font20 one
+			 */
 			draw_grid_hline(0, 4, gridp->cols, gridp, C_DKYELLOW);
 		}
-#endif
+		/* update the disk access LED */
+		draw_led(DISKLX, DISKLY, disk_led == DISK_LED_OFF ? C_DKRED :
+			 (disk_led == DISK_LED_READ ? C_GREEN : C_RED));
 	}
 }
 
@@ -572,7 +580,7 @@ typedef struct led {
 	uint16_t y;
 	char c1;
 	char c2;
-	enum { LB, LW } type;
+	enum { LB, LW, LD } type;
 	union {
 		struct {
 			BYTE i;
@@ -595,6 +603,7 @@ static const led_t __not_in_flash("lcd_tables") leds[] = {
 	{ LX( 5), LY(0), 'P', '2', LB, .b.i = 0xff, .b.m = 0x04, .b.p = &fp_led_output },
 	{ LX( 6), LY(0), 'P', '1', LB, .b.i = 0xff, .b.m = 0x02, .b.p = &fp_led_output },
 	{ LX( 7), LY(0), 'P', '0', LB, .b.i = 0xff, .b.m = 0x01, .b.p = &fp_led_output },
+	{ LX(10), LY(0), 'D', 'K', LD, .b.i = 0x00, .b.m = 0x00, .b.p = NULL },
 	{ LX(12), LY(0), 'I', 'E', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &IFF },
 	{ LX(13), LY(0), 'R', 'U', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &cpu_state },
 	{ LX(14), LY(0), 'W', 'A', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &fp_led_wait },
@@ -634,45 +643,13 @@ static const led_t __not_in_flash("lcd_tables") leds[] = {
 };
 static const int num_leds = sizeof(leds) / sizeof(led_t);
 
-/*
- *	Draw a 10x10 LED circular bracket.
- */
-static inline void __not_in_flash_func(draw_led_bracket)(uint16_t x,
-							 uint16_t y)
-{
-	draw_hline(x + 2, y, 6, C_GRAY);
-	draw_pixel(x + 1, y + 1, C_GRAY);
-	draw_pixel(x + 8, y + 1, C_GRAY);
-	draw_vline(x, y + 2, 6, C_GRAY);
-	draw_vline(x + 9, y + 2, 6, C_GRAY);
-	draw_pixel(x + 1, y + 8, C_GRAY);
-	draw_pixel(x + 8, y + 8, C_GRAY);
-	draw_hline(x + 2, y + 9, 6, C_GRAY);
-}
-
-/*
- *	Draw a LED inside a 10x10 circular bracket.
- */
-static inline void __not_in_flash_func(draw_led)(uint16_t x, uint16_t y,
-						 int on_off)
-{
-	uint16_t col = on_off ? C_RED : C_DKRED;
-	int i;
-
-	for (i = 1; i < 9; i++) {
-		if (i == 1 || i == 8)
-			draw_hline(x + 2, y + i, 6, col);
-		else
-			draw_hline(x + 1, y + i, 8, col);
-	}
-}
-
 static void __not_in_flash_func(lcd_draw_panel)(int first)
 {
 	const led_t *p;
 	const char *model = "Z80pack " MODEL " " USR_REL;
 	const char *s;
-	int i, bit;
+	int i;
+	uint16_t col;
 
 	p = leds;
 	if (first) {
@@ -696,11 +673,26 @@ static void __not_in_flash_func(lcd_draw_panel)(int first)
 		}
 	} else {
 		for (i = 0; i < num_leds; i++) {
-			if (p->type == LB)
-				bit = (*(p->b.p) ^ p->b.i) & p->b.m;
-			else
-				bit = *(p->w.p) & p->w.m;
-			draw_led(p->x, p->y, bit);
+			col = C_DKRED;
+			switch (p->type) {
+			case LB:
+				if ((*(p->b.p) ^ p->b.i) & p->b.m)
+					col = C_RED;
+				break;
+			case LW:
+				if (*(p->w.p) & p->w.m)
+					col = C_RED;
+				break;
+			case LD:
+				if (disk_led == DISK_LED_READ)
+					col = C_GREEN;
+				else if (disk_led == DISK_LED_WRITE)
+					col = C_RED;
+				break;
+			default:
+				break;
+			}
+			draw_led(p->x, p->y, col);
 			p++;
 		}
 	}

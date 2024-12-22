@@ -382,4 +382,36 @@ static inline void draw_grid_vline(uint16_t x, uint16_t y, uint16_t h,
 	}
 }
 
+/*
+ *	Draw a 10x10 LED circular bracket.
+ */
+static inline void __not_in_flash_func(draw_led_bracket)(uint16_t x,
+							 uint16_t y)
+{
+	draw_hline(x + 2, y, 6, C_GRAY);
+	draw_pixel(x + 1, y + 1, C_GRAY);
+	draw_pixel(x + 8, y + 1, C_GRAY);
+	draw_vline(x, y + 2, 6, C_GRAY);
+	draw_vline(x + 9, y + 2, 6, C_GRAY);
+	draw_pixel(x + 1, y + 8, C_GRAY);
+	draw_pixel(x + 8, y + 8, C_GRAY);
+	draw_hline(x + 2, y + 9, 6, C_GRAY);
+}
+
+/*
+ *	Draw a LED inside a 10x10 circular bracket.
+ */
+static inline void __not_in_flash_func(draw_led)(uint16_t x, uint16_t y,
+						 uint16_t col)
+{
+	int i;
+
+	for (i = 1; i < 9; i++) {
+		if (i == 1 || i == 8)
+			draw_hline(x + 2, y + i, 6, col);
+		else
+			draw_hline(x + 1, y + i, 8, col);
+	}
+}
+
 #endif /* !DRAW_INC */

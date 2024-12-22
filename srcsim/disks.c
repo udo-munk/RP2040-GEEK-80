@@ -33,6 +33,7 @@
 FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
 char disks[NUMDISK][DISKLEN]; /* path name for 4 disk images /DISKS80/filename.DSK */
+int disk_led;	/* status of disk access LED */
 
 static FATFS fs; /* FatFs on MicroSD */
 
@@ -264,26 +265,30 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 	unsigned int br;
 	register int i;
 
-	/* prepare for sector read */
-	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
-		return stat;
+	disk_led = DISK_LED_READ;
 
-	/* read sector into memory */
-	sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br);
-	if (sd_res == FR_OK) {
-		if (br < SEC_SZ) {	/* UH OH */
-			f_close(&sd_file);
-			return FDC_STAT_READ;
-		} else {
-			f_close(&sd_file);
-			for (i = 0; i < SEC_SZ; i++)
-				dma_write(addr + i, dsk_buf[i]);
-			return FDC_STAT_OK;
-		}
-	} else {
+	/* prepare for sector read */
+	if ((stat = prep_io(drive, track, sector, addr)) == FDC_STAT_OK) {
+
+		/* read sector into memory */
+		sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br);
+		if (sd_res == FR_OK) {
+			if (br < SEC_SZ)	/* UH OH */
+				stat = FDC_STAT_READ;
+			else {
+				for (i = 0; i < SEC_SZ; i++)
+					dma_write(addr + i, dsk_buf[i]);
+				stat = FDC_STAT_OK;
+			}
+		} else
+			stat = FDC_STAT_READ;
+
 		f_close(&sd_file);
-		return FDC_STAT_READ;
 	}
+
+	disk_led = DISK_LED_OFF;
+
+	return stat;
 }
 
 /*
@@ -295,26 +300,29 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 	unsigned int br;
 	register int i;
 
-	/* prepare for sector write */
-	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
-		return stat;
+	disk_led = DISK_LED_WRITE;
 
-	/* write sector to disk image */
-	for (i = 0; i < SEC_SZ; i++)
-		dsk_buf[i] = dma_read(addr + i);
-	sd_res = f_write(&sd_file, &dsk_buf[0], SEC_SZ, &br);
-	if (sd_res == FR_OK) {
-		if (br < SEC_SZ) {	/* UH OH */
-			f_close(&sd_file);
-			return FDC_STAT_WRITE;
-		} else {
-			f_close(&sd_file);
-			return FDC_STAT_OK;
-		}
-	} else {
+	/* prepare for sector write */
+	if ((stat = prep_io(drive, track, sector, addr)) == FDC_STAT_OK) {
+
+		/* write sector to disk image */
+		for (i = 0; i < SEC_SZ; i++)
+			dsk_buf[i] = dma_read(addr + i);
+		sd_res = f_write(&sd_file, &dsk_buf[0], SEC_SZ, &br);
+		if (sd_res == FR_OK) {
+			if (br < SEC_SZ)	/* UH OH */
+				stat = FDC_STAT_WRITE;
+			else
+				stat = FDC_STAT_OK;
+		} else
+			stat = FDC_STAT_WRITE;
+
 		f_close(&sd_file);
-		return FDC_STAT_WRITE;
 	}
+
+	disk_led = DISK_LED_OFF;
+
+	return stat;
 }
 
 /*
