@@ -8,7 +8,7 @@ Program Information
  features:          UART stdin / stdout
                     USB stdin / stdout
  binary start:      0x10000000
- binary end:        0x1005062c
+ binary end:        0x1004a9c8
 
 Fixed Pin Information
  4:                 UART1 TX

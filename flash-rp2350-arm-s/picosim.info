@@ -8,7 +8,7 @@ Program Information
  features:            UART stdin / stdout
                       USB stdin / stdout
  binary start:        0x10000000
- binary end:          0x1004cec4
+ binary end:          0x10047840
  target chip:         RP2350
  image type:          ARM Secure
 
@@ -27,12 +27,12 @@ Build Information
 
 Metadata Block 1
  address:             0x10000138
- next block address:  0x1004ceb0
+ next block address:  0x1004782c
  block type:          image def
  target chip:         RP2350
  image type:          ARM Secure
 
 Metadata Block 2
- address:             0x1004ceb0
+ address:             0x1004782c
  next block address:  0x10000138
  block type:          ignored
