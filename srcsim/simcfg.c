@@ -375,8 +375,8 @@ again:
 
 		case 'r':
 			prompt_fn(s, "bin");
-			if (s[0])
-				load_file(s);
+			if (s[0] && load_file(s))
+				PC = 0;
 			putchar('\n');
 			menu = 0;
 			break;

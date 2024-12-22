@@ -29,11 +29,12 @@
 
 #include "sd-fdc.h"
 #include "disks.h"
+#include "draw.h"
+#include "lcd.h"
 
 FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
 char disks[NUMDISK][DISKLEN]; /* path name for 4 disk images /DISKS80/filename.DSK */
-int disk_led;	/* status of disk access LED */
 
 static FATFS fs; /* FatFs on MicroSD */
 
@@ -126,10 +127,11 @@ void list_files(const char *dir, const char *ext)
 
 /*
  * load a file 'name' into memory
+ * returns 1 on success, 0 on error
  */
-void load_file(const char *name)
+int load_file(const char *name)
 {
-	int i = 0;
+	int i = 0, res;
 	register unsigned int j;
 	unsigned int br;
 	char SFN[25];
@@ -142,7 +144,7 @@ void load_file(const char *name)
 	sd_res = f_open(&sd_file, SFN, FA_READ);
 	if (sd_res != FR_OK) {
 		puts("File not found");
-		return;
+		return 0;
 	}
 
 	/* read file into memory */
@@ -153,12 +155,16 @@ void load_file(const char *name)
 			break;
 		i += SEC_SZ;
 	}
-	if (sd_res != FR_OK)
+	if (sd_res != FR_OK) {
 		printf("f_read error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
-	else
+		res = 0;
+	} else {
 		printf("loaded file \"%s\" (%d bytes)\n", SFN, i + br);
+		res = 1;
+	}
 
 	f_close(&sd_file);
+	return res;
 }
 
 /*
@@ -265,7 +271,7 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 	unsigned int br;
 	register int i;
 
-	disk_led = DISK_LED_READ;
+	led_color = (led_color & ~C_GREEN) | C_GREEN;
 
 	/* prepare for sector read */
 	if ((stat = prep_io(drive, track, sector, addr)) == FDC_STAT_OK) {
@@ -286,7 +292,7 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 		f_close(&sd_file);
 	}
 
-	disk_led = DISK_LED_OFF;
+	led_color &= ~C_GREEN;
 
 	return stat;
 }
@@ -300,7 +306,7 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 	unsigned int br;
 	register int i;
 
-	disk_led = DISK_LED_WRITE;
+	led_color = (led_color & ~C_RED) | C_RED;
 
 	/* prepare for sector write */
 	if ((stat = prep_io(drive, track, sector, addr)) == FDC_STAT_OK) {
@@ -320,7 +326,7 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 		f_close(&sd_file);
 	}
 
-	disk_led = DISK_LED_OFF;
+	led_color &= ~C_RED;
 
 	return stat;
 }

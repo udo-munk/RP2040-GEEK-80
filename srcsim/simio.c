@@ -34,6 +34,7 @@
 #include "simio.h"
 
 #include "dazzler.h"
+#include "draw.h"
 #include "lcd.h"
 #include "rtc80.h"
 #include "sd-fdc.h"
@@ -42,7 +43,8 @@
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static void p001_out(BYTE data), p254_out(BYTE data), hwctl_out(BYTE data);
+static void p000_out(BYTE data), p001_out(BYTE data), p254_out(BYTE data);
+static void hwctl_out(BYTE data);
 static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
 static void mmu_out(BYTE data), fp_out(BYTE data);
 static BYTE mmu_in(void);
@@ -72,6 +74,7 @@ BYTE (*const port_in[256])(void) = {
  *	I/O port (0 - 255), to do the required I/O.
  */
 void (*const port_out[256])(BYTE data) = {
+	[  0] = p000_out,	/* RGB LED */
 	[  1] = p001_out,	/* SIO data */
 	[  4] = fdc_out,	/* FDC command */
 	[ 14] = dazzler_ctl_out, /* Cromemco Dazzler control */
@@ -172,6 +175,21 @@ static BYTE mmu_in(void)
 static BYTE p255_in(void)
 {
 	return fp_value;
+}
+
+/*
+ *	I/O function port 0 write:
+ *	Switch RGB LED blue on/off.
+ */
+static void p000_out(BYTE data)
+{
+	if (!data) {
+		/* 0 switches LED blue off */
+		led_color &= ~C_BLUE;
+	} else {
+		/* everything else on */
+		led_color = (led_color & ~C_BLUE) | C_BLUE;
+	}
 }
 
 /*

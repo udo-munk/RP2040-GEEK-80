@@ -18,7 +18,6 @@
 
 #include "lcd.h"
 #include "draw.h"
-#include "disks.h"
 
 #if COLOR_DEPTH == 12
 #define STRIDE (((WAVESHARE_GEEK_LCD_WIDTH + 1) / 2) * 3)
@@ -52,6 +51,8 @@ static void lcd_draw_memory(int first);
 static void lcd_draw_panel(int first);
 #endif
 
+uint16_t led_color;	/* color of RGB LED */
+
 void lcd_init(void)
 {
 	mutex_init(&lcd_mutex);
@@ -59,6 +60,8 @@ void lcd_init(void)
 	lcd_status_func = lcd_draw_cpu_reg;
 	lcd_draw_func = lcd_draw_empty;
 	lcd_task_done = 0;
+
+	led_color = 0;
 
 	draw_set_pixmap(&lcd_pixmap);
 
@@ -197,28 +200,98 @@ static void lcd_draw_empty(int first)
 }
 
 /*
+ *	Info line at the bottom of the LCD, used by CPU status and
+ *	LED panel displays:
+ *
+ *	01234567890123456789012
+ *	Z80pack x.x    o xx.xxC
+ */
+
+#define IXOFF	5	/* info line x pixel offset */
+
+static int temp_refresh;	/* temperature refresh counter */
+
+/*
+ *	Draw info line static content
+ */
+static void __not_in_flash_func(lcd_info_first)(void)
+{
+	const char *p;
+	int i;
+	uint16_t y = draw_pixmap->height - font20.height;
+
+	/* draw product info */
+	p = "Z80pack " USR_REL;
+	for (i = 0; *p && i < 12; i++)
+		draw_char(i * font20.width + IXOFF, y, *p++, &font20, C_ORANGE,
+			  C_DKBLUE);
+	draw_char(19 * font20.width + IXOFF, y, '.', &font20, C_ORANGE,
+		  C_DKBLUE);
+	draw_char(22 * font20.width + IXOFF, y, 'C', &font20, C_ORANGE,
+		  C_DKBLUE);
+
+	/* draw the RGB LED bracket */
+	draw_led_bracket(15 * font20.width + IXOFF, y + 5);
+
+	temp_refresh = LCD_REFRESH - 1; /* force temperature update */
+}
+
+/*
+ *	Draw info line dynamic content
+ */
+static void __not_in_flash_func(lcd_info_update)(void)
+{
+	int i, temp;
+	uint16_t y = draw_pixmap->height - font20.height;
+
+	/* update temperature every second */
+	if (++temp_refresh >= LCD_REFRESH) {
+		temp_refresh = 0;
+
+		/* read the onboard temperature sensor */
+
+		/* 12-bit conversion, assume max value == ADC_VREF == 3.3 V */
+		const float conversionFactor = 3.3f / (1 << 12);
+
+		float adc = (float) adc_read() * conversionFactor;
+		float tempC = 27.0f - (adc - 0.706f) / 0.001721f;
+
+		temp = (int) (tempC * 100.0f + 0.5f);
+
+		for (i = 0; i < 5; i++) {
+			draw_char((21 - i) * font20.width + IXOFF, y,
+				  '0' + temp % 10, &font20, C_ORANGE,
+				  C_DKBLUE);
+			if (i < 4)
+				temp /= 10;
+			if (i == 1)
+				i++; /* skip decimal point */
+		}
+	}
+
+	/* update the RGB LED */
+	draw_led(15 * font20.width + IXOFF, y + 5, led_color);
+}
+
+/*
  *	CPU status displays:
  *
- *	Z80 CPU using font20 (10 x 20 pixels)
- *	-------------------------------------
+ *	Z80 CPU using font20 (10 x 20 pixels):
  *
- *	  012345678901234567890123
+ *	  01234567890123456789012
  *	0 A  12   BC 1234 DE 1234
  *	1 HL 1234 SP 1234 PC 1234
  *	2 IX 1234 IY 1234 AF'1234
  *	3 BC'1234 DE'1234 HL'1234
  *	4 F  SZHPNC  IF12 IR 1234
- *	5 info           o xx.xxC
  *
- *	8080 CPU using font28 (14 x 28 pixels)
- *	--------------------------------------
+ *	8080 CPU using font28 (14 x 28 pixels):
  *
- *	  01234567890123456
+ *	  0123456789012345
  *	0 A  12    BC 1234
  *	1 DE 1234  HL 1234
  *	2 SP 1234  PC 1234
  *	3 F  SZHPC    IF 1
- *	4 info    o xx.xxC (font20)
  */
 
 #define XOFF20	5	/* x pixel offset of text grid for font20 */
@@ -228,9 +301,6 @@ static void lcd_draw_empty(int first)
 #define XOFF28	8	/* x pixel offset of text grid for font28 */
 #define YOFF28	0	/* y pixel offset of text grid for font28 */
 #define SPC28	1	/* vertical spacing for font28 */
-
-#define DISKLX	150	/* disk access LED position */
-#define DISKLY	120
 
 typedef struct lbl {
 	uint8_t x;
@@ -347,35 +417,23 @@ static const reg_t __not_in_flash("lcd_tables") regs_8080[] = {
 static const int num_regs_8080 = sizeof(regs_8080) / sizeof(reg_t);
 #endif
 
-static inline float read_onboard_temp(void)
-{
-	/* 12-bit conversion, assume max value == ADC_VREF == 3.3 V */
-	const float conversionFactor = 3.3f / (1 << 12);
-
-	float adc = (float) adc_read() * conversionFactor;
-	float tempC = 27.0f - (adc - 0.706f) / 0.001721f;
-
-	return tempC;
-}
-
 static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 {
-	char *p, c;
-	int i, j, n = 0, temp;
+	char c;
+	int i, j, n = 0;
 	uint16_t x;
 	WORD w;
 	const lbl_t *lp;
 	const reg_t *rp = NULL;
 	const draw_grid_t *gridp = NULL;
-	static int cpu_type, counter;
+	static int cpu_type;
 	static draw_grid_t grid20, grid28;
 
 	if (first || (cpu_type != cpu)) {
-		/* if first call or new CPU type, draw static background */
+		/* if first call or new CPU type, draw static content */
 
 		draw_setup_grid(&grid20, XOFF20, YOFF20, &font20, SPC20);
 		draw_setup_grid(&grid28, XOFF28, YOFF28, &font28, SPC28);
-		counter = LCD_REFRESH - 1; /* force temperature update */
 
 		draw_clear(C_DKBLUE);
 
@@ -415,16 +473,12 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 		for (i = 0; i < n; lp++, i++)
 			draw_grid_char(lp->x, lp->y, lp->c, gridp, C_WHITE,
 				       C_DKBLUE);
-		/* draw info line (font20) */
-		p = "Z80pack " USR_REL;
-		for (i = 0; *p && i < 12; i++)
-			draw_grid_char(i, 5, *p++, &grid20, C_ORANGE,
-				       C_DKBLUE);
-		draw_grid_char(19, 5, '.', &grid20, C_ORANGE, C_DKBLUE);
-		draw_grid_char(22, 5, 'C', &grid20, C_ORANGE, C_DKBLUE);
-		/* draw the disk access LED bracket */
-		draw_led_bracket(DISKLX, DISKLY);
+		/* draw info line static content */
+		lcd_info_first();
 	} else {
+		/* draw dynamic content */
+
+		/* use cpu_type in the following code, since cpu can change */
 #ifndef EXCLUDE_Z80
 		if (cpu_type == Z80) {
 			gridp = &grid20;
@@ -482,30 +536,16 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 				w >>= 4;
 			}
 		}
-		/* update temperature every second */
-		if (++counter >= LCD_REFRESH) {
-			counter = 0;
-			temp = (int) (read_onboard_temp() * 100.0f + 0.5f);
-			for (i = 0; i < 5; i++) {
-				draw_grid_char(21 - i, 5, '0' + temp % 10,
-					       &grid20, C_ORANGE, C_DKBLUE);
-				if (i < 4)
-					temp /= 10;
-				if (i == 1)
-					i++; /* skip decimal point */
-			}
-		}
+		/* draw info line dynamic content */
+		lcd_info_update();
 		if (cpu_type == I8080) {
 			/*
-			 * do this here, because the line would be overdrawn
-			 * by the info line, as the font28 register display
-			 * is one pixel row larger than the font20 one
+			 * do this here, because this line would be overdrawn
+			 * by the info line, as the 8080 register display
+			 * reaches into the first pixel row of the info line
 			 */
 			draw_grid_hline(0, 4, gridp->cols, gridp, C_DKYELLOW);
 		}
-		/* update the disk access LED */
-		draw_led(DISKLX, DISKLY, disk_led == DISK_LED_OFF ? C_DKRED :
-			 (disk_led == DISK_LED_READ ? C_GREEN : C_RED));
 	}
 }
 
@@ -516,9 +556,10 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 static void __not_in_flash_func(lcd_draw_memory)(int first)
 {
 	int x, y;
-	uint32_t *p;
+	const uint32_t *p;
 
 	if (first) {
+		/* draw static content */
 		draw_clear(C_DKBLUE);
 		draw_hline(MEM_XOFF, MEM_YOFF, 128 + 96 + 4 * MEM_BRDR - 1,
 			   C_GREEN);
@@ -530,6 +571,7 @@ static void __not_in_flash_func(lcd_draw_memory)(int first)
 		draw_vline(MEM_XOFF + 128 + 96 + 4 * MEM_BRDR - 2, 0,
 			   128 + 2 * MEM_BRDR, C_GREEN);
 	} else {
+		/* draw dynamic content */
 		p = (uint32_t *) bnk0;
 		for (x = MEM_XOFF + MEM_BRDR;
 		     x < MEM_XOFF + MEM_BRDR + 128; x++) {
@@ -580,7 +622,7 @@ typedef struct led {
 	uint16_t y;
 	char c1;
 	char c2;
-	enum { LB, LW, LD } type;
+	enum { LB, LW } type;
 	union {
 		struct {
 			BYTE i;
@@ -603,7 +645,6 @@ static const led_t __not_in_flash("lcd_tables") leds[] = {
 	{ LX( 5), LY(0), 'P', '2', LB, .b.i = 0xff, .b.m = 0x04, .b.p = &fp_led_output },
 	{ LX( 6), LY(0), 'P', '1', LB, .b.i = 0xff, .b.m = 0x02, .b.p = &fp_led_output },
 	{ LX( 7), LY(0), 'P', '0', LB, .b.i = 0xff, .b.m = 0x01, .b.p = &fp_led_output },
-	{ LX(10), LY(0), 'D', 'K', LD, .b.i = 0x00, .b.m = 0x00, .b.p = NULL },
 	{ LX(12), LY(0), 'I', 'E', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &IFF },
 	{ LX(13), LY(0), 'R', 'U', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &cpu_state },
 	{ LX(14), LY(0), 'W', 'A', LB, .b.i = 0x00, .b.m = 0x01, .b.p = &fp_led_wait },
@@ -646,13 +687,12 @@ static const int num_leds = sizeof(leds) / sizeof(led_t);
 static void __not_in_flash_func(lcd_draw_panel)(int first)
 {
 	const led_t *p;
-	const char *model = "Z80pack " MODEL " " USR_REL;
-	const char *s;
 	int i;
 	uint16_t col;
 
 	p = leds;
 	if (first) {
+		/* draw static content */
 		draw_clear(C_DKBLUE);
 		for (i = 0; i < num_leds; i++) {
 			draw_char(p->x - PLEDXO, p->y - PLEDYO,
@@ -665,36 +705,22 @@ static void __not_in_flash_func(lcd_draw_panel)(int first)
 			draw_led_bracket(p->x, p->y);
 			p++;
 		}
-		i = (draw_pixmap->width - strlen(model) * font20.width) / 2;
-		for (s = model; *s; s++) {
-			draw_char(i, draw_pixmap->height - font20.height - 1,
-				  *s, &font20, C_ORANGE, C_DKBLUE);
-			i += font20.width;
-		}
+		lcd_info_first();
 	} else {
+		/* draw dynamic content */
 		for (i = 0; i < num_leds; i++) {
 			col = C_DKRED;
-			switch (p->type) {
-			case LB:
+			if (p->type == LB) {
 				if ((*(p->b.p) ^ p->b.i) & p->b.m)
 					col = C_RED;
-				break;
-			case LW:
+			} else {
 				if (*(p->w.p) & p->w.m)
 					col = C_RED;
-				break;
-			case LD:
-				if (disk_led == DISK_LED_READ)
-					col = C_GREEN;
-				else if (disk_led == DISK_LED_WRITE)
-					col = C_RED;
-				break;
-			default:
-				break;
 			}
 			draw_led(p->x, p->y, col);
 			p++;
 		}
+		lcd_info_update();
 	}
 }
 
