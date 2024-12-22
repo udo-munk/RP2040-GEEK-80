@@ -494,7 +494,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 		}
 #ifndef EXCLUDE_I8080
 		if (cpu_type == I8080) {
-			/* info occupies the same space, so it draw here */
+			/* info occupies the same space, so it is draw here */
 			draw_grid_hline(0, 4, gridp->cols, gridp, C_DKYELLOW);
 		}
 #endif
