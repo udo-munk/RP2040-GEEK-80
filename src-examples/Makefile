@@ -2,13 +2,16 @@ Z80ASMDIR = ../../z80pack/z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
 Z80ASMFLAGS = -fb -l -T -sn -p0
 
-all: kscope.bin life.bin micro80.bin serial.bin tb.bin test8080.bin
+all: kscope.bin life.bin blink.bin micro80.bin serial.bin tb.bin test8080.bin
 
 kscope.bin: kscope.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 $<
 
 life.bin: life.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 $<
+
+blink.bin: blink.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMFLAGS) $<
 
 micro80.bin: micro80.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 $<
@@ -32,7 +35,8 @@ install:
 uninstall:
 
 clean:
-	rm -f kscope.bin life.bin micro80.bin serial.bin tb.bin test8080.bin
+	rm -f kscope.bin life.bin blink.bin micro80.bin serial.bin tb.bin \
+		test8080.bin
 
 distclean: clean
 

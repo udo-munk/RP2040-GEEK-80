@@ -17,6 +17,8 @@
 
 typedef void (*lcd_func_t)(int first);
 
+extern uint16_t led_color;
+
 extern void lcd_init(void), lcd_exit(void);
 extern void lcd_set_rotation(int rotated);
 extern void lcd_custom_disp(lcd_func_t draw_func);

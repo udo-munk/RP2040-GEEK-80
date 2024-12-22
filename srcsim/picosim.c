@@ -168,12 +168,12 @@ int main(void)
 	init_disks();		/* initialize disk drives */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
+	PC = 0xff00;		/* power on jump into the boot ROM */
 	config();		/* configure the machine */
 
 	f_flag = speed;		/* setup speed of the CPU */
 	tmax = speed * 10000;	/* theoretically */
 
-	PC = 0xff00;		/* power on jump into the boot ROM */
 #ifdef SIMPLEPANEL
 	fp_led_address = PC;
 	fp_led_data = getmem(PC);
