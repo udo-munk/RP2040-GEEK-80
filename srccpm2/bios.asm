@@ -252,13 +252,13 @@ SEL1	STA	DSKNO		;save disk #
 ;
 SETTRK	MOV	A,C		;get to accumulator
 	STA	FDCCMD+DDTRK	;set in FDC command
-        RET
+	RET
 ;
 ;	set sector given by register C
 ;
 SETSEC	MOV	A,C		;get to accumulator
-	STA     FDCCMD+DDSEC	;set in FDC command
-        RET
+	STA	FDCCMD+DDSEC	;set in FDC command
+	RET
 ;
 ;	set DMA address given by registers B and C
 ;
@@ -266,11 +266,11 @@ SETDMA	MOV	A,C		;low order address
 	STA	FDCCMD+DDLDMA	;set in FDC command
 	MOV	A,B		;high order address
 	STA	FDCCMD+DDHDMA	;set in FDC command
-        RET
+	RET
 ;
 ;	perform read operation
 ;
-READ	LDA     DSKNO		;get disk #
+READ	LDA	DSKNO		;get disk #
 	ORI	20H		;mask in read command
 	OUT	FDC		;ask FDC to execute the command
 	IN	FDC		;get status from FDC
@@ -296,7 +296,7 @@ WRITE	LDA	DSKNO		;get disk #
 ;	the translation table given by DE
 ;
 SECTRAN	XCHG			;HL=.TRANS
-	DAD	B               ;HL=.TRANS(SECTOR)
+	DAD	B		;HL=.TRANS(SECTOR)
 	XCHG
 	LDAX	D
 	MOV	L,A		;L=TRANS(SECTOR)

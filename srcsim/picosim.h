@@ -9,4 +9,6 @@
 
 extern int speed, initial_lcd;
 
+extern float read_onboard_temp(void);
+
 #endif /* !PICOSIM_INC */

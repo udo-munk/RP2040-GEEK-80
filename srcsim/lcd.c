@@ -9,7 +9,6 @@
 #include "pico/multicore.h"
 #include "pico/sync.h"
 #include "pico/time.h"
-#include "hardware/adc.h"
 
 #include "sim.h"
 #include "simdefs.h"
@@ -18,6 +17,7 @@
 
 #include "lcd.h"
 #include "draw.h"
+#include "picosim.h"
 
 #if COLOR_DEPTH == 12
 #define STRIDE (((WAVESHARE_GEEK_LCD_WIDTH + 1) / 2) * 3)
@@ -249,14 +249,7 @@ static void __not_in_flash_func(lcd_info_update)(void)
 		temp_refresh = 0;
 
 		/* read the onboard temperature sensor */
-
-		/* 12-bit conversion, assume max value == ADC_VREF == 3.3 V */
-		const float conversionFactor = 3.3f / (1 << 12);
-
-		float adc = (float) adc_read() * conversionFactor;
-		float tempC = 27.0f - (adc - 0.706f) / 0.001721f;
-
-		temp = (int) (tempC * 100.0f + 0.5f);
+		temp = (int) (read_onboard_temp() * 100.0f + 0.5f);
 
 		for (i = 0; i < 5; i++) {
 			draw_char((21 - i) * font20.width + IXOFF, y,

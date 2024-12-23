@@ -66,6 +66,7 @@ BYTE (*const port_in[256])(void) = {
 	[ 65] = clkc_in,	/* RTC read clock command */
 	[ 66] = clkd_in,	/* RTC read clock data */
 	[160] = hwctl_in,	/* virtual hardware control */
+	[254] = p255_in,	/* mirror of port 255 */
 	[255] = p255_in		/* read from front panel switches */
 };
 
