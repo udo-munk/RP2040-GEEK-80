@@ -92,7 +92,8 @@ void config(void)
 	const char *dext = "*.DSK";
 	char s[10];
 	unsigned int br;
-	int go_flag = 0, brightness = 90, rotated = 0;
+	bool go_flag = false, rotated = false;
+	int brightness = 90;
 	int i, n, menu;
 	struct tm t = { .tm_year = 124, .tm_mon = 0, .tm_mday = 1,
 			.tm_wday = 1, .tm_hour = 0, .tm_min = 0, .tm_sec = 0,
@@ -403,7 +404,7 @@ again:
 			break;
 
 		case 'g':
-			go_flag = 1;
+			go_flag = true;
 			break;
 
 		default:

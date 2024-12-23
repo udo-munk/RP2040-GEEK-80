@@ -220,7 +220,7 @@ void lcd_dev_backlight(uint8_t value)
 /*
  *	Set LCD rotation mode
  */
-void lcd_dev_rotation(uint8_t rotated)
+void lcd_dev_rotation(bool rotated)
 {
 	lcd_dma_wait();
 

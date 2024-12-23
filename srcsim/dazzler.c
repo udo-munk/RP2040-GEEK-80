@@ -138,7 +138,7 @@ static const draw_ro_pixmap_t dazzler_bitmap = {
 };
 
 /* DAZZLER stuff */
-static int state;
+static bool state;
 static WORD dma_addr;
 static BYTE flags = 64;
 static BYTE format;
@@ -278,7 +278,7 @@ static void __not_in_flash_func(draw_lowres)(void)
 	}
 }
 
-static void __not_in_flash_func(dazzler_draw)(int first)
+static void __not_in_flash_func(dazzler_draw)(bool first)
 {
 	if (first) {
 		x_off = (draw_pixmap->width - 128) / 2;
@@ -310,13 +310,13 @@ void dazzler_ctl_out(BYTE data)
 
 	/* switch DAZZLER on/off */
 	if (data & 128) {
-		if (state == 0) {
-			state = 1;
+		if (!state) {
+			state = true;
 			lcd_custom_disp(dazzler_draw);
 		}
 	} else {
-		if (state == 1) {
-			state = 0;
+		if (state) {
+			state = false;
 			lcd_status_disp(LCD_STATUS_CURRENT);
 		}
 	}

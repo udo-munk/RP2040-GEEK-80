@@ -109,7 +109,7 @@ have to update date/time information my self anymore. This is optional,
 the firmware will check if such a device is available, and if found use
 time/date informations from it.
 
-![image](https://github.com/udo-munk/RP2xxx-GEEK-80/blob/main/resources/RTC.png "battery backed RTC")
+![image](https://github.com/udo-munk/RP2xxx-GEEK-80/blob/main/resources/RTC.jpg "battery backed RTC")
 
 The serial UART is enabled, so that one can connect a terminal. I tested
 this with connecting a Pico probe to the UART.

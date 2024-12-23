@@ -15,7 +15,7 @@
 extern void lcd_dev_init(void);
 extern void lcd_dev_exit(void);
 extern void lcd_dev_backlight(uint8_t value);
-extern void lcd_dev_rotation(uint8_t rotated);
+extern void lcd_dev_rotation(bool rotated);
 extern void lcd_dev_send_pixmap(draw_pixmap_t *pixmap);
 
 #endif /* !LCD_DEV_INC */
