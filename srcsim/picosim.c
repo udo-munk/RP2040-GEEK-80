@@ -25,9 +25,9 @@
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 #include <tusb.h>
 #endif
+#include "pico/binary_info.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
-#include "pico/binary_info.h"
 #include "hardware/adc.h"
 #include "hardware/uart.h"
 #include "hardware/watchdog.h"
@@ -62,8 +62,8 @@ int speed = CPU_SPEED;
 int initial_lcd = LCD_STATUS_REGISTERS;
 
 /*
- * callback for TinyUSB when terminal sends a break
- * stops CPU
+ *	callback for TinyUSB when terminal sends a break
+ *	stops CPU
  */
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
@@ -104,13 +104,29 @@ static void lcd_draw_wait_term(int first)
 }
 #endif
 
+/*
+ *	read the onboard temperature sensor
+ */
+float read_onboard_temp(void)
+{
+	/* 12-bit conversion, assume max value == ADC_VREF == 3.3 V */
+	const float conversionFactor = 3.3f / (1 << 12);
+
+	float adc = (float) adc_read() * conversionFactor;
+	float tempC = 27.0f - (adc - 0.706f) / 0.001721f;
+
+	return tempC;
+}
+
 int main(void)
 {
-	/* strings for picotool, so that it shows used pins */
-	bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN,
-				   PICO_DEFAULT_I2C_SCL_PIN,
-				   GPIO_FUNC_I2C));
 	char s[2];
+
+	/* strings for picotool, so that it shows used pins */
+	bi_decl(bi_2pins_with_names(PICO_DEFAULT_I2C_SDA_PIN,
+				    "DS3231 I2C SDA",
+				    PICO_DEFAULT_I2C_SCL_PIN,
+				    "DS3231 I2C SCL"));
 
 	stdio_init_all();	/* initialize stdio */
 #if LIB_STDIO_MSC_USB
@@ -202,8 +218,10 @@ int main(void)
 	lcd_exit();		/* shutdown LCD */
 
 	/* reset machine */
-	watchdog_enable(1, 1);
-	for (;;);
+	watchdog_reboot(0, 0, 0);
+	for (;;) {
+		__nop();
+	}
 }
 
 /*

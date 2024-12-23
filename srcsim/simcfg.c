@@ -21,10 +21,10 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "pico/aon_timer.h"
+#include "hardware/i2c.h"
 
 #include "ff.h"
 #include "ds3231.h"
@@ -173,9 +173,10 @@ void config(void)
 			aon_timer_get_time(&ts);
 			localtime_r(&ts.tv_sec, &t);
 			printf("Current time: %s %04d-%02d-%02d "
-			       "%02d:%02d:%02d\n", dotw[t.tm_wday],
-			       t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
-			       t.tm_hour, t.tm_min, t.tm_sec);
+			       "%02d:%02d:%02d, Chip temperature: %.2f C\n",
+			       dotw[t.tm_wday], t.tm_year + 1900, t.tm_mon + 1,
+			       t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec,
+			       read_onboard_temp());
 			printf("b - LCD brightness: %d\n", brightness);
 			printf("m - rotate LCD\n");
 			printf("l - LCD status display: ");

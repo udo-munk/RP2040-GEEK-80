@@ -12,6 +12,8 @@ Copy the "example".bin files into a directory CODE80 on MicroSD card.
 
 The examples are:
 serial.bin	- shows how to do serial I/O
+blink.bin	- blink a LED with Z80 port output
+
 test8080.bin	- Kelly Smith 8080 CPU test program
 tb.bin		- 8080 TINY BASIC
 kscope.bin	- Kaleidoscope (uses Dazzler graphics)
@@ -24,5 +26,7 @@ bas16k40.bin	- Extended MITS Altair BASIC 16K V4.0              fp sw = 22
 
 "fp sw" = front panel switches
 
-Set the front panel switches with the "p - Port 255 value" menu command,
-or with "p fe" in the ICE.
+Set the front panel switches with the "p - Port 255 value" menu
+command, or with "p fe" in the ICE (yes, port 254, which is a mirror
+of port 255 to allow setting the switches, since writing to port 255
+will set the port LEDs on the front panel display).
