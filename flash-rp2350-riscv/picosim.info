@@ -8,32 +8,32 @@ Program Information
  features:            UART stdin / stdout
                       USB stdin / stdout
  binary start:        0x10000000
- binary end:          0x10050e74
+ binary end:          0x100515ec
  target chip:         RP2350
  image type:          RISC-V
 
 Fixed Pin Information
  4:                   UART1 TX
  5:                   UART1 RX
- 28:                  I2C0 SDA
- 29:                  I2C0 SCL
+ 28:                  DS3231 I2C SDA
+ 29:                  DS3231 I2C SCL
 
 Build Information
  sdk version:         2.1.0
  pico_board:          waveshare_rp2350_geek
  boot2_name:          boot2_w25q080
- build date:          Dec 22 2024
+ build date:          Dec 23 2024
  build attributes:    Release
 
 Metadata Block 1
  address:             0x10000014
- next block address:  0x10050e60
+ next block address:  0x100515d8
  block type:          image def
  target chip:         RP2350
  image type:          RISC-V
  entry point:         EP 0x10000036, SP 0x20082000
 
 Metadata Block 2
- address:             0x10050e60
+ address:             0x100515d8
  next block address:  0x10000014
  block type:          ignored
