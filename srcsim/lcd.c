@@ -533,9 +533,8 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(bool first)
 		lcd_info_update();
 		if (cpu_type == I8080) {
 			/*
-			 * do this here, because this line would be overdrawn
-			 * by the info line, as the 8080 register display
-			 * reaches into the first pixel row of the info line
+			 * do this here, because this line overwrites the first
+			 * pixel row of the info line
 			 */
 			draw_grid_hline(0, 4, gridp->cols, gridp, C_DKYELLOW);
 		}

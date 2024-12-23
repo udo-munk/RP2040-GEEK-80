@@ -293,6 +293,10 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 #endif
 
 	switch (tolower((unsigned char) *cmd)) {
+	case 'a':
+		lcd_status_next();
+		break;
+
 	case 'c':
 		/*
 		 *	Calculate the clock frequency of the emulated CPU:
@@ -375,6 +379,7 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 
 static void picosim_ice_help(void)
 {
+	puts("a                         switch to next LCD status display");
 	puts("c                         measure clock frequency");
 	puts("r filename                read file (without .BIN) into memory");
 	puts("! ls                      list files");
