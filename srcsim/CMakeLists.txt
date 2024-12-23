@@ -139,7 +139,7 @@ if(PICO_RP2040)
 else()
 	pico_set_program_description(${PROJECT_NAME} "z80pack on Waveshare RP2350-GEEK")
 endif()
-pico_set_program_version(${PROJECT_NAME} "1.4")
+pico_set_program_version(${PROJECT_NAME} "1.5")
 pico_set_program_url(${PROJECT_NAME} "https://github.com/udo-munk/RP2xxx-GEEK-80")
 
 # enable UART in/out, enable USB in/out
