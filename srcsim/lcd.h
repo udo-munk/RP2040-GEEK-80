@@ -15,12 +15,12 @@
 #define LCD_STATUS_PANEL	2
 #define LCD_STATUS_MEMORY	3
 
-typedef void (*lcd_func_t)(int first);
+typedef void (*lcd_func_t)(bool first);
 
 extern uint16_t led_color;
 
 extern void lcd_init(void), lcd_exit(void);
-extern void lcd_set_rotation(int rotated);
+extern void lcd_set_rotation(bool rotated);
 extern void lcd_custom_disp(lcd_func_t draw_func);
 extern void lcd_status_disp(int which);
 extern void lcd_status_next(void);

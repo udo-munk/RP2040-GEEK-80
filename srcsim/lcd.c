@@ -38,17 +38,17 @@ static draw_pixmap_t lcd_pixmap = {
 };
 
 static mutex_t lcd_mutex;
-static volatile lcd_func_t lcd_draw_func;
-static volatile lcd_func_t lcd_status_func;
-static volatile int lcd_shows_status;
-static volatile int lcd_task_done;
+static lcd_func_t lcd_draw_func;
+static lcd_func_t lcd_status_func;
+static bool lcd_shows_status;
+static bool lcd_task_done;
 
 static void lcd_task(void);
-static void lcd_draw_empty(int first);
-static void lcd_draw_cpu_reg(int first);
-static void lcd_draw_memory(int first);
+static void lcd_draw_empty(bool first);
+static void lcd_draw_cpu_reg(bool first);
+static void lcd_draw_memory(bool first);
 #ifdef SIMPLEPANEL
-static void lcd_draw_panel(int first);
+static void lcd_draw_panel(bool first);
 #endif
 
 uint16_t led_color;	/* color of RGB LED */
@@ -59,7 +59,7 @@ void lcd_init(void)
 
 	lcd_status_func = lcd_draw_cpu_reg;
 	lcd_draw_func = lcd_draw_empty;
-	lcd_task_done = 0;
+	lcd_task_done = false;
 
 	led_color = 0;
 
@@ -87,7 +87,7 @@ void lcd_exit(void)
 static void __not_in_flash_func(lcd_task)(void)
 {
 	absolute_time_t t;
-	int first = 1;
+	bool first = true;
 	int64_t d;
 	lcd_func_t curr_func = NULL;
 
@@ -104,10 +104,10 @@ static void __not_in_flash_func(lcd_task)(void)
 
 		if (curr_func != lcd_draw_func) {
 			curr_func = lcd_draw_func;
-			first = 1;
+			first = true;
 		}
 		(*curr_func)(first);
-		first = 0;
+		first = false;
 		mutex_enter_blocking(&lcd_mutex);
 		lcd_dev_send_pixmap(draw_pixmap);
 		mutex_exit(&lcd_mutex);
@@ -126,7 +126,7 @@ static void __not_in_flash_func(lcd_task)(void)
 	/* deinitialize the LCD controller */
 	lcd_dev_exit();
 	mutex_exit(&lcd_mutex);
-	lcd_task_done = 1;
+	lcd_task_done = true;
 
 	while (1)
 		__wfi();
@@ -137,7 +137,7 @@ void lcd_brightness(int brightness)
 	lcd_dev_backlight((uint8_t) brightness);
 }
 
-void lcd_set_rotation(int rotated)
+void lcd_set_rotation(bool rotated)
 {
 	mutex_enter_blocking(&lcd_mutex);
 	lcd_dev_rotation(rotated);
@@ -148,7 +148,7 @@ void lcd_custom_disp(lcd_func_t draw_func)
 {
 	mutex_enter_blocking(&lcd_mutex);
 	lcd_draw_func = draw_func;
-	lcd_shows_status = 0;
+	lcd_shows_status = false;
 	mutex_exit(&lcd_mutex);
 }
 
@@ -172,7 +172,7 @@ void lcd_status_disp(int which)
 		break;
 	}
 	lcd_draw_func = lcd_status_func;
-	lcd_shows_status = 1;
+	lcd_shows_status = true;
 	mutex_exit(&lcd_mutex);
 }
 
@@ -193,7 +193,7 @@ void lcd_status_next(void)
 	}
 }
 
-static void lcd_draw_empty(int first)
+static void lcd_draw_empty(bool first)
 {
 	if (first)
 		draw_clear(C_BLACK);
@@ -410,7 +410,7 @@ static const reg_t __not_in_flash("lcd_tables") regs_8080[] = {
 static const int num_regs_8080 = sizeof(regs_8080) / sizeof(reg_t);
 #endif
 
-static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
+static void __not_in_flash_func(lcd_draw_cpu_reg)(bool first)
 {
 	char c;
 	int i, j, n = 0;
@@ -546,7 +546,7 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(int first)
 #define MEM_YOFF 0
 #define MEM_BRDR 3
 
-static void __not_in_flash_func(lcd_draw_memory)(int first)
+static void __not_in_flash_func(lcd_draw_memory)(bool first)
 {
 	int x, y;
 	const uint32_t *p;
@@ -677,7 +677,7 @@ static const led_t __not_in_flash("lcd_tables") leds[] = {
 };
 static const int num_leds = sizeof(leds) / sizeof(led_t);
 
-static void __not_in_flash_func(lcd_draw_panel)(int first)
+static void __not_in_flash_func(lcd_draw_panel)(bool first)
 {
 	const led_t *p;
 	int i;
