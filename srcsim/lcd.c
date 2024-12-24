@@ -204,7 +204,7 @@ static void lcd_draw_empty(bool first)
  *	LED panel displays:
  *
  *	01234567890123456789012
- *	Z80pack x.x    o xx.xxC
+ *	Z80pack x.x   o xx.xx°C
  */
 
 #define IXOFF	5	/* info line x pixel offset */
@@ -225,13 +225,15 @@ static void __not_in_flash_func(lcd_info_first)(void)
 	for (i = 0; *p && i < 12; i++)
 		draw_char(i * font20.width + IXOFF, y, *p++, &font20, C_ORANGE,
 			  C_DKBLUE);
-	draw_char(19 * font20.width + IXOFF, y, '.', &font20, C_ORANGE,
+	draw_char(18 * font20.width + IXOFF, y, '.', &font20, C_ORANGE,
+		  C_DKBLUE);
+	draw_char(21 * font20.width + IXOFF, y, '\007', &font20, C_ORANGE,
 		  C_DKBLUE);
 	draw_char(22 * font20.width + IXOFF, y, 'C', &font20, C_ORANGE,
 		  C_DKBLUE);
 
 	/* draw the RGB LED bracket */
-	draw_led_bracket(15 * font20.width + IXOFF, y + 5);
+	draw_led_bracket(14 * font20.width + IXOFF, y + 5);
 
 	temp_refresh = LCD_REFRESH - 1; /* force temperature update */
 }
@@ -252,7 +254,7 @@ static void __not_in_flash_func(lcd_info_update)(void)
 		temp = (int) (read_onboard_temp() * 100.0f + 0.5f);
 
 		for (i = 0; i < 5; i++) {
-			draw_char((21 - i) * font20.width + IXOFF, y,
+			draw_char((20 - i) * font20.width + IXOFF, y,
 				  '0' + temp % 10, &font20, C_ORANGE,
 				  C_DKBLUE);
 			if (i < 4)
@@ -263,7 +265,7 @@ static void __not_in_flash_func(lcd_info_update)(void)
 	}
 
 	/* update the RGB LED */
-	draw_led(15 * font20.width + IXOFF, y + 5, led_color);
+	draw_led(14 * font20.width + IXOFF, y + 5, led_color);
 }
 
 /*
@@ -287,59 +289,11 @@ static void __not_in_flash_func(lcd_info_update)(void)
  *	3 F  SZHPC    IF 1
  */
 
-#define XOFF20	5	/* x pixel offset of text grid for font20 */
-#define YOFF20	0	/* y pixel offset of text grid for font20 */
-#define SPC20	3	/* vertical spacing for font20 */
-
-#define XOFF28	8	/* x pixel offset of text grid for font28 */
-#define YOFF28	0	/* y pixel offset of text grid for font28 */
-#define SPC28	1	/* vertical spacing for font28 */
-
-typedef struct lbl {
-	uint8_t x;
-	uint8_t y;
-	char c;
-} lbl_t;
-
-#ifndef EXCLUDE_Z80
-static const lbl_t __not_in_flash("lcd_tables") lbls_z80[] = {
-	{  0, 0, 'A'},
-	{  8, 0, 'B'}, {  9, 0, 'C'},
-	{ 16, 0, 'D'}, { 17, 0, 'E'},
-	{  0, 1, 'H'}, {  1, 1, 'L'},
-	{  8, 1, 'S'}, {  9, 1, 'P'},
-	{ 16, 1, 'P'}, { 17, 1, 'C'},
-	{  0, 2, 'I'}, {  1, 2, 'X'},
-	{  8, 2, 'I'}, {  9, 2, 'Y'},
-	{ 16, 2, 'A'}, { 17, 2, 'F'}, { 18, 2, '\''},
-	{  0, 3, 'B'}, {  1, 3, 'C'}, {  2, 3, '\''},
-	{  8, 3, 'D'}, {  9, 3, 'E'}, { 10, 3, '\''},
-	{ 16, 3, 'H'}, { 17, 3, 'L'}, { 18, 3, '\''},
-	{  0, 4, 'F'},
-	{ 11, 4, 'I'}, { 12, 4, 'F'},
-	{ 16, 4, 'I'}, { 17, 4, 'R'}
-};
-static const int num_lbls_z80 = sizeof(lbls_z80) / sizeof(lbl_t);
-#endif
-
-#ifndef EXCLUDE_I8080
-static const lbl_t __not_in_flash("lcd_tables") lbls_8080[] = {
-	{  0, 0, 'A'},
-	{  9, 0, 'B'}, { 10, 0, 'C'},
-	{  0, 1, 'D'}, {  1, 1, 'E'},
-	{  9, 1, 'H'}, { 10, 1, 'L'},
-	{  0, 2, 'S'}, {  1, 2, 'P'},
-	{  9, 2, 'P'}, { 10, 2, 'C'},
-	{  0, 3, 'F'},
-	{ 12, 3, 'I'}, { 13, 3, 'F'}
-};
-static const int num_lbls_8080 = sizeof(lbls_8080) / sizeof(lbl_t);
-#endif
-
 typedef struct reg {
 	uint8_t x;
 	uint8_t y;
-	enum { RB, RW, RF, RI, RFA, RR } type;
+	enum { RB, RW, RF, RI, RA, RR } type;
+	const char *l;
 	union {
 		struct {
 			const BYTE *p;
@@ -355,60 +309,72 @@ typedef struct reg {
 } reg_t;
 
 #ifndef EXCLUDE_Z80
+
+#define XOFF20	5	/* x pixel offset of text grid for font20 */
+#define YOFF20	0	/* y pixel offset of text grid for font20 */
+#define SPC20	3	/* vertical spacing for font20 */
+
 static const reg_t __not_in_flash("lcd_tables") regs_z80[] = {
-	{  4, 0, RB, .b.p = &A },
-	{ 12, 0, RB, .b.p = &B },
-	{ 14, 0, RB, .b.p = &C },
-	{ 20, 0, RB, .b.p = &D },
-	{ 22, 0, RB, .b.p = &E },
-	{  4, 1, RB, .b.p = &H },
-	{  6, 1, RB, .b.p = &L },
-	{ 14, 1, RW, .w.p = &SP },
-	{ 22, 1, RW, .w.p = &PC },
-	{  6, 2, RW, .w.p = &IX },
-	{ 14, 2, RW, .w.p = &IY },
-	{ 20, 2, RB, .b.p = &A_ },
-	{ 22, 2, RFA, .b.p = NULL },
-	{  4, 3, RB, .b.p = &B_ },
-	{  6, 3, RB, .b.p = &C_ },
-	{ 12, 3, RB, .b.p = &D_ },
-	{ 14, 3, RB, .b.p = &E_ },
-	{ 20, 3, RB, .b.p = &H_ },
-	{ 22, 3, RB, .b.p = &L_ },
-	{  3, 4, RF, .f.c = 'S', .f.m = S_FLAG },
-	{  4, 4, RF, .f.c = 'Z', .f.m = Z_FLAG },
-	{  5, 4, RF, .f.c = 'H', .f.m = H_FLAG },
-	{  6, 4, RF, .f.c = 'P', .f.m = P_FLAG },
-	{  7, 4, RF, .f.c = 'N', .f.m = N_FLAG },
-	{  8, 4, RF, .f.c = 'C', .f.m = C_FLAG },
-	{ 13, 4, RI, .f.c = '1', .f.m = 1 },
-	{ 14, 4, RI, .f.c = '2', .f.m = 2 },
-	{ 20, 4, RB, .b.p = &I },
-	{ 22, 4, RR, .b.p = NULL }
+	{  4, 0, RB, "A",    .b.p = &A },
+	{ 12, 0, RB, "BC",   .b.p = &B },
+	{ 14, 0, RB, NULL,   .b.p = &C },
+	{ 20, 0, RB, "DE",   .b.p = &D },
+	{ 22, 0, RB, NULL,   .b.p = &E },
+	{  4, 1, RB, "HL",   .b.p = &H },
+	{  6, 1, RB, NULL,   .b.p = &L },
+	{ 14, 1, RW, "SP",   .w.p = &SP },
+	{ 22, 1, RW, "PC",   .w.p = &PC },
+	{  6, 2, RW, "IX",   .w.p = &IX },
+	{ 14, 2, RW, "IY",   .w.p = &IY },
+	{ 20, 2, RB, "AF\'", .b.p = &A_ },
+	{ 22, 2, RA, NULL,   .b.p = NULL },
+	{  4, 3, RB, "BC\'", .b.p = &B_ },
+	{  6, 3, RB, NULL,   .b.p = &C_ },
+	{ 12, 3, RB, "DE\'", .b.p = &D_ },
+	{ 14, 3, RB, NULL,   .b.p = &E_ },
+	{ 20, 3, RB, "HL\'", .b.p = &H_ },
+	{ 22, 3, RB, NULL,   .b.p = &L_ },
+	{  3, 4, RF, NULL,   .f.c = 'S', .f.m = S_FLAG },
+	{  4, 4, RF, "F",    .f.c = 'Z', .f.m = Z_FLAG },
+	{  5, 4, RF, NULL,   .f.c = 'H', .f.m = H_FLAG },
+	{  6, 4, RF, NULL,   .f.c = 'P', .f.m = P_FLAG },
+	{  7, 4, RF, NULL,   .f.c = 'N', .f.m = N_FLAG },
+	{  8, 4, RF, NULL,   .f.c = 'C', .f.m = C_FLAG },
+	{ 13, 4, RI, NULL,   .f.c = '1', .f.m = 1 },
+	{ 14, 4, RI, "IF",   .f.c = '2', .f.m = 2 },
+	{ 20, 4, RB, "IR",   .b.p = &I },
+	{ 22, 4, RR, NULL,   .b.p = NULL }
 };
 static const int num_regs_z80 = sizeof(regs_z80) / sizeof(reg_t);
-#endif
+
+#endif /* !EXCLUDE_Z80 */
 
 #ifndef EXCLUDE_I8080
+
+#define XOFF28	8	/* x pixel offset of text grid for font28 */
+#define YOFF28	0	/* y pixel offset of text grid for font28 */
+#define SPC28	1	/* vertical spacing for font28 */
+
 static const reg_t __not_in_flash("lcd_tables") regs_8080[] = {
-	{  4, 0, RB, .b.p = &A },
-	{ 13, 0, RB, .b.p = &B },
-	{ 15, 0, RB, .b.p = &C },
-	{  4, 1, RB, .b.p = &D },
-	{  6, 1, RB, .b.p = &E },
-	{ 13, 1, RB, .b.p = &H },
-	{ 15, 1, RB, .b.p = &L },
-	{  6, 2, RW, .w.p = &SP },
-	{ 15, 2, RW, .w.p = &PC },
-	{  3, 3, RF, .f.c = 'S', .f.m = S_FLAG },
-	{  4, 3, RF, .f.c = 'Z', .f.m = Z_FLAG },
-	{  5, 3, RF, .f.c = 'H', .f.m = H_FLAG },
-	{  6, 3, RF, .f.c = 'P', .f.m = P_FLAG },
-	{  7, 3, RF, .f.c = 'C', .f.m = C_FLAG },
-	{ 15, 3, RI, .f.c = '1', .f.m = 3 }
+	{  4, 0, RB, "A",  .b.p = &A },
+	{ 13, 0, RB, "BC", .b.p = &B },
+	{ 15, 0, RB, NULL, .b.p = &C },
+	{  4, 1, RB, "DE", .b.p = &D },
+	{  6, 1, RB, NULL, .b.p = &E },
+	{ 13, 1, RB, "HL", .b.p = &H },
+	{ 15, 1, RB, NULL, .b.p = &L },
+	{  6, 2, RW, "SP", .w.p = &SP },
+	{ 15, 2, RW, "PC", .w.p = &PC },
+	{  3, 3, RF, NULL, .f.c = 'S', .f.m = S_FLAG },
+	{  4, 3, RF, "F",  .f.c = 'Z', .f.m = Z_FLAG },
+	{  5, 3, RF, NULL, .f.c = 'H', .f.m = H_FLAG },
+	{  6, 3, RF, NULL, .f.c = 'P', .f.m = P_FLAG },
+	{  7, 3, RF, NULL, .f.c = 'C', .f.m = C_FLAG },
+	{ 15, 3, RI, "IF", .f.c = '1', .f.m = 3 }
 };
 static const int num_regs_8080 = sizeof(regs_8080) / sizeof(reg_t);
-#endif
+
+#endif /* !EXCLUDE_I8080 */
 
 static void __not_in_flash_func(lcd_draw_cpu_reg)(bool first)
 {
@@ -416,76 +382,80 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(bool first)
 	int i, j, n = 0;
 	uint16_t x;
 	WORD w;
-	const lbl_t *lp;
+	const char *s;
 	const reg_t *rp = NULL;
-	const draw_grid_t *gridp = NULL;
 	static int cpu_type;
-	static draw_grid_t grid20, grid28;
+	static draw_grid_t grid;
 
-	if (first || (cpu_type != cpu)) {
-		/* if first call or new CPU type, draw static content */
+	/* redraw static content if new CPU type */
+	if (cpu_type != cpu) {
+		cpu_type = cpu;
+		first = true;
+	}
 
-		draw_setup_grid(&grid20, XOFF20, YOFF20, &font20, SPC20);
-		draw_setup_grid(&grid28, XOFF28, YOFF28, &font28, SPC28);
+	/* use cpu_type in the following code, since cpu can change */
+#ifndef EXCLUDE_Z80
+	if (cpu_type == Z80) {
+		rp = regs_z80;
+		n = num_regs_z80;
+	}
+#endif
+#ifndef EXCLUDE_I8080
+	if (cpu_type == I8080) {
+		rp = regs_8080;
+		n = num_regs_8080;
+	}
+#endif
 
+	if (first) {
+		/* draw static content */
 		draw_clear(C_DKBLUE);
 
-		cpu_type = cpu;
-		/* use cpu_type in the following code, since cpu can change */
+		/* setup text grid and draw grid lines */
 #ifndef EXCLUDE_Z80
 		if (cpu_type == Z80) {
-			gridp = &grid20;
-			lp = lbls_z80;
-			n = num_lbls_z80;
+			draw_setup_grid(&grid, XOFF20, YOFF20, -1, 5, &font20,
+					SPC20);
 
 			/* draw vertical grid lines */
-			draw_grid_vline(7, 0, 4, gridp, C_DKYELLOW);
-			draw_grid_vline(10, 4, 1, gridp, C_DKYELLOW);
-			draw_grid_vline(15, 0, 5, gridp, C_DKYELLOW);
+			draw_grid_vline(7, 0, 4, &grid, C_DKYELLOW);
+			draw_grid_vline(10, 4, 1, &grid, C_DKYELLOW);
+			draw_grid_vline(15, 0, 5, &grid, C_DKYELLOW);
 			/* draw horizontal grid lines */
-			for (i = 1; i < 6; i++)
-				draw_grid_hline(0, i, gridp->cols, gridp,
+			for (i = 1; i < 5; i++)
+				draw_grid_hline(0, i, grid.cols, &grid,
 						C_DKYELLOW);
 		}
 #endif
 #ifndef EXCLUDE_I8080
 		if (cpu_type == I8080) {
-			gridp = &grid28;
-			lp = lbls_8080;
-			n = num_lbls_8080;
+			draw_setup_grid(&grid, XOFF28, YOFF28, -1, 4, &font28,
+					SPC28);
 
 			/* draw vertical grid line */
-			draw_grid_vline(8, 0, 4, gridp, C_DKYELLOW);
+			draw_grid_vline(8, 0, 4, &grid, C_DKYELLOW);
 			/* draw horizontal grid lines */
 			for (i = 1; i < 4; i++)
-				draw_grid_hline(0, i, gridp->cols, gridp,
+				draw_grid_hline(0, i, grid.cols, &grid,
 						C_DKYELLOW);
 		}
 #endif
-		/* draw labels */
-		for (i = 0; i < n; lp++, i++)
-			draw_grid_char(lp->x, lp->y, lp->c, gridp, C_WHITE,
-				       C_DKBLUE);
+		/* draw register labels */
+		for (i = 0; i < n; rp++, i++)
+			if ((s = rp->l) != NULL) {
+				x = rp->x - (rp->type == RW ? 6 : 4);
+				if (rp->type == RI)
+					x++;
+				while (*s)
+					draw_grid_char(x++, rp->y, *s++, &grid,
+						       C_WHITE, C_DKBLUE);
+			}
+
 		/* draw info line static content */
 		lcd_info_first();
 	} else {
 		/* draw dynamic content */
 
-		/* use cpu_type in the following code, since cpu can change */
-#ifndef EXCLUDE_Z80
-		if (cpu_type == Z80) {
-			gridp = &grid20;
-			rp = regs_z80;
-			n = num_regs_z80;
-		}
-#endif
-#ifndef EXCLUDE_I8080
-		if (cpu_type == I8080) {
-			gridp = &grid28;
-			rp = regs_8080;
-			n = num_regs_8080;
-		}
-#endif
 		/* draw register contents */
 		for (i = 0; i < n; rp++, i++) {
 			switch (rp->type) {
@@ -498,17 +468,17 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(bool first)
 				j = 4;
 				break;
 			case RF: /* flags */
-				draw_grid_char(rp->x, rp->y, rp->f.c, gridp,
+				draw_grid_char(rp->x, rp->y, rp->f.c, &grid,
 					       (F & rp->f.m) ? C_GREEN : C_RED,
 					       C_DKBLUE);
 				continue;
 			case RI: /* interrupt register */
-				draw_grid_char(rp->x, rp->y, rp->f.c, gridp,
+				draw_grid_char(rp->x, rp->y, rp->f.c, &grid,
 					       (IFF & rp->f.m) == rp->f.m ?
 					       C_GREEN : C_RED, C_DKBLUE);
 				continue;
 #ifndef EXCLUDE_Z80
-			case RFA: /* alternate flags (int) */
+			case RA: /* alternate flags (int) */
 				w = F_;
 				j = 2;
 				break;
@@ -524,20 +494,14 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(bool first)
 			while (j--) {
 				c = w & 0xf;
 				c += c < 10 ? '0' : 'A' - 10;
-				draw_grid_char(x--, rp->y, c, gridp, C_GREEN,
+				draw_grid_char(x--, rp->y, c, &grid, C_GREEN,
 					       C_DKBLUE);
 				w >>= 4;
 			}
 		}
+
 		/* draw info line dynamic content */
 		lcd_info_update();
-		if (cpu_type == I8080) {
-			/*
-			 * do this here, because this line overwrites the first
-			 * pixel row of the info line
-			 */
-			draw_grid_hline(0, 4, gridp->cols, gridp, C_DKYELLOW);
-		}
 	}
 }
 
