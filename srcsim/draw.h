@@ -273,10 +273,12 @@ static inline void draw_vline(uint16_t x, uint16_t y, uint16_t h, uint16_t col)
 
 /*
  *	Setup a text grid defined by font and spacing.
+ *	If col < 0 then use the entire draw pixmap width.
+ *	If row < 0 then use the entire draw pixmap height.
  */
 static inline void draw_setup_grid(draw_grid_t *grid, uint16_t xoff,
-					  uint16_t yoff, const font_t *font,
-					  uint16_t spc)
+				   uint16_t yoff, int cols, int rows,
+				   const font_t *font, uint16_t spc)
 {
 #ifdef DRAW_DEBUG
 	if (draw_pixmap == NULL) {
@@ -291,6 +293,24 @@ static inline void draw_setup_grid(draw_grid_t *grid, uint16_t xoff,
 		fprintf(stderr, "%s: font is NULL\n", __func__);
 		return;
 	}
+	if (cols == 0) {
+		fprintf(stderr," %s: number of columns is zero\n", __func__);
+		return;
+	}
+	if (cols > (draw_pixmap->width - xoff) / grid->cwidth) {
+		fprintf(stderr," %s: number of columns %d is too large\n",
+			__func__, cols);
+		return;
+	}
+	if (rows == 0) {
+		fprintf(stderr," %s: number of rows is zero\n", __func__);
+		return;
+	}
+	if (rows > (draw_pixmap->height - yoff + spc) / grid->cheight) {
+		fprintf(stderr," %s: number of rows %d is too large\n",
+			__func__, rows);
+		return;
+	}
 #endif
 	grid->font = font;
 	grid->xoff = xoff;
@@ -298,8 +318,15 @@ static inline void draw_setup_grid(draw_grid_t *grid, uint16_t xoff,
 	grid->spc = spc;
 	grid->cwidth = font->width;
 	grid->cheight = font->height + spc;
-	grid->cols = (draw_pixmap->width - xoff) / grid->cwidth;
-	grid->rows = (draw_pixmap->height - yoff + spc) / grid->cheight;
+	if (cols < 0)
+		grid->cols = (draw_pixmap->width - xoff) / grid->cwidth;
+	else
+		grid->cols = cols;
+	if (rows < 0)
+		grid->rows = (draw_pixmap->height - yoff + spc) /
+			grid->cheight;
+	else
+		grid->rows = rows;
 }
 
 /*
@@ -385,8 +412,7 @@ static inline void draw_grid_vline(uint16_t x, uint16_t y, uint16_t h,
 /*
  *	Draw a 10x10 LED circular bracket.
  */
-static inline void __not_in_flash_func(draw_led_bracket)(uint16_t x,
-							 uint16_t y)
+static inline void draw_led_bracket(uint16_t x, uint16_t y)
 {
 	draw_hline(x + 2, y, 6, C_GRAY);
 	draw_pixel(x + 1, y + 1, C_GRAY);
@@ -401,8 +427,7 @@ static inline void __not_in_flash_func(draw_led_bracket)(uint16_t x,
 /*
  *	Draw a LED inside a 10x10 circular bracket.
  */
-static inline void __not_in_flash_func(draw_led)(uint16_t x, uint16_t y,
-						 uint16_t col)
+static inline void draw_led(uint16_t x, uint16_t y, uint16_t col)
 {
 	int i;
 

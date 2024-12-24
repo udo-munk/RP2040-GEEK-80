@@ -204,7 +204,7 @@ static void lcd_draw_empty(bool first)
  *	LED panel displays:
  *
  *	01234567890123456789012
- *	Z80pack x.x    o xx.xxC
+ *	Z80pack x.x   o xx.xx°C
  */
 
 #define IXOFF	5	/* info line x pixel offset */
@@ -225,13 +225,15 @@ static void __not_in_flash_func(lcd_info_first)(void)
 	for (i = 0; *p && i < 12; i++)
 		draw_char(i * font20.width + IXOFF, y, *p++, &font20, C_ORANGE,
 			  C_DKBLUE);
-	draw_char(19 * font20.width + IXOFF, y, '.', &font20, C_ORANGE,
+	draw_char(18 * font20.width + IXOFF, y, '.', &font20, C_ORANGE,
+		  C_DKBLUE);
+	draw_char(21 * font20.width + IXOFF, y, '\007', &font20, C_ORANGE,
 		  C_DKBLUE);
 	draw_char(22 * font20.width + IXOFF, y, 'C', &font20, C_ORANGE,
 		  C_DKBLUE);
 
 	/* draw the RGB LED bracket */
-	draw_led_bracket(15 * font20.width + IXOFF, y + 5);
+	draw_led_bracket(14 * font20.width + IXOFF, y + 5);
 
 	temp_refresh = LCD_REFRESH - 1; /* force temperature update */
 }
@@ -252,7 +254,7 @@ static void __not_in_flash_func(lcd_info_update)(void)
 		temp = (int) (read_onboard_temp() * 100.0f + 0.5f);
 
 		for (i = 0; i < 5; i++) {
-			draw_char((21 - i) * font20.width + IXOFF, y,
+			draw_char((20 - i) * font20.width + IXOFF, y,
 				  '0' + temp % 10, &font20, C_ORANGE,
 				  C_DKBLUE);
 			if (i < 4)
@@ -263,7 +265,7 @@ static void __not_in_flash_func(lcd_info_update)(void)
 	}
 
 	/* update the RGB LED */
-	draw_led(15 * font20.width + IXOFF, y + 5, led_color);
+	draw_led(14 * font20.width + IXOFF, y + 5, led_color);
 }
 
 /*
@@ -412,21 +414,23 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(bool first)
 		/* setup text grid and draw grid lines */
 #ifndef EXCLUDE_Z80
 		if (cpu_type == Z80) {
-			draw_setup_grid(&grid, XOFF20, YOFF20, &font20, SPC20);
+			draw_setup_grid(&grid, XOFF20, YOFF20, -1, 5, &font20,
+					SPC20);
 
 			/* draw vertical grid lines */
 			draw_grid_vline(7, 0, 4, &grid, C_DKYELLOW);
 			draw_grid_vline(10, 4, 1, &grid, C_DKYELLOW);
 			draw_grid_vline(15, 0, 5, &grid, C_DKYELLOW);
 			/* draw horizontal grid lines */
-			for (i = 1; i < 6; i++)
+			for (i = 1; i < 5; i++)
 				draw_grid_hline(0, i, grid.cols, &grid,
 						C_DKYELLOW);
 		}
 #endif
 #ifndef EXCLUDE_I8080
 		if (cpu_type == I8080) {
-			draw_setup_grid(&grid, XOFF28, YOFF28, &font28, SPC28);
+			draw_setup_grid(&grid, XOFF28, YOFF28, -1, 4, &font28,
+					SPC28);
 
 			/* draw vertical grid line */
 			draw_grid_vline(8, 0, 4, &grid, C_DKYELLOW);
@@ -498,16 +502,6 @@ static void __not_in_flash_func(lcd_draw_cpu_reg)(bool first)
 
 		/* draw info line dynamic content */
 		lcd_info_update();
-
-#ifndef EXCLUDE_I8080
-		if (cpu_type == I8080) {
-			/*
-			 * do this here, because this line overwrites the first
-			 * pixel row of the info line
-			 */
-			draw_grid_hline(0, 4, grid.cols, &grid, C_DKYELLOW);
-		}
-#endif
 	}
 }
 
